@@ -243,8 +243,8 @@ namespace nes_ui {
     }
 
     void SDLEmulator::render() {
-        constexpr double cpuHz = 1789773.0;
-        constexpr double audioCycles = cpuHz / 44100.0;
+        constexpr double ppuHz = 1789773.0 * 3.0;
+        constexpr double audioCycles = ppuHz / 44100.0;
         if (state_ == EmulationState::Idle) {
             SDL_RenderClear(renderer_);
             ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer_);
@@ -257,7 +257,7 @@ namespace nes_ui {
             const double elapsed = static_cast<double>(current_time - perfCounter_) * 1000.0 / frequency;
             perfCounter_ = SDL_GetPerformanceCounter();
 
-            cycleAccumulator_ += elapsed * cpuHz / 1000.0;
+            cycleAccumulator_ += elapsed * ppuHz / 1000.0;
             const auto cyclesToRun = static_cast<int64_t>(cycleAccumulator_);
             cycleAccumulator_ -= static_cast<double>(cyclesToRun);
 

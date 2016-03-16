@@ -49,7 +49,8 @@ namespace nes_core {
         Controller controller1_;
         Controller controller2_;
 
-        int availableCycles_ = 0;
+        double availablePpuCycles_ = 0;
+        int ppuSubStep_ = 0;  // 0,1,2 — CPU fires when ppuSubStep_ reaches 2 (P-CPU-PP order)
     };
 
 }

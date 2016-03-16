@@ -99,8 +99,16 @@ namespace nes_core {
         return ppu_->frame();
     }
 
+    std::int64_t Bus::ppuCycles() const {
+        return ppu_->ppuCycles();
+    }
+
     void Bus::notifyA12(const std::uint16_t addr) const {
         cartridge_->notifyA12(addr);
+    }
+
+    void Bus::mapperPpuStep() const {
+        cartridge_->mapperPpuStep();
     }
 
     bool Bus::irqAsserted() const {

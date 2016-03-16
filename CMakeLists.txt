@@ -122,6 +122,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/mapper/test_mapper_001.cpp
             tests/core/mapper/test_mapper_002.cpp
             tests/core/mapper/test_mapper_003.cpp
+            tests/core/mapper/test_mapper_004.cpp
             tests/core/apu/test_pulse.cpp
             tests/core/apu/test_triangle.cpp
             tests/core/apu/test_noise.cpp

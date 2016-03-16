@@ -31,6 +31,9 @@ namespace nes_core {
 
         virtual void notifyA12(std::uint16_t) {}
 
+        /** Called every PPU cycle for mappers that need per-cycle processing. */
+        virtual void ppuStep() {}
+
         virtual void reset() {
             prgRomIndex_ = 0;
             prgRamIndex_ = 0;

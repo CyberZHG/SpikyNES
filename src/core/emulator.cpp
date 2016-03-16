@@ -20,34 +20,48 @@ namespace nes_core {
         apu_.reset();
         controller1_.reset();
         controller2_.reset();
-        availableCycles_ = 0;
+        availablePpuCycles_ = 0;
+        ppuSubStep_ = 2;
     }
 
     void Emulator::run(const double milliseconds) {
-        availableCycles_ += CPU_FREQUENCY_NTSC * milliseconds / 1000.0;
-        while (cpu_.cycles() < availableCycles_) {
+        constexpr double PPU_FREQUENCY_NTSC_D = CPU_FREQUENCY_NTSC * 3.0;
+        availablePpuCycles_ += PPU_FREQUENCY_NTSC_D * milliseconds / 1000.0;
+        while (ppu_.ppuCycles() < availablePpuCycles_) {
             (void)step();
         }
     }
 
     int Emulator::step() {
         if (!cpu_.halted()) {
-            for (int i = 0; i < 3; ++i) {
-                ppu_.step();
-            }
-            apu_.step();
+            ppu_.step();
         }
-        cpu_.step();
-        return 1;
+
+        bool cpuRan = false;
+        if (++ppuSubStep_ == 2) {
+            if (!cpu_.halted()) {
+                apu_.step();
+            }
+            cpu_.step();
+            cpuRan = true;
+        }
+
+        if (ppuSubStep_ >= 3) {
+            ppuSubStep_ = 0;
+            if (!cpu_.halted()) {
+                cpu_.samplePrevIrqState();
+            }
+        }
+
+        return cpuRan ? 1 : 0;
     }
 
     int Emulator::execOp() {
+        const auto startCycles = cpu_.cycles();
         const auto steps = cpu_.steps();
-        std::int16_t cycles = 0;
         while (cpu_.steps() == steps) {
             step();
-            ++cycles;
         }
-        return cycles;
+        return static_cast<int>(cpu_.cycles() - startCycles);
     }
 }

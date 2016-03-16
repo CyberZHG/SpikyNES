@@ -35,8 +35,10 @@ namespace nes_core {
         [[nodiscard]] std::int32_t ppuScanline() const;
         [[nodiscard]] std::int32_t ppuCycle() const;
         [[nodiscard]] std::int64_t ppuFrame() const;
+        [[nodiscard]] std::int64_t ppuCycles() const;
 
         void notifyA12(std::uint16_t addr) const;
+        void mapperPpuStep() const;
 
         [[nodiscard]] bool irqAsserted() const;
         [[nodiscard]] Mirroring mirroring() const;

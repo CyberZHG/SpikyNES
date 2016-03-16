@@ -120,6 +120,9 @@ namespace nes_core {
         /** Stall the CPU for the given number of cycles. */
         void stall(const int cycles) { stallCycles_ += cycles; }
 
+        /** Update prevIrqState_ from current bus state. Used by emulator to shift IRQ poll timing. */
+        void samplePrevIrqState();
+
     protected:
         /** Push a byte onto the stack. */
         void pushByte(std::uint8_t value);
@@ -341,6 +344,7 @@ namespace nes_core {
         bool nmiPending_ = false;
         bool nmiActive_ = false;
         bool prevIRQInhibit_ = true;
+        bool prevIrqState_ = false;
         bool irqActive_ = false;
         bool dmaPending_ = false;
         std::uint8_t dmaPage_ = 0;

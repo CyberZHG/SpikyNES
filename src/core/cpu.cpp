@@ -403,6 +403,7 @@ namespace nes_core {
         dmaPage_ = 0;
         dmaAlignCycle_ = false;
         prevIRQInhibit_ = true;
+        prevIrqState_ = false;
     }
 
     std::uint8_t CPU::cpuRead(const std::uint16_t addr) const {
@@ -411,6 +412,10 @@ namespace nes_core {
 
     void CPU::cpuWrite(const std::uint16_t addr, const std::uint16_t value) {
         mem_[addr % CPU_RAM_SIZE] = value;
+    }
+
+    void CPU::samplePrevIrqState() {
+        prevIrqState_ = bus_->irqAsserted();
     }
 
     void CPU::triggerDMA(const std::uint8_t page) {
@@ -584,12 +589,13 @@ namespace nes_core {
             if (nmiPending_) {
                 nmiPending_ = false;
                 nmiActive_ = true;
-            } else if (bus_->irqAsserted() && !prevIRQInhibit_) {
+            } else if (prevIrqState_ && !prevIRQInhibit_) {
                 irqActive_ = true;
             }
         } else {
             ++opState_.step;
         }
+        prevIrqState_ = bus_->irqAsserted();
         ++cycles_;
     }
 }

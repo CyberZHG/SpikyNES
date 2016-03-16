@@ -112,6 +112,7 @@ namespace nes_core {
         [[nodiscard]] std::int32_t scanline() const { return scanline_; }
         [[nodiscard]] std::int32_t cycle() const { return cycle_; }
         [[nodiscard]] std::int64_t frame() const { return frame_; }
+        [[nodiscard]] std::int64_t ppuCycles() const { return ppuCycles_; }
         [[nodiscard]] const std::array<std::uint32_t, PPU_FRAME_BUFFER_SIZE>& frameBuffer() const { return frameBuffer_; }
 
     protected:
@@ -176,6 +177,7 @@ namespace nes_core {
         std::int32_t scanline_ = 0;
         std::int32_t cycle_ = 0;
         std::int64_t frame_ = 0;
+        std::int64_t ppuCycles_ = 0;
         bool suppressVBlank_ = false;
         bool isVBlankNMIOn_ = false;
         bool isVBlankNMIOnPrev_ = false;

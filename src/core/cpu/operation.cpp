@@ -710,6 +710,7 @@ namespace nes_core {
             opState_.readHi = bus_->cpuRead(CPU_VECTOR_NMI + 1);
             regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
             setBit(regs_.P, CPURegisters::INDEX_I);
+            prevIRQInhibit_ = true;
             nmiActive_ = false;
             opState_.finished = true;
         }
@@ -737,6 +738,7 @@ namespace nes_core {
             opState_.readHi = bus_->cpuRead(CPU_VECTOR_IRQ + 1);
             regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
             setBit(regs_.P, CPURegisters::INDEX_I);
+            prevIRQInhibit_ = true;
             irqActive_ = false;
             opState_.finished = true;
         }

@@ -21,6 +21,7 @@ namespace nes_core {
         [[nodiscard]] bool irqAsserted() const override;
 
         void notifyA12(std::uint16_t addr) override;
+        void ppuStep() override;
 
     private:
         [[nodiscard]] int chrBankAddr(std::uint16_t addr) const;
@@ -43,6 +44,7 @@ namespace nes_core {
         bool irqFlag_ = false;
 
         std::int64_t a12LowCycle_ = 0;
+        std::int32_t irqDelay_ = 0;
     };
 
     using MapperMMC3 = Mapper004;

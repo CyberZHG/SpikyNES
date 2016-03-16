@@ -171,6 +171,12 @@ namespace nes_core {
         }
     }
 
+    void Cartridge::mapperPpuStep() const {
+        if (mapper_ != nullptr) {
+            mapper_->ppuStep();
+        }
+    }
+
     bool Cartridge::irqAsserted() const {
         return mapper_ != nullptr && mapper_->irqAsserted();
     }

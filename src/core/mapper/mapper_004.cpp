@@ -21,6 +21,7 @@ namespace nes_core {
         irqReload_ = false;
         irqFlag_ = false;
         a12LowCycle_ = 0;
+        irqDelay_ = 0;
     }
 
     std::uint8_t Mapper004::cpuRead(const std::uint16_t addr) {
@@ -94,6 +95,7 @@ namespace nes_core {
             if (addr % 2 == 0) {
                 irqDisabled_ = true;
                 irqFlag_ = false;
+                irqDelay_ = 0;
             } else {
                 irqDisabled_ = false;
             }
@@ -168,13 +170,13 @@ namespace nes_core {
         }
         if (addr & 0x1000) {
             if (a12LowCycle_ > 0) {
-                if (bus_->cpuCycles() >= a12LowCycle_ + 3) {
+                if (bus_->ppuCycles() >= a12LowCycle_ + 10) {
                     clockIrqCounter();
                 }
                 a12LowCycle_ = 0;
             }
         } else if (a12LowCycle_ == 0) {
-            a12LowCycle_ = bus_->cpuCycles();
+            a12LowCycle_ = bus_->ppuCycles();
         }
     }
 
@@ -189,4 +191,8 @@ namespace nes_core {
             irqFlag_ = true;
         }
     }
+
+    void Mapper004::ppuStep() {
+    }
+
 }

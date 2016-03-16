@@ -50,6 +50,7 @@ namespace nes_core {
         void ppuWrite(std::uint16_t addr, std::uint8_t value);
 
         void notifyA12(std::uint16_t addr) const;
+        void mapperPpuStep() const;
 
         [[nodiscard]] Mirroring mirroring() const;
         [[nodiscard]] bool irqAsserted() const;

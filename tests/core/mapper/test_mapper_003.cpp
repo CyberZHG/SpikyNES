@@ -160,3 +160,44 @@ TEST_F(Mapper003Test, ChrBank_FullAddressRange) {
         EXPECT_EQ(cartridge.ppuRead(addr), static_cast<std::uint8_t>(addr >> 8));
     }
 }
+
+TEST_F(Mapper003Test, CpuRead_BelowPrgRam_ReturnsZero) {
+    cartridge.initPrgRom(PRG_ROM_BANK_SIZE);
+    cartridge.initChrRom(CHR_ROM_BANK_SIZE);
+    cartridge.initMapper(3, 1, 0, 1);
+
+    EXPECT_EQ(cartridge.cpuRead(0x0000), 0x00);
+    EXPECT_EQ(cartridge.cpuRead(0x5FFF), 0x00);
+}
+
+TEST_F(Mapper003Test, PpuRead_AboveChrRange_ReturnsZero) {
+    cartridge.initPrgRom(PRG_ROM_BANK_SIZE);
+    cartridge.initChrRom(CHR_ROM_BANK_SIZE);
+    cartridge.initMapper(3, 1, 0, 1);
+
+    EXPECT_EQ(cartridge.ppuRead(0x2000), 0x00);
+    EXPECT_EQ(cartridge.ppuRead(0x3FFF), 0x00);
+}
+
+TEST_F(Mapper003Test, ChrBankSwitch_4Banks) {
+    cartridge.initChrRom(4 * CHR_ROM_BANK_SIZE);
+    cartridge.ppuWrite(0x0000, 0x11);
+    cartridge.initPrgRom(PRG_ROM_BANK_SIZE);
+    cartridge.cpuWrite(0x8000, 0xFF);
+    cartridge.initMapper(3, 1, 0, 4);
+
+    cartridge.cpuWrite(0x8000, 0x00);
+    EXPECT_EQ(cartridge.ppuRead(0x0000), 0x11);
+
+    cartridge.cpuWrite(0x8000, 0x01);
+    EXPECT_EQ(cartridge.ppuRead(0x0000), 0x00);
+
+    cartridge.cpuWrite(0x8000, 0x02);
+    EXPECT_EQ(cartridge.ppuRead(0x0000), 0x00);
+
+    cartridge.cpuWrite(0x8000, 0x03);
+    EXPECT_EQ(cartridge.ppuRead(0x0000), 0x00);
+
+    cartridge.cpuWrite(0x8000, 0x00);
+    EXPECT_EQ(cartridge.ppuRead(0x0000), 0x11);
+}

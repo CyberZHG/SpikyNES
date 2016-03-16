@@ -111,6 +111,7 @@ namespace nes_core {
         patternTableTileHi_ = 0;
         ppuBusLatch_ = 0;
         ppuBusLatchFrame_.fill(0);
+        ppuCycles_ = 0;
     }
 
     std::uint8_t PPU::registerRead(const std::uint16_t addr) {
@@ -200,7 +201,6 @@ namespace nes_core {
                 }
             }
         } else if (index == 7) {  // PPU_DATA
-            bus_->notifyA12(regs_.v & PPU_MEM_MASK);
             ppuWrite(regs_.v, value);
             regs_.v += regs_.vRamIncrement();
             if (!regs_.renderingEnabled() || scanline_ >= 240) {
@@ -604,6 +604,8 @@ namespace nes_core {
     }
 
     void PPU::step() {
+        ++ppuCycles_;
+        bus_->mapperPpuStep();
         if (vramAddrUpdateDelay_ > 0) {
             if (--vramAddrUpdateDelay_ == 0) {
                 regs_.v = pendingVramAddr_;
