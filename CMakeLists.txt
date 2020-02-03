@@ -36,8 +36,18 @@ if(SPIKY_NES_ENABLE_COVERAGE)
 endif()
 
 add_library(SpikyNESCore STATIC
-        include/core.h
-        src/core.cpp
+        include/core/emulator.h
+        src/core/emulator.cpp
+        include/core/cpu.h
+        src/core/cpu.cpp
+        include/core/ppu.h
+        src/core/ppu.cpp
+        include/core/apu.h
+        src/core/apu.cpp
+        include/core/bus.h
+        src/core/bus.cpp
+        include/core/cartridge.h
+        src/core/cartridge.cpp
 )
 
 target_include_directories(SpikyNESCore
