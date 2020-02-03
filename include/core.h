@@ -1,0 +1,4 @@
+#ifndef SPIKYNES_CORE_H
+#define SPIKYNES_CORE_H
+
+#endif //SPIKYNES_CORE_H
