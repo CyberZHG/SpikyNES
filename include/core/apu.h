@@ -3,9 +3,16 @@
 
 namespace nes_core {
 
+    class Bus;
+
     class APU {
     public:
+        explicit APU(Bus* bus);
+
+        void reset();
+
     private:
+        Bus* bus_ = nullptr;
     };
 
 }

@@ -48,6 +48,7 @@ add_library(SpikyNESCore STATIC
         src/core/bus.cpp
         include/core/cartridge.h
         src/core/cartridge.cpp
+        include/core/constants.h
 )
 
 target_include_directories(SpikyNESCore
@@ -69,6 +70,8 @@ if(SPIKY_NES_ENABLE_TESTS)
 
     add_executable(runTests
             tests/test_main.cpp
+            tests/core/cpu/test_cpu_utils.cpp
+            tests/core/cpu/test_cpu_utils.h
     )
 
     target_link_libraries(runTests

@@ -1,17 +1,23 @@
 #ifndef SPIKYNES_CPU_H
 #define SPIKYNES_CPU_H
 
-#include <cstdint>
+#include <array>
+
+#include "core/constants.h"
 
 namespace nes_core {
 
+    class Bus;
+
     struct CPURegisters {
-        std::int8_t A = 0;
-        std::int8_t X = 0;
-        std::int8_t Y = 0;
-        std::int8_t P = 0b00100100;
-        std::int8_t SP = 0;
-        std::int16_t PC = 0;
+        std::uint8_t A = 0;
+        std::uint8_t X = 0;
+        std::uint8_t Y = 0;
+        std::uint8_t P = 0b00100100;
+        std::uint8_t SP = 0;
+        std::uint16_t PC = 0;
+
+        void reset();
 
         /**
          * @return N (negative) flag.
@@ -42,6 +48,18 @@ namespace nes_core {
 
     class CPU {
     public:
+        explicit CPU(Bus* bus);
+
+        void reset();
+
+        CPURegisters& registers() { return regs_; }
+        const CPURegisters& registers() const { return regs_; }
+
+        /** Read a byte from CPU RAM. */
+        std::uint8_t read(std::uint16_t addr) const;
+        /** Set a byte to CPU RAM. */
+        void write(std::uint16_t addr, std::uint16_t value);
+
         /**
          * Execute one instruction.
          * @return Cycles consumed.
@@ -49,7 +67,12 @@ namespace nes_core {
         int step();
 
     private:
+        /**
+         * 2KB internal RAM, mirrored 3 times and up to $2000.
+         */
+        std::array<std::uint8_t, CPU_RAM_SIZE> mem_ = {};
         CPURegisters regs_;
+        Bus* bus_ = nullptr;
     };
 
 }

@@ -13,8 +13,19 @@ namespace nes_core {
 
     class Emulator {
     public:
-        Emulator() = default;
+        Emulator();
         virtual ~Emulator() = default;
+
+        CPU& cpu() { return cpu_; }
+        const CPU& cpu() const { return cpu_; }
+        PPU& ppu() { return ppu_; }
+        const PPU& ppu() const { return ppu_; }
+        APU& apu() { return apu_; }
+        const APU& apu() const { return apu_; }
+        Bus& bus() { return bus_; }
+        const Bus& bus() const { return bus_; }
+
+        void reset();
 
         // void run(double milliseconds);
 
