@@ -1,4 +1,5 @@
 #include "test_cpu_utils.h"
+#include "core/constants.h"
 
 void CPUTestBase::SetUp() {
     emulator.reset();
@@ -20,5 +21,12 @@ TEST_F(CPUTestBase, reset) {
     const auto cycles = runProgram({}, 0);
     EXPECT_EQ(cycles, 0);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN);
+    EXPECT_EQ(emulator.cpu().registers().P, 0b00100100);
+}
+
+TEST_F(CPUTestBase, nop) {
+    const auto cycles = runProgram({OPCODE_NOP}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
     EXPECT_EQ(emulator.cpu().registers().P, 0b00100100);
 }
