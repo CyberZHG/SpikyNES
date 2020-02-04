@@ -149,6 +149,15 @@ namespace nes_core {
         /** Logical shift right. */
         void execLSR(std::uint16_t addr);
 
+        /** Rotate left on accumulator. */
+        void execROL();
+        /** Rotate left. */
+        void execROL(std::uint16_t addr);
+        /** Rotate right on accumulator. */
+        void execROR();
+        /** Rotate right. */
+        void execROR(std::uint16_t addr);
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.

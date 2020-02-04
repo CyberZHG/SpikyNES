@@ -417,6 +417,8 @@ namespace nes_core {
             case OpCode::PLP: execPLP(); break;
             case OpCode::ASL: mode == AM_ACC ? execASL() : execASL(addr.addr); break;
             case OpCode::LSR: mode == AM_ACC ? execLSR() : execLSR(addr.addr); break;
+            case OpCode::ROL: mode == AM_ACC ? execROL() : execROL(addr.addr); break;
+            case OpCode::ROR: mode == AM_ACC ? execROR() : execROR(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }

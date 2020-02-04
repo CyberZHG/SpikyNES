@@ -90,4 +90,32 @@ namespace nes_core {
         regs_.updateNZ(val >>= 1);
         bus_->write(addr, val);
     }
+
+    void CPU::execROL() {
+        const auto c = regs_.C();
+        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 7));
+        regs_.updateNZ(regs_.A = (regs_.A << 1) | c);
+    }
+
+    void CPU::execROL(const std::uint16_t addr) {
+        const auto c = regs_.C();
+        auto val = bus_->read(addr);
+        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 7));
+        regs_.updateNZ(val = (val << 1) | c);
+        bus_->write(addr, val);
+    }
+
+    void CPU::execROR() {
+        const auto c = regs_.C();
+        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 0));
+        regs_.updateNZ(regs_.A = (regs_.A >> 1) | (c << 7));
+    }
+
+    void CPU::execROR(const std::uint16_t addr) {
+        const auto c = regs_.C();
+        auto val = bus_->read(addr);
+        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 0));
+        regs_.updateNZ(val = (val >> 1) | (c << 7));
+        bus_->write(addr, val);
+    }
 }
