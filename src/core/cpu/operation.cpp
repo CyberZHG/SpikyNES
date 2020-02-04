@@ -179,4 +179,32 @@ namespace nes_core {
         updateBit(regs_.P, CPURegisters::INDEX_C, m <= regs_.Y);
         regs_.updateNZ(val);
     }
+
+    void CPU::execINC(const std::uint16_t addr) {
+        const auto val = bus_->read(addr) + 1;
+        bus_->write(addr, val);
+        regs_.updateNZ(val);
+    }
+
+    void CPU::execINX() {
+        regs_.updateNZ(++regs_.X);
+    }
+
+    void CPU::execINY() {
+        regs_.updateNZ(++regs_.Y);
+    }
+
+    void CPU::execDEC(const std::uint16_t addr) {
+        const auto val = bus_->read(addr) - 1;
+        bus_->write(addr, val);
+        regs_.updateNZ(val);
+    }
+
+    void CPU::execDEX() {
+        regs_.updateNZ(--regs_.X);
+    }
+
+    void CPU::execDEY() {
+        regs_.updateNZ(--regs_.Y);
+    }
 }

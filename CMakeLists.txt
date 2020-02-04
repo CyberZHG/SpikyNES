@@ -83,6 +83,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/cpu/test_shift.cpp
             tests/core/cpu/test_logical.cpp
             tests/core/cpu/test_arithmetic.cpp
+            tests/core/cpu/test_increment.cpp
     )
 
     target_link_libraries(runTests

@@ -178,6 +178,19 @@ namespace nes_core {
         /** Compare index register Y to memory. */
         void execCPY(std::uint16_t addr);
 
+        /** Increment memory by one. */
+        void execINC(std::uint16_t addr);
+        /** Increment index register X by one. */
+        void execINX();
+        /** Increment index register Y by one. */
+        void execINY();
+        /** Decrement memory by one. */
+        void execDEC(std::uint16_t addr);
+        /** Decrement index register X by one. */
+        void execDEX();
+        /** Decrement index register Y by one. */
+        void execDEY();
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.
