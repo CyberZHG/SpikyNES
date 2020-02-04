@@ -384,6 +384,7 @@ namespace nes_core {
             case AM_ABS: addr = addrAbsolute(); break;
             case AM_ABS_X: addr = addrAbsoluteX(); break;
             case AM_ABS_Y: addr = addrAbsoluteY(); break;
+            case AM_ZP: addr = addrZeroPage(); break;
             default:
                 throw std::runtime_error("Invalid addressing mode");
         }

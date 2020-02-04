@@ -34,4 +34,8 @@ namespace nes_core {
         regs_.PC += 2;
         return result;
     }
+
+    AddressingResult CPU::addrZeroPage() {
+        return {read(regs_.PC++), false};
+    }
 }
