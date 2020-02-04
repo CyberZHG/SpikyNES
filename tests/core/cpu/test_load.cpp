@@ -300,3 +300,69 @@ TEST_F(CPUTestBase, LDA_IndirectX_Negative) {
     EXPECT_FALSE(emulator.cpu().registers().Z());
     EXPECT_TRUE(emulator.cpu().registers().N());
 }
+
+TEST_F(CPUTestBase, LDA_IndirectY) {
+    // LDA ($10),Y ; Read pointer from $10/$11, add Y, load from result
+    // Pointer = $0300, Y = $05, load from $0305
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0010, 0x00);
+    emulator.cpu().write(0x0011, 0x03);
+    emulator.cpu().write(0x0305, 0x42);
+    const auto cycles = runProgram({0xB1, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDA_IndirectY_PageCross) {
+    // LDA ($10),Y ; Page crossing: $03F0 + $20 = $0410
+    emulator.cpu().registers().Y = 0x20;
+    emulator.cpu().write(0x0010, 0xF0);
+    emulator.cpu().write(0x0011, 0x03);
+    emulator.cpu().write(0x0410, 0x42);
+    const auto cycles = runProgram({0xB1, 0x10}, 1);
+    EXPECT_EQ(cycles, 6);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDA_IndirectY_PointerWrap) {
+    // LDA ($FF),Y ; Pointer at $FF/$00
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x00FF, 0x00);
+    emulator.cpu().write(0x0000, 0x03);
+    emulator.cpu().write(0x0305, 0x42);
+    const auto cycles = runProgram({0xB1, 0xFF}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+}
+
+TEST_F(CPUTestBase, LDA_IndirectY_Zero) {
+    // LDA ($10),Y ; Load zero
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0010, 0x00);
+    emulator.cpu().write(0x0011, 0x03);
+    emulator.cpu().write(0x0305, 0x00);
+    const auto cycles = runProgram({0xB1, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x00);
+    EXPECT_TRUE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDA_IndirectY_Negative) {
+    // LDA ($10),Y ; Load negative value
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0010, 0x00);
+    emulator.cpu().write(0x0011, 0x03);
+    emulator.cpu().write(0x0305, 0x80);
+    const auto cycles = runProgram({0xB1, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x80);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_TRUE(emulator.cpu().registers().N());
+}

@@ -101,6 +101,8 @@ namespace nes_core {
         AddressingResult addrZeroPageY();
         /** Use the address from X-indexed zero page. */
         AddressingResult addrZeroPageIndirectX();
+        /** Use the address from zero page then plus Y. */
+        AddressingResult addrZeroPageIndirectY();
 
         /** Load accumulator with memory. */
         void execLDA(std::uint16_t addr);

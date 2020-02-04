@@ -63,4 +63,13 @@ namespace nes_core {
         result.pageCrossed = false;
         return result;
     }
+
+    AddressingResult CPU::addrZeroPageIndirectY() {
+        auto addr = static_cast<std::uint16_t>(read(regs_.PC++));
+        addr = read((addr + 1) & 0xFF) << 8 | read(addr);
+        AddressingResult result;
+        result.addr = addr + regs_.Y;
+        result.pageCrossed = hasPageCross(addr, result.addr);
+        return result;
+    }
 }
