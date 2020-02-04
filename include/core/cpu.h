@@ -167,6 +167,17 @@ namespace nes_core {
         /** Test bits in memory with accumulator. */
         void execBIT(std::uint16_t addr);
 
+        /** Add memory to accumulator with carry. */
+        void execADC(std::uint16_t addr);
+        /** Subtract memory from accumulator with borrow. */
+        void execSBC(std::uint16_t addr);
+        /** Compare memory and accumulator. */
+        void execCMP(std::uint16_t addr);
+        /** Compare index register X to memory. */
+        void execCPX(std::uint16_t addr);
+        /** Compare index register Y to memory. */
+        void execCPY(std::uint16_t addr);
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.

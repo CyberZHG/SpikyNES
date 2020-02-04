@@ -140,4 +140,43 @@ namespace nes_core {
         updateBit(regs_.P, CPURegisters::INDEX_N, static_cast<std::uint8_t>(val & (1 << 7)));
         updateBit(regs_.P, CPURegisters::INDEX_V, static_cast<std::uint8_t>(val & (1 << 6)));
     }
+
+    void CPU::execADC(const std::uint16_t addr) {
+        const auto m = bus_->read(addr);
+        const auto val = static_cast<int>(regs_.A) + static_cast<int>(m) + regs_.C();
+        const auto result = static_cast<std::uint8_t>(val);
+        updateBit(regs_.P, CPURegisters::INDEX_C, val > 255);
+        updateBit(regs_.P, CPURegisters::INDEX_V, ((regs_.A ^ result) & (m ^ result) & 0x80) != 0);
+        regs_.updateNZ(regs_.A = result);
+    }
+
+    void CPU::execSBC(const std::uint16_t addr) {
+        const auto m = bus_->read(addr);
+        const auto val = static_cast<int>(regs_.A) - static_cast<int>(m) - (1 - regs_.C());
+        const auto result = static_cast<std::uint8_t>(val);
+        updateBit(regs_.P, CPURegisters::INDEX_C, val >= 0);
+        updateBit(regs_.P, CPURegisters::INDEX_V, ((regs_.A ^ result) & (regs_.A ^ m) & 0x80) != 0);
+        regs_.updateNZ(regs_.A = result);
+    }
+
+    void CPU::execCMP(const std::uint16_t addr) {
+        const auto m = bus_->read(addr);
+        const int val = static_cast<int>(regs_.A) - static_cast<int>(m);
+        updateBit(regs_.P, CPURegisters::INDEX_C, m <= regs_.A);
+        regs_.updateNZ(val);
+    }
+
+    void CPU::execCPX(const std::uint16_t addr) {
+        const auto m = bus_->read(addr);
+        const int val = static_cast<int>(regs_.X) - static_cast<int>(m);
+        updateBit(regs_.P, CPURegisters::INDEX_C, m <= regs_.X);
+        regs_.updateNZ(val);
+    }
+
+    void CPU::execCPY(const std::uint16_t addr) {
+        const auto m = bus_->read(addr);
+        const int val = static_cast<int>(regs_.Y) - static_cast<int>(m);
+        updateBit(regs_.P, CPURegisters::INDEX_C, m <= regs_.Y);
+        regs_.updateNZ(val);
+    }
 }

@@ -423,6 +423,11 @@ namespace nes_core {
             case OpCode::ORA: execORA(addr.addr); break;
             case OpCode::EOR: execEOR(addr.addr); break;
             case OpCode::BIT: execBIT(addr.addr); break;
+            case OpCode::ADC: execADC(addr.addr); break;
+            case OpCode::SBC: execSBC(addr.addr); break;
+            case OpCode::CMP: execCMP(addr.addr); break;
+            case OpCode::CPX: execCPX(addr.addr); break;
+            case OpCode::CPY: execCPY(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }
