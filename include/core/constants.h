@@ -15,8 +15,6 @@ namespace nes_core {
 
     constexpr std::size_t PPU_RAM_END = 0x4000;
 
-    constexpr std::uint8_t OPCODE_NOP = 0xEA;
-
 }
 
 #endif //SPIKYNES_CONSTANTS_H

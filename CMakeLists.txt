@@ -49,6 +49,8 @@ add_library(SpikyNESCore STATIC
         include/core/cartridge.h
         src/core/cartridge.cpp
         include/core/constants.h
+        include/core/utils.h
+        src/core/utils.cpp
 )
 
 target_include_directories(SpikyNESCore

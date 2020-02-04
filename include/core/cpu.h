@@ -4,46 +4,65 @@
 #include <array>
 
 #include "core/constants.h"
+#include "core/utils.h"
 
 namespace nes_core {
 
     class Bus;
 
     struct CPURegisters {
+        static constexpr std::uint8_t DEFAULT_STATE = 0b00110100;
+
         std::uint8_t A = 0;
         std::uint8_t X = 0;
         std::uint8_t Y = 0;
-        std::uint8_t P = 0b00100100;
+        std::uint8_t P = DEFAULT_STATE;
         std::uint8_t SP = 0;
         std::uint16_t PC = 0;
 
+        static constexpr int INDEX_N = 7;
+        static constexpr int INDEX_V = 6;
+        static constexpr int INDEX_B = 4;
+        static constexpr int INDEX_I = 2;
+        static constexpr int INDEX_Z = 1;
+        static constexpr int INDEX_C = 0;
+
         void reset();
+
+        void updateN(std::uint8_t val);
+        void updateZ(std::uint8_t val);
+        void updateNZ(std::uint8_t val);
 
         /**
          * @return N (negative) flag.
          */
-        bool isNegative() const { return P & 0b10000000; }
+        bool N() const { return getBit(P, INDEX_N); }
         /**
          * @return V (overflow) flag.
          */
-        bool isOverflow() const { return P & 0b01000000; }
+        bool V() const { return getBit(P, INDEX_V); }
         /**
          * B is 0 when pushed by interrupts (NMI and IRQ) and 1 when pushed by instructions (BRK and PHP).
          * @return B flag.
          */
-        bool isBreak() const { return P & 0b00010000; }
+        bool B() const { return getBit(P, INDEX_B); }
         /**
          * @return I (interrupt disable) flag.
          */
-        bool isInterruptDisabled() const { return P & 0b00000100; }
+        bool I() const { return getBit(P, INDEX_I); }
         /**
          * @return Z (zero) flag.
          */
-        bool isZero() const { return P & 0b00000010; }
+        bool Z() const { return getBit(P, INDEX_Z); }
         /**
          * @return C (carry) flag.
          */
-        bool isCarry() const { return P & 0b00000001; }
+        bool C() const { return getBit(P, INDEX_C); }
+    };
+
+    struct AddressingResult {
+        std::uint16_t address;
+        bool pageCrossed;
     };
 
     class CPU {
