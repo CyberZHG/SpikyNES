@@ -23,6 +23,7 @@ namespace nes_core {
         static constexpr int INDEX_N = 7;
         static constexpr int INDEX_V = 6;
         static constexpr int INDEX_B = 4;
+        static constexpr int INDEX_D = 3;
         static constexpr int INDEX_I = 2;
         static constexpr int INDEX_Z = 1;
         static constexpr int INDEX_C = 0;
@@ -190,6 +191,21 @@ namespace nes_core {
         void execDEX();
         /** Decrement index register Y by one. */
         void execDEY();
+
+        /** Clear carry flag. */
+        void execCLC();
+        /** Clear decimal mode. */
+        void execCLD();
+        /** Clear interrupt disable. */
+        void execCLI();
+        /** Clear overflow flag. */
+        void execCLV();
+        /** Set carry flag. */
+        void execSEC();
+        /** Set decimal mode. */
+        void execSED();
+        /** set interrupt disable. */
+        void execSEI();
 
     private:
         /**

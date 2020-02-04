@@ -207,4 +207,32 @@ namespace nes_core {
     void CPU::execDEY() {
         regs_.updateNZ(--regs_.Y);
     }
+
+    void CPU::execCLC() {
+        clearBit(regs_.P, CPURegisters::INDEX_C);
+    }
+
+    void CPU::execCLD() {
+        clearBit(regs_.P, CPURegisters::INDEX_D);
+    }
+
+    void CPU::execCLI() {
+        clearBit(regs_.P, CPURegisters::INDEX_I);
+    }
+
+    void CPU::execCLV() {
+        clearBit(regs_.P, CPURegisters::INDEX_V);
+    }
+
+    void CPU::execSEC() {
+        setBit(regs_.P, CPURegisters::INDEX_C);
+    }
+
+    void CPU::execSED() {
+        setBit(regs_.P, CPURegisters::INDEX_D);
+    }
+
+    void CPU::execSEI() {
+        setBit(regs_.P, CPURegisters::INDEX_I);
+    }
 }
