@@ -377,15 +377,20 @@ namespace nes_core {
     int CPU::step() {
         const auto opCode = read(regs_.PC++);
         const auto [op, cycles, mode] = OP_INFO[opCode];
+        AddressingResult addr;
         switch (mode) {
-            case AM_IMP:
-                break;
+            case AM_IMP: break;
+            case AM_IMM: addr = addrImmediate(); break;
             default:
                 throw std::runtime_error("Invalid addressing mode");
         }
         int finalCycles = cycles;
+        if (addr.pageCrossed) {
+            ++finalCycles;
+        }
         switch (op) {
             case OpCode::NOP: break;
+            case OpCode::LDA: execLDA(addr.address); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }

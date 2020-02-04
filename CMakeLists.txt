@@ -51,6 +51,8 @@ add_library(SpikyNESCore STATIC
         include/core/constants.h
         include/core/utils.h
         src/core/utils.cpp
+        src/core/cpu/addressing.cpp
+        src/core/cpu/operation.cpp
 )
 
 target_include_directories(SpikyNESCore
@@ -74,6 +76,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/test_main.cpp
             tests/core/cpu/test_cpu_utils.cpp
             tests/core/cpu/test_cpu_utils.h
+            tests/core/cpu/test_load.cpp
     )
 
     target_link_libraries(runTests

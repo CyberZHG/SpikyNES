@@ -61,8 +61,8 @@ namespace nes_core {
     };
 
     struct AddressingResult {
-        std::uint16_t address;
-        bool pageCrossed;
+        std::uint16_t address = 0;
+        bool pageCrossed = false;
     };
 
     class CPU {
@@ -84,6 +84,12 @@ namespace nes_core {
          * @return Cycles consumed.
          */
         int step();
+
+        /** The operand is contained in the second byte of the instruction. */
+        AddressingResult addrImmediate();
+
+        /** Load accumulator with memory. */
+        void execLDA(std::uint16_t addr);
 
     private:
         /**
