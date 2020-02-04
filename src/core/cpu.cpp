@@ -382,6 +382,8 @@ namespace nes_core {
             case AM_IMP: break;
             case AM_IMM: addr = addrImmediate(); break;
             case AM_ABS: addr = addrAbsolute(); break;
+            case AM_ABS_X: addr = addrAbsoluteX(); break;
+            case AM_ABS_Y: addr = addrAbsoluteY(); break;
             default:
                 throw std::runtime_error("Invalid addressing mode");
         }
@@ -391,7 +393,7 @@ namespace nes_core {
         }
         switch (op) {
             case OpCode::NOP: break;
-            case OpCode::LDA: execLDA(addr.address); break;
+            case OpCode::LDA: execLDA(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }

@@ -17,14 +17,14 @@ int CPUTestBase::runProgram(const std::vector<std::uint8_t>& program, const int 
     return cycles;
 }
 
-TEST_F(CPUTestBase, reset) {
+TEST_F(CPUTestBase, Reset) {
     const auto cycles = runProgram({}, 0);
     EXPECT_EQ(cycles, 0);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN);
     EXPECT_EQ(emulator.cpu().registers().P, 0b00110100);
 }
 
-TEST_F(CPUTestBase, nop) {
+TEST_F(CPUTestBase, NOP) {
     const auto cycles = runProgram({0xEA}, 1);
     EXPECT_EQ(cycles, 2);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);

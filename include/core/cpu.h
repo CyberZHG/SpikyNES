@@ -61,7 +61,7 @@ namespace nes_core {
     };
 
     struct AddressingResult {
-        std::uint16_t address = 0;
+        std::uint16_t addr = 0;
         bool pageCrossed = false;
     };
 
@@ -89,6 +89,10 @@ namespace nes_core {
         AddressingResult addrImmediate();
         /** The second byte as low order bits and the third byte as the high order bits. */
         AddressingResult addrAbsolute();
+        /** X-indexed absolute. */
+        AddressingResult addrAbsoluteX();
+        /** Y-indexed absolute. */
+        AddressingResult addrAbsoluteY();
 
         /** Load accumulator with memory. */
         void execLDA(std::uint16_t addr);
