@@ -106,6 +106,8 @@ namespace nes_core {
 
         /** Load accumulator with memory. */
         void execLDA(std::uint16_t addr);
+        /** Load index register X from memory. */
+        void execLDX(std::uint16_t addr);
 
     private:
         /**

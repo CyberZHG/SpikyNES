@@ -6,4 +6,9 @@ namespace nes_core {
         regs_.A = bus_->read(addr);
         regs_.updateNZ(regs_.A);
     }
+
+    void CPU::execLDX(const std::uint16_t addr) {
+        regs_.X = bus_->read(addr);
+        regs_.updateNZ(regs_.X);
+    }
 }
