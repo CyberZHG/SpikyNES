@@ -87,6 +87,8 @@ namespace nes_core {
 
         /** The operand is contained in the second byte of the instruction. */
         AddressingResult addrImmediate();
+        /** The second byte as low order bits and the third byte as the high order bits. */
+        AddressingResult addrAbsolute();
 
         /** Load accumulator with memory. */
         void execLDA(std::uint16_t addr);

@@ -381,6 +381,7 @@ namespace nes_core {
         switch (mode) {
             case AM_IMP: break;
             case AM_IMM: addr = addrImmediate(); break;
+            case AM_ABS: addr = addrAbsolute(); break;
             default:
                 throw std::runtime_error("Invalid addressing mode");
         }
