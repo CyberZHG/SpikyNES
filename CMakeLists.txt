@@ -77,6 +77,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/cpu/test_cpu_utils.cpp
             tests/core/cpu/test_cpu_utils.h
             tests/core/cpu/test_load.cpp
+            tests/core/cpu/test_store.cpp
     )
 
     target_link_libraries(runTests

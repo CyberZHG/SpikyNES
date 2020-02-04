@@ -401,10 +401,12 @@ namespace nes_core {
             case OpCode::LDA: execLDA(addr.addr); break;
             case OpCode::LDX: execLDX(addr.addr); break;
             case OpCode::LDY: execLDY(addr.addr); break;
+            case OpCode::STA: execSTA(addr.addr); break;
+            case OpCode::STX: execSTX(addr.addr); break;
+            case OpCode::STY: execSTY(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }
         return finalCycles;
     }
 }
-

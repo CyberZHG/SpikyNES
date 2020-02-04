@@ -16,4 +16,16 @@ namespace nes_core {
         regs_.Y = bus_->read(addr);
         regs_.updateNZ(regs_.Y);
     }
+
+    void CPU::execSTA(const std::uint16_t addr) {
+        bus_->write(addr, regs_.A);
+    }
+
+    void CPU::execSTX(const std::uint16_t addr) {
+        bus_->write(addr, regs_.X);
+    }
+
+    void CPU::execSTY(const std::uint16_t addr) {
+        bus_->write(addr, regs_.Y);
+    }
 }

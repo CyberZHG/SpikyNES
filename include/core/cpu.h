@@ -111,6 +111,13 @@ namespace nes_core {
         /** Load index register Y from memory. */
         void execLDY(std::uint16_t addr);
 
+        /** Store accumulator in memory. */
+        void execSTA(std::uint16_t addr);
+        /** Store index register X in memory. */
+        void execSTX(std::uint16_t addr);
+        /** Store index register Y in memory. */
+        void execSTY(std::uint16_t addr);
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.
