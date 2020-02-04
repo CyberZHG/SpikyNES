@@ -158,6 +158,15 @@ namespace nes_core {
         /** Rotate right. */
         void execROR(std::uint16_t addr);
 
+        /** "AND" memory with accumulator. */
+        void execAND(std::uint16_t addr);
+        /** "OR" memory with accumulator. */
+        void execORA(std::uint16_t addr);
+        /** "XOR" memory with accumulator. */
+        void execEOR(std::uint16_t addr);
+        /** Test bits in memory with accumulator. */
+        void execBIT(std::uint16_t addr);
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.

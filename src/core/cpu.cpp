@@ -12,7 +12,7 @@ namespace nes_core {
         // Shifts
         ASL, LSR, ROL, ROR,
         // Logical
-        AND, BIT, EOR, ORA,
+        AND, ORA, EOR, BIT,
         // Arithmetic
         ADC, SBC, CMP, CPX, CPY,
         // Increments & Decrements
@@ -419,6 +419,10 @@ namespace nes_core {
             case OpCode::LSR: mode == AM_ACC ? execLSR() : execLSR(addr.addr); break;
             case OpCode::ROL: mode == AM_ACC ? execROL() : execROL(addr.addr); break;
             case OpCode::ROR: mode == AM_ACC ? execROR() : execROR(addr.addr); break;
+            case OpCode::AND: execAND(addr.addr); break;
+            case OpCode::ORA: execORA(addr.addr); break;
+            case OpCode::EOR: execEOR(addr.addr); break;
+            case OpCode::BIT: execBIT(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }

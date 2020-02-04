@@ -118,4 +118,26 @@ namespace nes_core {
         regs_.updateNZ(val = (val >> 1) | (c << 7));
         bus_->write(addr, val);
     }
+
+    void CPU::execAND(const std::uint16_t addr) {
+        const auto val = bus_->read(addr);
+        regs_.updateNZ(regs_.A &= val);
+    }
+
+    void CPU::execORA(const std::uint16_t addr) {
+        const auto val = bus_->read(addr);
+        regs_.updateNZ(regs_.A |= val);
+    }
+
+    void CPU::execEOR(const std::uint16_t addr) {
+        const auto val = bus_->read(addr);
+        regs_.updateNZ(regs_.A ^= val);
+    }
+
+    void CPU::execBIT(const std::uint16_t addr) {
+        const auto val = bus_->read(addr);
+        regs_.updateZ(val & regs_.A);
+        updateBit(regs_.P, CPURegisters::INDEX_N, static_cast<std::uint8_t>(val & (1 << 7)));
+        updateBit(regs_.P, CPURegisters::INDEX_V, static_cast<std::uint8_t>(val & (1 << 6)));
+    }
 }
