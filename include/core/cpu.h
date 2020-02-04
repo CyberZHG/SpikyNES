@@ -95,6 +95,10 @@ namespace nes_core {
         AddressingResult addrAbsoluteY();
         /** Fetch from $00 - $FF. */
         AddressingResult addrZeroPage();
+        /** X-indexed zero page */
+        AddressingResult addrZeroPageX();
+        /** Y-indexed zero page */
+        AddressingResult addrZeroPageY();
 
         /** Load accumulator with memory. */
         void execLDA(std::uint16_t addr);

@@ -38,4 +38,20 @@ namespace nes_core {
     AddressingResult CPU::addrZeroPage() {
         return {read(regs_.PC++), false};
     }
+
+    AddressingResult CPU::addrZeroPageX() {
+        AddressingResult result;
+        result.addr = static_cast<std::uint16_t>(read(regs_.PC++));
+        result.addr = (result.addr + regs_.X) & 0xFF;
+        result.pageCrossed = false;
+        return result;
+    }
+
+    AddressingResult CPU::addrZeroPageY() {
+        AddressingResult result;
+        result.addr = static_cast<std::uint16_t>(read(regs_.PC++));
+        result.addr = (result.addr + regs_.Y) & 0xFF;
+        result.pageCrossed = false;
+        return result;
+    }
 }

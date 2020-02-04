@@ -188,3 +188,49 @@ TEST_F(CPUTestBase, LDA_ZeroPage_Negative) {
     EXPECT_FALSE(emulator.cpu().registers().Z());
     EXPECT_TRUE(emulator.cpu().registers().N());
 }
+
+TEST_F(CPUTestBase, LDA_ZeroPageX) {
+    // LDA $10,X ; Load from zero page address $10 + X
+    emulator.cpu().registers().X = 0x05;
+    emulator.cpu().write(0x0015, 0x42);
+    const auto cycles = runProgram({0xB5, 0x10}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDA_ZeroPageX_Wrap) {
+    // LDA $F0,X ; Load with zero page wrap ($F0 + $20 = $10, wraps in zero page)
+    emulator.cpu().registers().X = 0x20;
+    emulator.cpu().write(0x0010, 0x42);
+    const auto cycles = runProgram({0xB5, 0xF0}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDA_ZeroPageX_Zero) {
+    // LDA $10,X ; Load zero
+    emulator.cpu().registers().X = 0x05;
+    emulator.cpu().write(0x0015, 0x00);
+    const auto cycles = runProgram({0xB5, 0x10}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x00);
+    EXPECT_TRUE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDA_ZeroPageX_Negative) {
+    // LDA $10,X ; Load negative value
+    emulator.cpu().registers().X = 0x05;
+    emulator.cpu().write(0x0015, 0x80);
+    const auto cycles = runProgram({0xB5, 0x10}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x80);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_TRUE(emulator.cpu().registers().N());
+}
