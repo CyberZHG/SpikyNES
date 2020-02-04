@@ -11,4 +11,9 @@ namespace nes_core {
         regs_.X = bus_->read(addr);
         regs_.updateNZ(regs_.X);
     }
+
+    void CPU::execLDY(const std::uint16_t addr) {
+        regs_.Y = bus_->read(addr);
+        regs_.updateNZ(regs_.Y);
+    }
 }

@@ -400,6 +400,7 @@ namespace nes_core {
             case OpCode::NOP: break;
             case OpCode::LDA: execLDA(addr.addr); break;
             case OpCode::LDX: execLDX(addr.addr); break;
+            case OpCode::LDY: execLDY(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }

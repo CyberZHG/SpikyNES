@@ -454,3 +454,89 @@ TEST_F(CPUTestBase, LDX_ZeroPageY_Wrap) {
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().X, 0x42);
 }
+
+// ==================== LDY ====================
+
+TEST_F(CPUTestBase, LDY_Immediate) {
+    // LDY #$42
+    const auto cycles = runProgram({0xA0, 0x42}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x42);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDY_Immediate_Zero) {
+    // LDY #$00
+    const auto cycles = runProgram({0xA0, 0x00}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x00);
+    EXPECT_TRUE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDY_Immediate_Negative) {
+    // LDY #$80
+    const auto cycles = runProgram({0xA0, 0x80}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x80);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_TRUE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LDY_Absolute) {
+    // LDY $0300
+    emulator.cpu().write(0x0300, 0x42);
+    const auto cycles = runProgram({0xAC, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 3);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x42);
+}
+
+TEST_F(CPUTestBase, LDY_AbsoluteX) {
+    // LDY $0300,X
+    emulator.cpu().registers().X = 0x10;
+    emulator.cpu().write(0x0310, 0x42);
+    const auto cycles = runProgram({0xBC, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 3);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x42);
+}
+
+TEST_F(CPUTestBase, LDY_AbsoluteX_PageCross) {
+    // LDY $03F0,X ; Page crossing: $03F0 + $20 = $0410
+    emulator.cpu().registers().X = 0x20;
+    emulator.cpu().write(0x0410, 0x42);
+    const auto cycles = runProgram({0xBC, 0xF0, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x42);
+}
+
+TEST_F(CPUTestBase, LDY_ZeroPage) {
+    // LDY $10
+    emulator.cpu().write(0x0010, 0x42);
+    const auto cycles = runProgram({0xA4, 0x10}, 1);
+    EXPECT_EQ(cycles, 3);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x42);
+}
+
+TEST_F(CPUTestBase, LDY_ZeroPageX) {
+    // LDY $10,X
+    emulator.cpu().registers().X = 0x05;
+    emulator.cpu().write(0x0015, 0x42);
+    const auto cycles = runProgram({0xB4, 0x10}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x42);
+}
+
+TEST_F(CPUTestBase, LDY_ZeroPageX_Wrap) {
+    // LDY $F0,X ; Zero page wrap: $F0 + $20 = $110 -> wraps to $10
+    emulator.cpu().registers().X = 0x20;
+    emulator.cpu().write(0x0010, 0x42);
+    const auto cycles = runProgram({0xB4, 0xF0}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().Y, 0x42);
+}

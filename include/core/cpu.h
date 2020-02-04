@@ -108,6 +108,8 @@ namespace nes_core {
         void execLDA(std::uint16_t addr);
         /** Load index register X from memory. */
         void execLDX(std::uint16_t addr);
+        /** Load index register Y from memory. */
+        void execLDY(std::uint16_t addr);
 
     private:
         /**
