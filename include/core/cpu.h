@@ -131,6 +131,15 @@ namespace nes_core {
         /** Transfer index X to stack pointer. */
         void execTXS();
 
+        /** Push accumulator on stack. */
+        void execPHA();
+        /** Push processor status on stack. */
+        void execPHP();
+        /** Pull accumulator from stack. */
+        void execPLA();
+        /** Pull processor status from stack. */
+        void execPLP();
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.

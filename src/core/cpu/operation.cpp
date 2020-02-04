@@ -3,18 +3,15 @@
 
 namespace nes_core {
     void CPU::execLDA(const std::uint16_t addr) {
-        regs_.A = bus_->read(addr);
-        regs_.updateNZ(regs_.A);
+        regs_.updateNZ(regs_.A = bus_->read(addr));
     }
 
     void CPU::execLDX(const std::uint16_t addr) {
-        regs_.X = bus_->read(addr);
-        regs_.updateNZ(regs_.X);
+        regs_.updateNZ(regs_.X = bus_->read(addr));
     }
 
     void CPU::execLDY(const std::uint16_t addr) {
-        regs_.Y = bus_->read(addr);
-        regs_.updateNZ(regs_.Y);
+        regs_.updateNZ(regs_.Y = bus_->read(addr));
     }
 
     void CPU::execSTA(const std::uint16_t addr) const {
@@ -51,5 +48,22 @@ namespace nes_core {
 
     void CPU::execTXS() {
         regs_.SP = regs_.X;
+    }
+
+    void CPU::execPHA() {
+        write(0x0100 + regs_.SP--, regs_.A);
+    }
+
+    void CPU::execPHP() {
+        write(0x0100 + regs_.SP--, regs_.P);
+    }
+
+    void CPU::execPLA() {
+        regs_.updateNZ(regs_.A = read(0x0100 + ++regs_.SP));
+    }
+
+    void CPU::execPLP() {
+        const auto b = regs_.P & (1 << CPURegisters::INDEX_B);
+        regs_.P = (read(0x0100 + ++regs_.SP) & ~(1 << CPURegisters::INDEX_B)) | b;
     }
 }

@@ -410,6 +410,10 @@ namespace nes_core {
             case OpCode::TYA: execTYA(); break;
             case OpCode::TSX: execTSX(); break;
             case OpCode::TXS: execTXS(); break;
+            case OpCode::PHA: execPHA(); break;
+            case OpCode::PHP: execPHP(); break;
+            case OpCode::PLA: execPLA(); break;
+            case OpCode::PLP: execPLP(); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }
