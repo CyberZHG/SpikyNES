@@ -6,9 +6,9 @@ namespace nes_core {
         LDA, LDX, LDY,
         STA, STX, STY,
         // Register Transfers
-        TAX, TAY, TXA, TYA,
+        TAX, TAY, TXA, TYA, TSX, TXS,
         // Stack Operations
-        TSX, TXS, PHA, PHP, PLA, PLP,
+        PHA, PHP, PLA, PLP,
         // Logical
         AND, EOR, ORA, BIT,
         // Arithmetic
@@ -404,6 +404,12 @@ namespace nes_core {
             case OpCode::STA: execSTA(addr.addr); break;
             case OpCode::STX: execSTX(addr.addr); break;
             case OpCode::STY: execSTY(addr.addr); break;
+            case OpCode::TAX: execTAX(); break;
+            case OpCode::TAY: execTAY(); break;
+            case OpCode::TXA: execTXA(); break;
+            case OpCode::TYA: execTYA(); break;
+            case OpCode::TSX: execTSX(); break;
+            case OpCode::TXS: execTXS(); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }

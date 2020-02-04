@@ -112,11 +112,24 @@ namespace nes_core {
         void execLDY(std::uint16_t addr);
 
         /** Store accumulator in memory. */
-        void execSTA(std::uint16_t addr);
+        void execSTA(std::uint16_t addr) const;
         /** Store index register X in memory. */
-        void execSTX(std::uint16_t addr);
+        void execSTX(std::uint16_t addr) const;
         /** Store index register Y in memory. */
-        void execSTY(std::uint16_t addr);
+        void execSTY(std::uint16_t addr) const;
+
+        /** Transfer accumulator to index X. */
+        void execTAX();
+        /** Transfer accumulator to index Y. */
+        void execTAY();
+        /** Transfer index X to accumulator. */
+        void execTXA();
+        /** Transfer index Y to accumulator. */
+        void execTYA();
+        /** Transfer stack pointer to index X. */
+        void execTSX();
+        /** Transfer index X to stack pointer. */
+        void execTXS();
 
     private:
         /**
