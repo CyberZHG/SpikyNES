@@ -140,6 +140,15 @@ namespace nes_core {
         /** Pull processor status from stack. */
         void execPLP();
 
+        /** Arithmetic shift left on accumulator. */
+        void execASL();
+        /** Arithmetic shift left. */
+        void execASL(std::uint16_t addr);
+        /** Logical shift right on accumulator. */
+        void execLSR();
+        /** Logical shift right. */
+        void execLSR(std::uint16_t addr);
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.

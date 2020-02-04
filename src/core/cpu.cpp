@@ -9,14 +9,14 @@ namespace nes_core {
         TAX, TAY, TXA, TYA, TSX, TXS,
         // Stack Operations
         PHA, PHP, PLA, PLP,
+        // Shifts
+        ASL, LSR, ROL, ROR,
         // Logical
-        AND, EOR, ORA, BIT,
+        AND, BIT, EOR, ORA,
         // Arithmetic
         ADC, SBC, CMP, CPX, CPY,
         // Increments & Decrements
         INC, INX, INY, DEC, DEX, DEY,
-        // Shifts
-        ASL, LSR, ROL, ROR,
         // Jumps & Calls
         JMP, JSR, RTS,
         // Branches
@@ -379,7 +379,8 @@ namespace nes_core {
         const auto [op, cycles, mode] = OP_INFO[opCode];
         AddressingResult addr;
         switch (mode) {
-            case AM_IMP: break;
+            case AM_IMP:
+            case AM_ACC: break;
             case AM_IMM: addr = addrImmediate(); break;
             case AM_ABS: addr = addrAbsolute(); break;
             case AM_ABS_X: addr = addrAbsoluteX(); break;
@@ -414,6 +415,8 @@ namespace nes_core {
             case OpCode::PHP: execPHP(); break;
             case OpCode::PLA: execPLA(); break;
             case OpCode::PLP: execPLP(); break;
+            case OpCode::ASL: mode == AM_ACC ? execASL() : execASL(addr.addr); break;
+            case OpCode::LSR: mode == AM_ACC ? execLSR() : execLSR(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }

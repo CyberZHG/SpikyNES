@@ -66,4 +66,28 @@ namespace nes_core {
         const auto b = regs_.P & (1 << CPURegisters::INDEX_B);
         regs_.P = (read(0x0100 + ++regs_.SP) & ~(1 << CPURegisters::INDEX_B)) | b;
     }
+
+    void CPU::execASL() {
+        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 7));
+        regs_.updateNZ(regs_.A <<= 1);
+    }
+
+    void CPU::execASL(const std::uint16_t addr) {
+        auto val = bus_->read(addr);
+        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 7));
+        regs_.updateNZ(val <<= 1);
+        bus_->write(addr, val);
+    }
+
+    void CPU::execLSR() {
+        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 0));
+        regs_.updateNZ(regs_.A >>= 1);
+    }
+
+    void CPU::execLSR(const std::uint16_t addr) {
+        auto val = bus_->read(addr);
+        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 0));
+        regs_.updateNZ(val >>= 1);
+        bus_->write(addr, val);
+    }
 }
