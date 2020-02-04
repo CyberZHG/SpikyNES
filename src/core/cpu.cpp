@@ -24,7 +24,7 @@ namespace nes_core {
         // Status Flag Changes
         CLC, CLD, CLI, CLV, SEC, SED, SEI,
         // System Functions
-        BRK, NOP, RTI,
+        BRK, RTI, NOP,
         // Unofficial Opcodes
         SLO, RLA, SRE, RRA, SAX, LAX,
         DCP, ISC, ANC, ALR, ARR, XAA,
@@ -385,6 +385,7 @@ namespace nes_core {
             case AM_ABS: addr = addrAbsolute(); break;
             case AM_ABS_X: addr = addrAbsoluteX(); break;
             case AM_ABS_Y: addr = addrAbsoluteY(); break;
+            case AM_IND: addr = addrAbsoluteIndirect(); break;
             case AM_ZP: addr = addrZeroPage(); break;
             case AM_ZP_X: addr = addrZeroPageX(); break;
             case AM_ZP_Y: addr = addrZeroPageY(); break;
@@ -434,6 +435,7 @@ namespace nes_core {
             case OpCode::DEC: execDEC(addr.addr); break;
             case OpCode::DEX: execDEX(); break;
             case OpCode::DEY: execDEY(); break;
+            case OpCode::JMP: execJMP(addr.addr); break;
             case OpCode::CLC: execCLC(); break;
             case OpCode::CLD: execCLD(); break;
             case OpCode::CLI: execCLI(); break;

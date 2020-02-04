@@ -94,6 +94,8 @@ namespace nes_core {
         AddressingResult addrAbsoluteX();
         /** Y-indexed absolute. */
         AddressingResult addrAbsoluteY();
+        /** Use the address from memory. */
+        AddressingResult addrAbsoluteIndirect();
         /** Fetch from $00 - $FF. */
         AddressingResult addrZeroPage();
         /** X-indexed zero page. */
@@ -191,6 +193,9 @@ namespace nes_core {
         void execDEX();
         /** Decrement index register Y by one. */
         void execDEY();
+
+        /** Jump indirect. */
+        void execJMP(std::uint16_t addr);
 
         /** Clear carry flag. */
         void execCLC();

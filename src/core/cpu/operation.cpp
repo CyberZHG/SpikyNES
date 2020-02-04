@@ -208,6 +208,10 @@ namespace nes_core {
         regs_.updateNZ(--regs_.Y);
     }
 
+    void CPU::execJMP(const std::uint16_t addr) {
+        regs_.PC = addr;
+    }
+
     void CPU::execCLC() {
         clearBit(regs_.P, CPURegisters::INDEX_C);
     }

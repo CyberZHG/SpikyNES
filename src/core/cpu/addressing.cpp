@@ -35,6 +35,15 @@ namespace nes_core {
         return result;
     }
 
+    AddressingResult CPU::addrAbsoluteIndirect() {
+        AddressingResult result;
+        const auto addr = read(regs_.PC + 1) << 8 | read(regs_.PC);
+        result.addr = read((addr & 0xFF00) | ((addr + 1) & 0x00FF)) << 8 | read(addr);
+        result.pageCrossed = false;
+        regs_.PC += 2;
+        return result;
+    }
+
     AddressingResult CPU::addrZeroPage() {
         return {read(regs_.PC++), false};
     }
