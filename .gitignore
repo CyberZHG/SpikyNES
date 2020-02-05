@@ -33,3 +33,6 @@ CTestTestfile.cmake
 .venv
 *__pycache__*
 dist
+
+# Test ROMs
+tests/roms
