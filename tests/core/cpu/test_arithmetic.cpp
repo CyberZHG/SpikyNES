@@ -444,3 +444,256 @@ TEST_F(CPUTestBase, CPY_Absolute) {
     EXPECT_EQ(cycles, 4);
     EXPECT_TRUE(emulator.cpu().registers().Z());
 }
+
+// ==================== ANC (Unofficial) ====================
+
+TEST_F(CPUTestBase, ANC_Immediate) {
+    // ANC #$0F ; AND A with immediate, copy N to C
+    emulator.cpu().registers().A = 0xFF;
+    const auto cycles = runProgram({0x0B, 0x0F}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x0F);
+    EXPECT_FALSE(emulator.cpu().registers().N());
+    EXPECT_FALSE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, ANC_Immediate_Negative) {
+    // ANC #$80 ; Result is negative, C = N = 1
+    emulator.cpu().registers().A = 0xFF;
+    const auto cycles = runProgram({0x0B, 0x80}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x80);
+    EXPECT_TRUE(emulator.cpu().registers().N());
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, ANC_Immediate_Zero) {
+    // ANC #$00 ; Result is zero
+    emulator.cpu().registers().A = 0xFF;
+    const auto cycles = runProgram({0x0B, 0x00}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x00);
+    EXPECT_TRUE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().C());
+}
+
+// ==================== ARR (Unofficial) ====================
+
+TEST_F(CPUTestBase, ARR_Immediate) {
+    // ARR #$FF ; AND A then ROR
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().P &= ~0x01;
+    const auto cycles = runProgram({0x6B, 0xFF}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x7F);
+}
+
+TEST_F(CPUTestBase, ARR_Immediate_WithCarry) {
+    // ARR #$FF ; With carry in
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().P |= 0x01;
+    const auto cycles = runProgram({0x6B, 0xFF}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0xFF);
+}
+
+// ==================== ASR (Unofficial) ====================
+
+TEST_F(CPUTestBase, ASR_Immediate) {
+    // ASR #$FF ; AND A then LSR
+    emulator.cpu().registers().A = 0xFF;
+    const auto cycles = runProgram({0x4B, 0xFF}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x7F);
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, ASR_Immediate_Masked) {
+    // ASR #$0E ; AND $0F then LSR
+    emulator.cpu().registers().A = 0x0F;
+    const auto cycles = runProgram({0x4B, 0x0E}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x07);
+    EXPECT_FALSE(emulator.cpu().registers().C());
+}
+
+// ==================== DCP (Unofficial) ====================
+
+TEST_F(CPUTestBase, DCP_ZeroPage) {
+    // DCP $10 ; DEC then CMP
+    emulator.cpu().registers().A = 0x10;
+    emulator.cpu().write(0x0010, 0x10);
+    const auto cycles = runProgram({0xC7, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x0F);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, DCP_ZeroPage_Equal) {
+    // DCP $10 ; Result equals A
+    emulator.cpu().registers().A = 0x0F;
+    emulator.cpu().write(0x0010, 0x10);
+    const auto cycles = runProgram({0xC7, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x0F);
+    EXPECT_TRUE(emulator.cpu().registers().Z());
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+// ==================== ISC (Unofficial) ====================
+
+TEST_F(CPUTestBase, ISC_ZeroPage) {
+    // ISC $10 ; INC then SBC
+    emulator.cpu().registers().A = 0x20;
+    emulator.cpu().registers().P |= 0x01;
+    emulator.cpu().write(0x0010, 0x0F);
+    const auto cycles = runProgram({0xE7, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x10);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x10);
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, ISC_ZeroPage_Wrap) {
+    // ISC $10 ; INC wraps $FF -> $00
+    emulator.cpu().registers().A = 0x10;
+    emulator.cpu().registers().P |= 0x01;
+    emulator.cpu().write(0x0010, 0xFF);
+    const auto cycles = runProgram({0xE7, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x00);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x10);
+}
+
+// ==================== RLA (Unofficial) ====================
+
+TEST_F(CPUTestBase, RLA_ZeroPage) {
+    // RLA $10 ; ROL then AND
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().P &= ~0x01;
+    emulator.cpu().write(0x0010, 0x81);
+    const auto cycles = runProgram({0x27, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x02);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x02);
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, RLA_ZeroPage_WithCarry) {
+    // RLA $10 ; ROL with carry in
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().P |= 0x01;
+    emulator.cpu().write(0x0010, 0x40);
+    const auto cycles = runProgram({0x27, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x81);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x81);
+    EXPECT_FALSE(emulator.cpu().registers().C());
+}
+
+// ==================== RRA (Unofficial) ====================
+
+TEST_F(CPUTestBase, RRA_ZeroPage) {
+    // RRA $10 ; ROR then ADC
+    emulator.cpu().registers().A = 0x10;
+    emulator.cpu().registers().P &= ~0x01;
+    emulator.cpu().write(0x0010, 0x02);
+    const auto cycles = runProgram({0x67, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x01);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x11);
+    EXPECT_FALSE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, RRA_ZeroPage_WithCarry) {
+    // RRA $10 ; ROR with carry in
+    emulator.cpu().registers().A = 0x10;
+    emulator.cpu().registers().P |= 0x01;
+    emulator.cpu().write(0x0010, 0x02);
+    const auto cycles = runProgram({0x67, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x81);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x91);
+}
+
+// ==================== SBX (Unofficial) ====================
+
+TEST_F(CPUTestBase, SBX_Immediate) {
+    // SBX #$10 ; X = (A AND X) - immediate
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().X = 0x3F;
+    const auto cycles = runProgram({0xCB, 0x10}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x2F);
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, SBX_Immediate_Borrow) {
+    // SBX #$40 ; Result underflows
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().X = 0x3F;
+    const auto cycles = runProgram({0xCB, 0x40}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().X, 0xFF);
+    EXPECT_FALSE(emulator.cpu().registers().C());
+}
+
+// ==================== SLO (Unofficial) ====================
+
+TEST_F(CPUTestBase, SLO_ZeroPage) {
+    // SLO $10 ; ASL then ORA
+    emulator.cpu().registers().A = 0x01;
+    emulator.cpu().write(0x0010, 0x81);
+    const auto cycles = runProgram({0x07, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x02);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x03);
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, SLO_ZeroPage_NoCarry) {
+    // SLO $10 ; No carry out
+    emulator.cpu().registers().A = 0x01;
+    emulator.cpu().write(0x0010, 0x40);
+    const auto cycles = runProgram({0x07, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x80);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x81);
+    EXPECT_FALSE(emulator.cpu().registers().C());
+}
+
+// ==================== SRE (Unofficial) ====================
+
+TEST_F(CPUTestBase, SRE_ZeroPage) {
+    // SRE $10 ; LSR then EOR
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().write(0x0010, 0x03);
+    const auto cycles = runProgram({0x47, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x01);
+    EXPECT_EQ(emulator.cpu().registers().A, 0xFE);
+    EXPECT_TRUE(emulator.cpu().registers().C());
+}
+
+TEST_F(CPUTestBase, SRE_ZeroPage_NoCarry) {
+    // SRE $10 ; No carry out
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().write(0x0010, 0x02);
+    const auto cycles = runProgram({0x47, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x01);
+    EXPECT_EQ(emulator.cpu().registers().A, 0xFE);
+    EXPECT_FALSE(emulator.cpu().registers().C());
+}
+
+// ==================== XAA (Unofficial) ====================
+
+TEST_F(CPUTestBase, XAA_Immediate) {
+    // XAA #$FF ; Highly unstable
+    emulator.cpu().registers().A = 0x00;
+    emulator.cpu().registers().X = 0xFF;
+    const auto cycles = runProgram({0x8B, 0xFF}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0xEE);
+}

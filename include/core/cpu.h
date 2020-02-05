@@ -256,15 +256,37 @@ namespace nes_core {
         /** Load accumulator and index register X from memory. */
         void execLAX(std::uint16_t addr);
         /** Store accumulator "AND" index register X in memory. */
-        void execSAX(std::uint16_t addr);
+        void execSAX(std::uint16_t addr) const;
         /** Store accumulator "AND" index register X "AND" value. */
-        void execSHA(std::uint16_t addr);
+        void execSHA(std::uint16_t addr) const;
         /** Store index register X "AND" value. */
-        void execSHX(std::uint16_t addr);
+        void execSHX(std::uint16_t addr) const;
         /** Store index register Y "AND" value. */
-        void execSHY(std::uint16_t addr);
+        void execSHY(std::uint16_t addr) const;
         /** Transfer accumulator "AND" index register X to stack pointer then store stack pointer "AND" hi-byte in memory. */
         void execSHS(std::uint16_t addr);
+        /** "AND" memory with accumulator then move negative flag to carry flag. */
+        void execANC(std::uint16_t addr);
+        /** "AND" accumulator then rotate right. */
+        void execARR(std::uint16_t addr);
+        /** "AND" then logical shift right. */
+        void execASR(std::uint16_t addr);
+        /** Decrement memory by one then compare with accumulator */
+        void execDCP(std::uint16_t addr);
+        /** Increment memory by one then SBC then subtract memory from accumulator with borrow. */
+        void execISC(std::uint16_t addr);
+        /** Rotate left then "AND" with accumulator. */
+        void execRLA(std::uint16_t addr);
+        /** Rotate right and add memory to accumulator. */
+        void execRRA(std::uint16_t addr);
+        /** Subtract memory from accumulator "AND" index register X. */
+        void execSBX(std::uint16_t addr);
+        /** Arithmetic shift left then "OR" memory with accumulator. */
+        void execSLO(std::uint16_t addr);
+        /** Logical shift right then "XOR" memory with accumulator. */
+        void execSRE(std::uint16_t addr);
+        /** Non-deterministic operation of accumulator, index register X, memory and bus contents. */
+        void execXAA(std::uint16_t addr);
 
     private:
         /**
