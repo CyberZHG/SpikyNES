@@ -50,3 +50,14 @@ TEST_F(CPUTestBase, BRK_RTI_RoundTrip) {
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 3);
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFF);
 }
+
+// ==================== JAM (Unofficial) ====================
+
+TEST_F(CPUTestBase, JAM) {
+    // JAM ; Halt the CPU
+    EXPECT_FALSE(emulator.cpu().isHalted());
+    const auto cycles = runProgram({0x02}, 1);
+    EXPECT_EQ(cycles, 0);
+    EXPECT_TRUE(emulator.cpu().isHalted());
+    EXPECT_EQ(emulator.cpu().step(), 0);
+}

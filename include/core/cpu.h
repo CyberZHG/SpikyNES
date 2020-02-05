@@ -86,6 +86,9 @@ namespace nes_core {
          */
         int step();
 
+        /** Check if CPU is halted by JAM/KIL instruction. */
+        bool isHalted() const { return halted_; }
+
     protected:
         /** Push a byte onto the stack. */
         void pushByte(std::uint8_t value);
@@ -295,6 +298,7 @@ namespace nes_core {
         std::array<std::uint8_t, CPU_RAM_SIZE> mem_ = {};
         CPURegisters regs_;
         Bus* bus_ = nullptr;
+        bool halted_ = false;
     };
 
 }

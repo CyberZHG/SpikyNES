@@ -371,6 +371,7 @@ namespace nes_core {
     void CPU::reset() {
         regs_.reset();
         regs_.PC = bus_->read(0xFFFD) << 8 | bus_->read(0xFFFC);
+        halted_ = false;
     }
 
     std::uint8_t CPU::read(const std::uint16_t addr) const {
@@ -382,6 +383,7 @@ namespace nes_core {
     }
 
     int CPU::step() {
+        if (halted_) return 0;
         const auto opCode = bus_->read(regs_.PC++);
         const auto [op, cycles, mode] = OP_INFO[opCode];
         AddressingResult addr;
@@ -483,6 +485,7 @@ namespace nes_core {
             case OpCode::SLO: execSLO(addr.addr); break;
             case OpCode::SRE: execSRE(addr.addr); break;
             case OpCode::XAA: execXAA(addr.addr); break;
+            case OpCode::JAM: halted_ = true; break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }
