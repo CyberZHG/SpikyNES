@@ -116,6 +116,8 @@ namespace nes_core {
         AddressingResult addrZeroPageIndirectX();
         /** Use the address from zero page then plus Y. */
         AddressingResult addrZeroPageIndirectY();
+        /** Add offset to the program counter. */
+        AddressingResult addrRelative();
 
         /** Load accumulator with memory. */
         void execLDA(std::uint16_t addr);
@@ -215,6 +217,23 @@ namespace nes_core {
         void execBRK();
         /** Return from interrupt. */
         void execRTI();
+
+        /** Branch on carry clear. */
+        bool execBCC(std::uint16_t addr);
+        /** Branch on carry set. */
+        bool execBCS(std::uint16_t addr);
+        /** Branch on result zero. */
+        bool execBEQ(std::uint16_t addr);
+        /** Branch on result minus. */
+        bool execBMI(std::uint16_t addr);
+        /** Branch on result not zero. */
+        bool execBNE(std::uint16_t addr);
+        /** Branch on result plus. */
+        bool execBPL(std::uint16_t addr);
+        /** Branch on overflow clear. */
+        bool execBVC(std::uint16_t addr);
+        /** Branch on overflow set. */
+        bool execBVS(std::uint16_t addr);
 
         /** Clear carry flag. */
         void execCLC();

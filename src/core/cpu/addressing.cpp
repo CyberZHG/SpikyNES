@@ -81,4 +81,10 @@ namespace nes_core {
         result.pageCrossed = hasPageCross(addr, result.addr);
         return result;
     }
+
+    AddressingResult CPU::addrRelative() {
+        const auto offset = static_cast<std::int8_t>(read(regs_.PC++));
+        const auto addr = static_cast<std::uint16_t>(regs_.PC + offset);
+        return {addr, hasPageCross(regs_.PC, addr)};
+    }
 }

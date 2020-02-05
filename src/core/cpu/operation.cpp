@@ -252,6 +252,70 @@ namespace nes_core {
         regs_.PC = popWord();
     }
 
+    bool CPU::execBCC(const std::uint16_t addr) {
+        if (!regs_.C()) {
+            regs_.PC = addr;
+            return true;
+        }
+        return false;
+    }
+
+    bool CPU::execBCS(const std::uint16_t addr) {
+        if (regs_.C()) {
+            regs_.PC = addr;
+            return true;
+        }
+        return false;
+    }
+
+    bool CPU::execBEQ(const std::uint16_t addr) {
+        if (regs_.Z()) {
+            regs_.PC = addr;
+            return true;
+        }
+        return false;
+    }
+
+    bool CPU::execBMI(const std::uint16_t addr) {
+        if (regs_.N()) {
+            regs_.PC = addr;
+            return true;
+        }
+        return false;
+    }
+
+    bool CPU::execBNE(const std::uint16_t addr) {
+        if (!regs_.Z()) {
+            regs_.PC = addr;
+            return true;
+        }
+        return false;
+    }
+
+    bool CPU::execBPL(const std::uint16_t addr) {
+        if (!regs_.N()) {
+            regs_.PC = addr;
+            return true;
+        }
+        return false;
+    }
+
+    bool CPU::execBVC(const std::uint16_t addr) {
+        if (!regs_.V()) {
+            regs_.PC = addr;
+            return true;
+        }
+        return false;
+    }
+
+    bool CPU::execBVS(const std::uint16_t addr) {
+        if (regs_.V()) {
+            regs_.PC = addr;
+            return true;
+        }
+        return false;
+    }
+
     void CPU::execCLC() {
         clearBit(regs_.P, CPURegisters::INDEX_C);
     }

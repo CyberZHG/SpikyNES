@@ -391,6 +391,7 @@ namespace nes_core {
             case AM_ZP_Y: addr = addrZeroPageY(); break;
             case AM_IND_X: addr = addrZeroPageIndirectX(); break;
             case AM_IND_Y: addr = addrZeroPageIndirectY(); break;
+            case AM_REL: addr = addrRelative(); break;
             default:
                 throw std::runtime_error("Invalid addressing mode");
         }
@@ -398,6 +399,7 @@ namespace nes_core {
         if (addr.pageCrossed) {
             ++finalCycles;
         }
+        bool branchTaken = false;
         switch (op) {
             case OpCode::NOP: break;
             case OpCode::LDA: execLDA(addr.addr); break;
@@ -440,6 +442,14 @@ namespace nes_core {
             case OpCode::RTS: execRTS(); break;
             case OpCode::BRK: execBRK(); break;
             case OpCode::RTI: execRTI(); break;
+            case OpCode::BCC: branchTaken = execBCC(addr.addr); break;
+            case OpCode::BCS: branchTaken = execBCS(addr.addr); break;
+            case OpCode::BEQ: branchTaken = execBEQ(addr.addr); break;
+            case OpCode::BMI: branchTaken = execBMI(addr.addr); break;
+            case OpCode::BNE: branchTaken = execBNE(addr.addr); break;
+            case OpCode::BPL: branchTaken = execBPL(addr.addr); break;
+            case OpCode::BVC: branchTaken = execBVC(addr.addr); break;
+            case OpCode::BVS: branchTaken = execBVS(addr.addr); break;
             case OpCode::CLC: execCLC(); break;
             case OpCode::CLD: execCLD(); break;
             case OpCode::CLI: execCLI(); break;
@@ -449,6 +459,9 @@ namespace nes_core {
             case OpCode::SEI: execSEI(); break;
             default:
                 throw std::runtime_error("Invalid opcode");
+        }
+        if (branchTaken) {
+            ++finalCycles;
         }
         return finalCycles;
     }
