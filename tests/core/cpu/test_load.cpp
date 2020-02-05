@@ -8,7 +8,7 @@ TEST_F(CPUTestBase, LDA_Immediate) {
     EXPECT_EQ(cycles, 2);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
     EXPECT_EQ(emulator.cpu().registers().A, 0x42);
-    EXPECT_EQ(emulator.cpu().registers().P, 0b00110100);
+    EXPECT_EQ(emulator.cpu().registers().P, 0b00100100);
     EXPECT_FALSE(emulator.cpu().registers().Z());
     EXPECT_FALSE(emulator.cpu().registers().N());
 }

@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 option(SPIKY_NES_ENABLE_TESTS "Build tests" OFF)
+option(SPIKY_NES_ENABLE_ROM_TESTS "Build ROM tests" OFF)
 option(SPIKY_NES_ENABLE_STRICT "Use strict compile options" OFF)
 option(SPIKY_NES_ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
@@ -92,6 +93,13 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/cpu/test_nop.cpp
             tests/core/test_cartridge.cpp
     )
+
+    if(SPIKY_NES_ENABLE_ROM_TESTS)
+        target_sources(runTests PRIVATE
+                tests/core/cpu/rom/test_nestest.cpp
+        )
+        target_compile_definitions(runTests PRIVATE SPIKY_NES_ROM_TESTS_ENABLED)
+    endif()
 
     target_link_libraries(runTests
             PRIVATE SpikyNESCore

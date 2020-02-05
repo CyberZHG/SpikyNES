@@ -11,7 +11,7 @@ namespace nes_core {
     class Bus;
 
     struct CPURegisters {
-        static constexpr std::uint8_t DEFAULT_STATE = 0b00110100;
+        static constexpr std::uint8_t DEFAULT_STATE = 0b00100100;
 
         std::uint8_t A = 0;
         std::uint8_t X = 0;

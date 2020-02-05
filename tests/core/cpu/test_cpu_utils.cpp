@@ -22,12 +22,12 @@ TEST_F(CPUTestBase, Reset) {
     const auto cycles = runProgram({}, 0);
     EXPECT_EQ(cycles, 0);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN);
-    EXPECT_EQ(emulator.cpu().registers().P, 0b00110100);
+    EXPECT_EQ(emulator.cpu().registers().P, 0b00100100);
 }
 
 TEST_F(CPUTestBase, NOP) {
     const auto cycles = runProgram({0xEA}, 1);
     EXPECT_EQ(cycles, 2);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
-    EXPECT_EQ(emulator.cpu().registers().P, 0b00110100);
+    EXPECT_EQ(emulator.cpu().registers().P, 0b00100100);
 }
