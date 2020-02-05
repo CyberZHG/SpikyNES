@@ -182,3 +182,108 @@ TEST_F(CPUTestBase, STY_ZeroPageX_Wrap) {
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().read(0x0010), 0x42);
 }
+
+// ==================== SAX (Unofficial) ====================
+
+TEST_F(CPUTestBase, SAX_ZeroPage) {
+    // SAX $10 ; Store A AND X to zero page
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().X = 0x0F;
+    const auto cycles = runProgram({0x87, 0x10}, 1);
+    EXPECT_EQ(cycles, 3);
+    EXPECT_EQ(emulator.cpu().read(0x0010), 0x0F);
+}
+
+TEST_F(CPUTestBase, SAX_ZeroPageY) {
+    // SAX $10,Y ; Store A AND X to zero page + Y
+    emulator.cpu().registers().A = 0xF0;
+    emulator.cpu().registers().X = 0x3C;
+    emulator.cpu().registers().Y = 0x05;
+    const auto cycles = runProgram({0x97, 0x10}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().read(0x0015), 0x30);
+}
+
+TEST_F(CPUTestBase, SAX_Absolute) {
+    // SAX $0300 ; Store A AND X to absolute address
+    emulator.cpu().registers().A = 0xAA;
+    emulator.cpu().registers().X = 0x55;
+    const auto cycles = runProgram({0x8F, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().read(0x0300), 0x00);
+}
+
+TEST_F(CPUTestBase, SAX_IndirectX) {
+    // SAX ($10,X) ; Store A AND X via indirect X
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().X = 0x05;
+    emulator.cpu().write(0x0015, 0x00);
+    emulator.cpu().write(0x0016, 0x03);
+    const auto cycles = runProgram({0x83, 0x10}, 1);
+    EXPECT_EQ(cycles, 6);
+    EXPECT_EQ(emulator.cpu().read(0x0300), 0x05);
+}
+
+// ==================== SHA (Unofficial) ====================
+
+TEST_F(CPUTestBase, SHA_AbsoluteY) {
+    // SHA $0300,Y ; Store A AND X AND (high byte + 1)
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().X = 0xFF;
+    emulator.cpu().registers().Y = 0x05;
+    const auto cycles = runProgram({0x9F, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
+}
+
+TEST_F(CPUTestBase, SHA_IndirectY) {
+    // SHA ($10),Y ; Store A AND X AND (high byte + 1)
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().X = 0xFF;
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0010, 0x00);
+    emulator.cpu().write(0x0011, 0x03);
+    const auto cycles = runProgram({0x93, 0x10}, 1);
+    EXPECT_EQ(cycles, 6);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
+}
+
+// ==================== SHX (Unofficial) ====================
+
+TEST_F(CPUTestBase, SHX_AbsoluteY) {
+    // SHX $0300,Y ; Store X AND (high byte + 1)
+    emulator.cpu().registers().X = 0xFF;
+    emulator.cpu().registers().Y = 0x05;
+    const auto cycles = runProgram({0x9E, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
+}
+
+TEST_F(CPUTestBase, SHX_AbsoluteY_Mask) {
+    // SHX $0300,Y ; X is masked by (high byte + 1)
+    emulator.cpu().registers().X = 0x0F;
+    emulator.cpu().registers().Y = 0x05;
+    const auto cycles = runProgram({0x9E, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
+}
+
+// ==================== SHY (Unofficial) ====================
+
+TEST_F(CPUTestBase, SHY_AbsoluteX) {
+    // SHY $0300,X ; Store Y AND (high byte + 1)
+    emulator.cpu().registers().Y = 0xFF;
+    emulator.cpu().registers().X = 0x05;
+    const auto cycles = runProgram({0x9C, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
+}
+
+TEST_F(CPUTestBase, SHY_AbsoluteX_Mask) {
+    // SHY $0300,X ; Y is masked by (high byte + 1)
+    emulator.cpu().registers().Y = 0x0F;
+    emulator.cpu().registers().X = 0x05;
+    const auto cycles = runProgram({0x9C, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
+}

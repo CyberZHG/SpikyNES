@@ -53,6 +53,7 @@ add_library(SpikyNESCore STATIC
         src/core/utils.cpp
         src/core/cpu/addressing.cpp
         src/core/cpu/operation.cpp
+        src/core/cpu/unofficial.cpp
 )
 
 target_include_directories(SpikyNESCore

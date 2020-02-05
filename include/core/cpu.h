@@ -250,6 +250,20 @@ namespace nes_core {
         /** set interrupt disable. */
         void execSEI();
 
+        // Unofficial opcodes
+        /** "AND" memory with stack pointer. */
+        void execLAS(std::uint16_t addr);
+        /** Load accumulator and index register X from memory. */
+        void execLAX(std::uint16_t addr);
+        /** Store accumulator "AND" index register X in memory. */
+        void execSAX(std::uint16_t addr);
+        /** Store accumulator "AND" index register X "AND" value. */
+        void execSHA(std::uint16_t addr);
+        /** Store index register X "AND" value. */
+        void execSHX(std::uint16_t addr);
+        /** Store index register Y "AND" value. */
+        void execSHY(std::uint16_t addr);
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.

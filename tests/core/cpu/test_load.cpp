@@ -540,3 +540,141 @@ TEST_F(CPUTestBase, LDY_ZeroPageX_Wrap) {
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().Y, 0x42);
 }
+
+// ==================== LAX (Unofficial) ====================
+
+TEST_F(CPUTestBase, LAX_Immediate) {
+    // LAX #$42 ; Load A and X with $42
+    const auto cycles = runProgram({0xAB, 0x42}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x42);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LAX_Immediate_Zero) {
+    // LAX #$00 ; Load A and X with zero
+    const auto cycles = runProgram({0xAB, 0x00}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x00);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x00);
+    EXPECT_TRUE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LAX_Immediate_Negative) {
+    // LAX #$80 ; Load A and X with negative value
+    const auto cycles = runProgram({0xAB, 0x80}, 1);
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x80);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x80);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_TRUE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LAX_ZeroPage) {
+    // LAX $10 ; Load A and X from zero page
+    emulator.cpu().write(0x0010, 0x42);
+    const auto cycles = runProgram({0xA7, 0x10}, 1);
+    EXPECT_EQ(cycles, 3);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x42);
+}
+
+TEST_F(CPUTestBase, LAX_ZeroPageY) {
+    // LAX $10,Y ; Load A and X from zero page + Y
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0015, 0x42);
+    const auto cycles = runProgram({0xB7, 0x10}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x42);
+}
+
+TEST_F(CPUTestBase, LAX_Absolute) {
+    // LAX $0300 ; Load A and X from absolute address
+    emulator.cpu().write(0x0300, 0x42);
+    const auto cycles = runProgram({0xAF, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x42);
+}
+
+TEST_F(CPUTestBase, LAX_AbsoluteY) {
+    // LAX $0300,Y ; Load A and X from absolute + Y
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0305, 0x42);
+    const auto cycles = runProgram({0xBF, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x42);
+}
+
+TEST_F(CPUTestBase, LAX_IndirectX) {
+    // LAX ($10,X) ; Load A and X from indirect X
+    emulator.cpu().registers().X = 0x05;
+    emulator.cpu().write(0x0015, 0x00);
+    emulator.cpu().write(0x0016, 0x03);
+    emulator.cpu().write(0x0300, 0x42);
+    const auto cycles = runProgram({0xA3, 0x10}, 1);
+    EXPECT_EQ(cycles, 6);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x42);
+}
+
+TEST_F(CPUTestBase, LAX_IndirectY) {
+    // LAX ($10),Y ; Load A and X from indirect Y
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0010, 0x00);
+    emulator.cpu().write(0x0011, 0x03);
+    emulator.cpu().write(0x0305, 0x42);
+    const auto cycles = runProgram({0xB3, 0x10}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x42);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x42);
+}
+
+// ==================== LAS (Unofficial) ====================
+
+TEST_F(CPUTestBase, LAS_AbsoluteY) {
+    // LAS $0300,Y ; A = X = SP = SP AND memory
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0305, 0x0F);
+    const auto cycles = runProgram({0xBB, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x0F);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x0F);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0x0F);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LAS_AbsoluteY_Zero) {
+    // LAS $0300,Y ; Result is zero
+    emulator.cpu().registers().SP = 0xF0;
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0305, 0x0F);
+    const auto cycles = runProgram({0xBB, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x00);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x00);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0x00);
+    EXPECT_TRUE(emulator.cpu().registers().Z());
+    EXPECT_FALSE(emulator.cpu().registers().N());
+}
+
+TEST_F(CPUTestBase, LAS_AbsoluteY_Negative) {
+    // LAS $0300,Y ; Result is negative
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().registers().Y = 0x05;
+    emulator.cpu().write(0x0305, 0x80);
+    const auto cycles = runProgram({0xBB, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().A, 0x80);
+    EXPECT_EQ(emulator.cpu().registers().X, 0x80);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0x80);
+    EXPECT_FALSE(emulator.cpu().registers().Z());
+    EXPECT_TRUE(emulator.cpu().registers().N());
+}

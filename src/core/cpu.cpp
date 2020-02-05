@@ -3,12 +3,12 @@
 
 namespace nes_core {
     enum class OpCode {
-        // Load/Store Operations
+        // Load/Store
         LDA, LDX, LDY,
         STA, STX, STY,
-        // Register Transfers
+        // Transfers
         TAX, TAY, TXA, TYA, TSX, TXS,
-        // Stack Operations
+        // Stacks
         PHA, PHP, PLA, PLP,
         // Shifts
         ASL, LSR, ROL, ROR,
@@ -26,10 +26,14 @@ namespace nes_core {
         BCC, BCS, BEQ, BMI, BNE, BPL, BVC, BVS,
         // Status Flag Changes
         CLC, CLD, CLI, CLV, SEC, SED, SEI,
+
         // Unofficial Opcodes
-        SLO, RLA, SRE, RRA, SAX, LAX,
+        // Load/Store
+        LAS, LAX,
+        SAX, SHA, SHX, SHY,
+        SLO, RLA, SRE, RRA,
         DCP, ISC, ANC, ALR, ARR, XAA,
-        AXS, AHX, SHY, SHX, TAS, LAS,
+        AXS, TAS,
         KIL,
         // Invalid
         INVALID,
@@ -221,7 +225,7 @@ namespace nes_core {
         /* 0x90 */ {OpCode::BCC, 2, AM_REL},
         /* 0x91 */ {OpCode::STA, 6, AM_IND_Y},
         /* 0x92 */ {OpCode::KIL, 0, AM_IMP},
-        /* 0x93 */ {OpCode::AHX, 6, AM_IND_Y},
+        /* 0x93 */ {OpCode::SHA, 6, AM_IND_Y},
         /* 0x94 */ {OpCode::STY, 4, AM_ZP_X},
         /* 0x95 */ {OpCode::STA, 4, AM_ZP_X},
         /* 0x96 */ {OpCode::STX, 4, AM_ZP_Y},
@@ -233,7 +237,7 @@ namespace nes_core {
         /* 0x9C */ {OpCode::SHY, 5, AM_ABS_X},
         /* 0x9D */ {OpCode::STA, 5, AM_ABS_X},
         /* 0x9E */ {OpCode::SHX, 5, AM_ABS_Y},
-        /* 0x9F */ {OpCode::AHX, 5, AM_ABS_Y},
+        /* 0x9F */ {OpCode::SHA, 5, AM_ABS_Y},
         /* 0xA0 */ {OpCode::LDY, 2, AM_IMM},
         /* 0xA1 */ {OpCode::LDA, 6, AM_IND_X},
         /* 0xA2 */ {OpCode::LDX, 2, AM_IMM},
@@ -458,6 +462,13 @@ namespace nes_core {
             case OpCode::SEC: execSEC(); break;
             case OpCode::SED: execSED(); break;
             case OpCode::SEI: execSEI(); break;
+            // Unofficial opcodes
+            case OpCode::LAS: execLAS(addr.addr); break;
+            case OpCode::LAX: execLAX(addr.addr); break;
+            case OpCode::SAX: execSAX(addr.addr); break;
+            case OpCode::SHA: execSHA(addr.addr); break;
+            case OpCode::SHX: execSHX(addr.addr); break;
+            case OpCode::SHY: execSHY(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }
