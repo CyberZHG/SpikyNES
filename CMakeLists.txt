@@ -89,6 +89,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/cpu/test_jump.cpp
             tests/core/cpu/test_control.cpp
             tests/core/cpu/test_branch.cpp
+            tests/core/cpu/test_nop.cpp
     )
 
     target_link_libraries(runTests
