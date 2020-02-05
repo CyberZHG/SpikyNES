@@ -2,6 +2,7 @@
 #include "core/constants.h"
 
 void CPUTestBase::SetUp() {
+    emulator.cartridge().initPRG(PRG_ROM_SIZE);
     emulator.reset();
 }
 

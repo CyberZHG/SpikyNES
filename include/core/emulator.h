@@ -8,6 +8,7 @@
 #include "cartridge.h"
 
 #include <memory>
+#include <string>
 
 namespace nes_core {
 
@@ -24,7 +25,10 @@ namespace nes_core {
         const APU& apu() const { return apu_; }
         Bus& bus() { return bus_; }
         const Bus& bus() const { return bus_; }
+        Cartridge& cartridge() { return cartridge_; }
+        const Cartridge& cartridge() const { return cartridge_; }
 
+        bool loadROM(const std::string& path);
         void reset();
 
         // void run(double milliseconds);
