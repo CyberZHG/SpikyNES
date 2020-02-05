@@ -26,3 +26,42 @@ TEST_F(CPUTestBase, JMP_Indirect_PageBoundaryBug) {
     EXPECT_EQ(cycles, 5);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x0450);
 }
+
+
+// ==================== JSR ====================
+
+TEST_F(CPUTestBase, JSR) {
+    // JSR $0300 ; Push return address - 1, jump to $0300
+    emulator.cpu().registers().SP = 0xFF;
+    const auto cycles = runProgram({0x20, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 6);
+    EXPECT_EQ(emulator.cpu().registers().PC, 0x0300);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0xFD);
+    EXPECT_EQ(emulator.cpu().read(0x01FF), (CPU_PROGRAM_BEGIN + 2) >> 8);
+    EXPECT_EQ(emulator.cpu().read(0x01FE), (CPU_PROGRAM_BEGIN + 2) & 0xFF);
+}
+
+// ==================== RTS ====================
+
+TEST_F(CPUTestBase, RTS) {
+    // RTS ; Pull return address + 1, jump there
+    emulator.cpu().registers().SP = 0xFD;
+    emulator.cpu().write(0x01FE, 0xFF);  // Low byte
+    emulator.cpu().write(0x01FF, 0x02);  // High byte ($02FF + 1 = $0300)
+    const auto cycles = runProgram({0x60}, 1);
+    EXPECT_EQ(cycles, 6);
+    EXPECT_EQ(emulator.cpu().registers().PC, 0x0300);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0xFF);
+}
+
+TEST_F(CPUTestBase, JSR_RTS_RoundTrip) {
+    // JSR then RTS should return to instruction after JSR
+    // Program: JSR $0210, NOP (at $0210: RTS)
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().write(0x0210, 0x60);  // RTS at $0210
+    const auto cycles = runProgram({0x20, 0x10, 0x02, 0xEA}, 3);
+    // JSR(6) + RTS(6) + NOP(2) = 14 cycles
+    EXPECT_EQ(cycles, 14);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 4);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0xFF);
+}

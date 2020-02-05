@@ -2,6 +2,25 @@
 #include "core/cpu.h"
 
 namespace nes_core {
+    void CPU::pushByte(const std::uint8_t value) {
+        write(CPU_STACK_OFFSET + regs_.SP--, value);
+    }
+
+    void CPU::pushWord(const std::uint16_t value) {
+        pushByte(value >> 8);
+        pushByte(value & 0xFF);
+    }
+
+    std::uint8_t CPU::popByte() {
+        return read(CPU_STACK_OFFSET + ++regs_.SP);
+    }
+
+    std::uint16_t CPU::popWord() {
+        const auto low = popByte();
+        const auto high = popByte();
+        return (high << 8) | low;
+    }
+
     void CPU::execLDA(const std::uint16_t addr) {
         regs_.updateNZ(regs_.A = bus_->read(addr));
     }
@@ -51,20 +70,20 @@ namespace nes_core {
     }
 
     void CPU::execPHA() {
-        write(0x0100 + regs_.SP--, regs_.A);
+        pushByte(regs_.A);
     }
 
     void CPU::execPHP() {
-        write(0x0100 + regs_.SP--, regs_.P);
+        pushByte(regs_.P);
     }
 
     void CPU::execPLA() {
-        regs_.updateNZ(regs_.A = read(0x0100 + ++regs_.SP));
+        regs_.updateNZ(regs_.A = popByte());
     }
 
     void CPU::execPLP() {
         const auto b = regs_.P & (1 << CPURegisters::INDEX_B);
-        regs_.P = (read(0x0100 + ++regs_.SP) & ~(1 << CPURegisters::INDEX_B)) | b;
+        regs_.P = (popByte() & ~(1 << CPURegisters::INDEX_B)) | b;
     }
 
     void CPU::execASL() {
@@ -210,6 +229,15 @@ namespace nes_core {
 
     void CPU::execJMP(const std::uint16_t addr) {
         regs_.PC = addr;
+    }
+
+    void CPU::execJSR(const std::uint16_t addr) {
+        pushWord(regs_.PC - 1);
+        regs_.PC = addr;
+    }
+
+    void CPU::execRTS() {
+        regs_.PC = popWord() + 1;
     }
 
     void CPU::execCLC() {

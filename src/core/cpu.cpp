@@ -436,6 +436,8 @@ namespace nes_core {
             case OpCode::DEX: execDEX(); break;
             case OpCode::DEY: execDEY(); break;
             case OpCode::JMP: execJMP(addr.addr); break;
+            case OpCode::JSR: execJSR(addr.addr); break;
+            case OpCode::RTS: execRTS(); break;
             case OpCode::CLC: execCLC(); break;
             case OpCode::CLD: execCLD(); break;
             case OpCode::CLI: execCLI(); break;

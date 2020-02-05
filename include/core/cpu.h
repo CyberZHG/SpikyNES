@@ -80,6 +80,15 @@ namespace nes_core {
         /** Set a byte to CPU RAM. */
         void write(std::uint16_t addr, std::uint16_t value);
 
+        /** Push a byte onto the stack. */
+        void pushByte(std::uint8_t value);
+        /** Push a word onto the stack (high byte first). */
+        void pushWord(std::uint16_t value);
+        /** Pop a byte from the stack. */
+        std::uint8_t popByte();
+        /** Pop a word from the stack (low byte first). */
+        std::uint16_t popWord();
+
         /**
          * Execute one instruction.
          * @return Cycles consumed.
@@ -196,6 +205,10 @@ namespace nes_core {
 
         /** Jump indirect. */
         void execJMP(std::uint16_t addr);
+        /** Jump to subroutine. */
+        void execJSR(std::uint16_t addr);
+        /** Return from subroutine. */
+        void execRTS();
 
         /** Clear carry flag. */
         void execCLC();
