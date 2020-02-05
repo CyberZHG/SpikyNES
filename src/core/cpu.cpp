@@ -31,9 +31,11 @@ namespace nes_core {
         // Load/Store
         LAS, LAX,
         SAX, SHA, SHX, SHY,
+        // Transfer
+        SHS,
         SLO, RLA, SRE, RRA,
         DCP, ISC, ANC, ALR, ARR, XAA,
-        AXS, TAS,
+        AXS,
         KIL,
         // Invalid
         INVALID,
@@ -233,7 +235,7 @@ namespace nes_core {
         /* 0x98 */ {OpCode::TYA, 2, AM_IMP},
         /* 0x99 */ {OpCode::STA, 5, AM_ABS_Y},
         /* 0x9A */ {OpCode::TXS, 2, AM_IMP},
-        /* 0x9B */ {OpCode::TAS, 5, AM_ABS_Y},
+        /* 0x9B */ {OpCode::SHS, 5, AM_ABS_Y},
         /* 0x9C */ {OpCode::SHY, 5, AM_ABS_X},
         /* 0x9D */ {OpCode::STA, 5, AM_ABS_X},
         /* 0x9E */ {OpCode::SHX, 5, AM_ABS_Y},
@@ -469,6 +471,7 @@ namespace nes_core {
             case OpCode::SHA: execSHA(addr.addr); break;
             case OpCode::SHX: execSHX(addr.addr); break;
             case OpCode::SHY: execSHY(addr.addr); break;
+            case OpCode::SHS: execSHS(addr.addr); break;
             default:
                 throw std::runtime_error("Invalid opcode");
         }

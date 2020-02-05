@@ -263,6 +263,8 @@ namespace nes_core {
         void execSHX(std::uint16_t addr);
         /** Store index register Y "AND" value. */
         void execSHY(std::uint16_t addr);
+        /** Transfer accumulator "AND" index register X to stack pointer then store stack pointer "AND" hi-byte in memory. */
+        void execSHS(std::uint16_t addr);
 
     private:
         /**

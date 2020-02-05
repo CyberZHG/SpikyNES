@@ -287,3 +287,38 @@ TEST_F(CPUTestBase, SHY_AbsoluteX_Mask) {
     EXPECT_EQ(cycles, 5);
     EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
 }
+
+// ==================== SHS (Unofficial) ====================
+
+TEST_F(CPUTestBase, SHS_AbsoluteY) {
+    // SHS $0300,Y ; SP = A AND X, store SP AND (high byte + 1)
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().X = 0xFF;
+    emulator.cpu().registers().Y = 0x05;
+    const auto cycles = runProgram({0x9B, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0xFF);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
+}
+
+TEST_F(CPUTestBase, SHS_AbsoluteY_SPSet) {
+    // SHS $0300,Y ; SP becomes A AND X
+    emulator.cpu().registers().A = 0xF0;
+    emulator.cpu().registers().X = 0x0F;
+    emulator.cpu().registers().Y = 0x05;
+    const auto cycles = runProgram({0x9B, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0x00);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x00);
+}
+
+TEST_F(CPUTestBase, SHS_AbsoluteY_Masked) {
+    // SHS $0300,Y ; Result masked by (high byte + 1)
+    emulator.cpu().registers().A = 0xFF;
+    emulator.cpu().registers().X = 0x0F;
+    emulator.cpu().registers().Y = 0x05;
+    const auto cycles = runProgram({0x9B, 0x00, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0x0F);
+    EXPECT_EQ(emulator.cpu().read(0x0305), 0x04);
+}

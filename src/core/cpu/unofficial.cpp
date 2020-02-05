@@ -25,4 +25,9 @@ namespace nes_core {
     void CPU::execSHY(const std::uint16_t addr) {
         bus_->write(addr, regs_.Y & ((addr >> 8) + 1));
     }
+
+    void CPU::execSHS(const std::uint16_t addr) {
+        regs_.SP = regs_.A & regs_.X;
+        bus_->write(addr, regs_.SP & ((addr >> 8) + 1));
+    }
 }
