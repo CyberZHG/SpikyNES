@@ -240,6 +240,18 @@ namespace nes_core {
         regs_.PC = popWord() + 1;
     }
 
+    void CPU::execBRK() {
+        pushWord(regs_.PC + 1);
+        pushByte(regs_.P | 0b00110000);
+        setBit(regs_.P, CPURegisters::INDEX_I);
+        regs_.PC = (bus_->read(0xFFFF) << 8) | bus_->read(0xFFFE);
+    }
+
+    void CPU::execRTI() {
+        regs_.P = (popByte() | 0b00100000) & ~(1 << CPURegisters::INDEX_B);
+        regs_.PC = popWord();
+    }
+
     void CPU::execCLC() {
         clearBit(regs_.P, CPURegisters::INDEX_C);
     }

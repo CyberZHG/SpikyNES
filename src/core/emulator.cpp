@@ -1,7 +1,7 @@
 #include "core/emulator.h"
 
 namespace nes_core {
-    Emulator::Emulator() : cpu_(&bus_), ppu_(&bus_), apu_(&bus_), bus_(&cpu_, &ppu_, &apu_) {
+    Emulator::Emulator() : cpu_(&bus_), ppu_(&bus_), apu_(&bus_), bus_(&cpu_, &ppu_, &apu_, &cartridge_) {
     }
 
     void Emulator::reset() {

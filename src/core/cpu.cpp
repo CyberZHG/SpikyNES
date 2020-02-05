@@ -19,12 +19,12 @@ namespace nes_core {
         INC, INX, INY, DEC, DEX, DEY,
         // Jumps & Calls
         JMP, JSR, RTS,
+        // Control
+        BRK, RTI, NOP,
         // Branches
         BCC, BCS, BEQ, BMI, BNE, BPL, BVC, BVS,
         // Status Flag Changes
         CLC, CLD, CLI, CLV, SEC, SED, SEI,
-        // System Functions
-        BRK, RTI, NOP,
         // Unofficial Opcodes
         SLO, RLA, SRE, RRA, SAX, LAX,
         DCP, ISC, ANC, ALR, ARR, XAA,
@@ -438,6 +438,8 @@ namespace nes_core {
             case OpCode::JMP: execJMP(addr.addr); break;
             case OpCode::JSR: execJSR(addr.addr); break;
             case OpCode::RTS: execRTS(); break;
+            case OpCode::BRK: execBRK(); break;
+            case OpCode::RTI: execRTI(); break;
             case OpCode::CLC: execCLC(); break;
             case OpCode::CLD: execCLD(); break;
             case OpCode::CLI: execCLI(); break;

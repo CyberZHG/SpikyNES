@@ -12,9 +12,18 @@ namespace nes_core {
     constexpr std::size_t CPU_RAM_SIZE = 0x0800;
     constexpr std::size_t CPU_STACK_OFFSET = 0x0100;
     constexpr std::size_t CPU_PROGRAM_BEGIN = 0x0200;
-    constexpr std::size_t CPU_RAM_END = 0x2000;
+    constexpr std::uint16_t CPU_RAM_END = 0x2000;
 
-    constexpr std::size_t PPU_RAM_END = 0x4000;
+    constexpr std::uint16_t PPU_REG_START = 0x2000;
+    constexpr std::size_t PPU_REG_COUNT = 8;
+    constexpr std::uint16_t PPU_REG_END = 0x4000;
+
+    constexpr std::uint16_t APU_REG_START = 0x4000;
+    constexpr std::size_t APU_REG_COUNT = 0x18;
+    constexpr std::uint16_t APU_REG_END = 0x4018;
+
+    constexpr std::size_t PRG_ROM_SIZE = 0x8000;
+    constexpr std::uint16_t PRG_ROM_START = 0x8000;
 
 }
 

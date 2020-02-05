@@ -80,6 +80,13 @@ namespace nes_core {
         /** Set a byte to CPU RAM. */
         void write(std::uint16_t addr, std::uint16_t value);
 
+        /**
+         * Execute one instruction.
+         * @return Cycles consumed.
+         */
+        int step();
+
+    protected:
         /** Push a byte onto the stack. */
         void pushByte(std::uint8_t value);
         /** Push a word onto the stack (high byte first). */
@@ -88,12 +95,6 @@ namespace nes_core {
         std::uint8_t popByte();
         /** Pop a word from the stack (low byte first). */
         std::uint16_t popWord();
-
-        /**
-         * Execute one instruction.
-         * @return Cycles consumed.
-         */
-        int step();
 
         /** The operand is contained in the second byte of the instruction. */
         AddressingResult addrImmediate();
@@ -209,6 +210,11 @@ namespace nes_core {
         void execJSR(std::uint16_t addr);
         /** Return from subroutine. */
         void execRTS();
+
+        /** Break command. */
+        void execBRK();
+        /** Return from interrupt. */
+        void execRTI();
 
         /** Clear carry flag. */
         void execCLC();

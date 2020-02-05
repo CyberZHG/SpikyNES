@@ -1,6 +1,10 @@
 #ifndef SPIKYNES_PPU_H
 #define SPIKYNES_PPU_H
 
+#include <array>
+
+#include "core/constants.h"
+
 namespace nes_core {
 
     class Bus;
@@ -11,8 +15,12 @@ namespace nes_core {
 
         void reset();
 
+        std::uint8_t read(std::uint16_t addr) const;
+        void write(std::uint16_t addr, std::uint8_t value);
+
     private:
         Bus* bus_ = nullptr;
+        std::array<std::uint8_t, PPU_REG_COUNT> regs_ = {};
     };
 
 }
