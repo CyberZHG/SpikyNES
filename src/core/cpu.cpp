@@ -1,3 +1,4 @@
+#include "core/bus.h"
 #include "core/cpu.h"
 
 namespace nes_core {
@@ -363,7 +364,7 @@ namespace nes_core {
 
     void CPU::reset() {
         regs_.reset();
-        regs_.PC = read(0xFFFD) << 8 | read(0xFFFC);
+        regs_.PC = bus_->read(0xFFFD) << 8 | bus_->read(0xFFFC);
     }
 
     std::uint8_t CPU::read(const std::uint16_t addr) const {
@@ -375,7 +376,7 @@ namespace nes_core {
     }
 
     int CPU::step() {
-        const auto opCode = read(regs_.PC++);
+        const auto opCode = bus_->read(regs_.PC++);
         const auto [op, cycles, mode] = OP_INFO[opCode];
         AddressingResult addr;
         switch (mode) {
