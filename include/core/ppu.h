@@ -48,6 +48,12 @@ namespace nes_core {
         bool showSpritesInLeft() const { return getBit(ppuMask, 2); }
         bool showBackgroundInLeft() const { return getBit(ppuMask, 1); }
         bool grayscale() const { return getBit(ppuMask, 0); }
+
+        // PPUSTATUS - Rendering events ($2002 read)
+        bool vBlank() const { return getBit(ppuStatus, 7); }
+        void clearVBlank() { clearBit(ppuStatus, 7); }
+        bool sprite0Hit() const { return getBit(ppuStatus, 6); }
+        bool spriteOverflow() const { return getBit(ppuStatus, 5); }
     };
 
     class PPU {
@@ -59,7 +65,7 @@ namespace nes_core {
         PPURegisters& registers() { return regs_; }
         const PPURegisters& registers() const { return regs_; }
 
-        std::uint8_t read(std::uint16_t addr) const;
+        std::uint8_t read(std::uint16_t addr);
         void write(std::uint16_t addr, std::uint8_t value);
 
     private:

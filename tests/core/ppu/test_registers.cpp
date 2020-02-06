@@ -264,3 +264,80 @@ TEST_F(PPUTestBase, PPUMASK_MirroredWrite) {
     emulator.ppu().write(0x3FF9, 0x00);
     EXPECT_FALSE(emulator.ppu().registers().renderingEnabled());
 }
+
+// ==================== PPUSTATUS ($2002) ====================
+
+TEST_F(PPUTestBase, PPUSTATUS_VBlank) {
+    // Bit 7: VBlank flag
+    emulator.ppu().registers().ppuStatus = 0x00;
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+
+    emulator.ppu().registers().ppuStatus = 0x80;
+    EXPECT_TRUE(emulator.ppu().registers().vBlank());
+
+    emulator.ppu().registers().ppuStatus = 0x7F;
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+}
+
+TEST_F(PPUTestBase, PPUSTATUS_ClearVBlank) {
+    // clearVBlank() should clear bit 7
+    emulator.ppu().registers().ppuStatus = 0xFF;
+    emulator.ppu().registers().clearVBlank();
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+    EXPECT_EQ(emulator.ppu().registers().ppuStatus, 0x7F);
+}
+
+TEST_F(PPUTestBase, PPUSTATUS_Sprite0Hit) {
+    // Bit 6: Sprite 0 hit flag
+    emulator.ppu().registers().ppuStatus = 0x00;
+    EXPECT_FALSE(emulator.ppu().registers().sprite0Hit());
+
+    emulator.ppu().registers().ppuStatus = 0x40;
+    EXPECT_TRUE(emulator.ppu().registers().sprite0Hit());
+
+    emulator.ppu().registers().ppuStatus = 0xBF;
+    EXPECT_FALSE(emulator.ppu().registers().sprite0Hit());
+}
+
+TEST_F(PPUTestBase, PPUSTATUS_SpriteOverflow) {
+    // Bit 5: Sprite overflow flag
+    emulator.ppu().registers().ppuStatus = 0x00;
+    EXPECT_FALSE(emulator.ppu().registers().spriteOverflow());
+
+    emulator.ppu().registers().ppuStatus = 0x20;
+    EXPECT_TRUE(emulator.ppu().registers().spriteOverflow());
+
+    emulator.ppu().registers().ppuStatus = 0xDF;
+    EXPECT_FALSE(emulator.ppu().registers().spriteOverflow());
+}
+
+TEST_F(PPUTestBase, PPUSTATUS_ReadClearsVBlank) {
+    // Reading PPUSTATUS clears VBlank flag (bit 7)
+    emulator.ppu().registers().ppuStatus = 0xFF;
+    emulator.ppu().read(0x2002);
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+    EXPECT_EQ(emulator.ppu().registers().ppuStatus & 0x80, 0x00);
+}
+
+TEST_F(PPUTestBase, PPUSTATUS_ReadResetsAddressLatch) {
+    // Reading PPUSTATUS resets the address latch (w = 0)
+    emulator.ppu().registers().w = 1;
+    emulator.ppu().read(0x2002);
+    EXPECT_EQ(emulator.ppu().registers().w, 0);
+}
+
+TEST_F(PPUTestBase, PPUSTATUS_ReadReturnsUpperBits) {
+    // Reading PPUSTATUS returns bits 7-5, lower bits are from internal latch
+    emulator.ppu().registers().ppuStatus = 0xE0;
+    auto result = emulator.ppu().read(0x2002);
+    EXPECT_EQ(result & 0xE0, 0xE0);
+}
+
+TEST_F(PPUTestBase, PPUSTATUS_MirroredRead) {
+    // PPUSTATUS is mirrored every 8 bytes from $2000 to $3FFF
+    emulator.ppu().registers().ppuStatus = 0x80;
+    emulator.ppu().registers().w = 1;
+    emulator.ppu().read(0x200A);
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+    EXPECT_EQ(emulator.ppu().registers().w, 0);
+}

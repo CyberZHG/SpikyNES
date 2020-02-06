@@ -45,8 +45,14 @@ namespace nes_core {
     void PPU::reset() {
     }
 
-    std::uint8_t PPU::read(const std::uint16_t addr) const {
-        return regs_.r(addr & 0b00000111);
+    std::uint8_t PPU::read(const std::uint16_t addr) {
+        const auto index = addr & 0b00000111;
+        const auto value = regs_.r(index);
+        if (index == 2) {
+            regs_.clearVBlank();
+            regs_.w = 0;
+        }
+        return value;
     }
 
     void PPU::write(const std::uint16_t addr, const std::uint8_t value) {
