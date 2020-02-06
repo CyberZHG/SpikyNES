@@ -405,7 +405,14 @@ namespace nes_core {
                 throw std::runtime_error("Invalid addressing mode");
         }
         int finalCycles = cycles;
-        if (addr.pageCrossed) {
+        const bool isStore = op == OpCode::STA || op == OpCode::STX || op == OpCode::STY ||
+                             op == OpCode::SAX || op == OpCode::SHA || op == OpCode::SHX ||
+                             op == OpCode::SHY || op == OpCode::SHS;
+        const bool isRMW = op == OpCode::ASL || op == OpCode::LSR || op == OpCode::ROL ||
+                           op == OpCode::ROR || op == OpCode::INC || op == OpCode::DEC ||
+                           op == OpCode::DCP || op == OpCode::ISC || op == OpCode::RLA ||
+                           op == OpCode::RRA || op == OpCode::SLO || op == OpCode::SRE;
+        if (addr.pageCrossed && mode != AM_REL && !isStore && !isRMW) {
             ++finalCycles;
         }
         bool branchTaken = false;
@@ -491,6 +498,9 @@ namespace nes_core {
         }
         if (branchTaken) {
             ++finalCycles;
+            if (addr.pageCrossed) {
+                ++finalCycles;
+            }
         }
         return finalCycles;
     }

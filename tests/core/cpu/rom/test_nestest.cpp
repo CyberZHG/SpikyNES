@@ -19,6 +19,7 @@ namespace {
         std::uint8_t Y = 0;
         std::uint8_t P = 0;
         std::uint8_t SP = 0;
+        int cycles = 0;
     };
 
     std::uint8_t parseHex8(const std::string& s) {
@@ -43,6 +44,9 @@ namespace {
         state.Y = findVal("Y:");
         state.P = findVal("P:");
         state.SP = findVal("SP:");
+        if (const auto pos = line.find("CYC:"); pos != std::string::npos) {
+            state.cycles = std::stoi(line.substr(pos + 4));
+        }
         return state;
     }
 
@@ -95,6 +99,7 @@ TEST_F(NestestTest, RunNestest) {
     emulator.cpu().registers().PC = 0xC000;
     auto expectedStates = loadNestestLog(logPath);
     ASSERT_FALSE(expectedStates.empty()) << "Failed to load nestest.log";
+    int totalCycles = 7;
     for (size_t i = 0; i < expectedStates.size(); ++i) {
         const auto& expected = expectedStates[i];
         const auto actual = getCurrentState();
@@ -120,7 +125,11 @@ TEST_F(NestestTest, RunNestest) {
             << "  Actual P: " << std::bitset<8>(actual.P);
         ASSERT_EQ(actual.SP, expected.SP)
             << "SP mismatch at instruction " << i << " (PC=" << std::hex << actual.PC << ")";
-        emulator.cpu().step();
+        ASSERT_EQ(totalCycles, expected.cycles)
+            << "Cycles mismatch at instruction " << i << " (PC=" << std::hex << actual.PC << ")\n"
+            << "Expected cycles: " << std::dec << expected.cycles << "\n"
+            << "  Actual cycles: " << std::dec << totalCycles;
+        totalCycles += emulator.cpu().step();
     }
     const auto mem02 = emulator.cpu().read(0x02);
     const auto mem03 = emulator.cpu().read(0x03);

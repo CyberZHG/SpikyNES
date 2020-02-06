@@ -74,7 +74,7 @@ namespace nes_core {
     }
 
     void CPU::execPHP() {
-        pushByte(regs_.P);
+        pushByte(regs_.P | 0b00110000);
     }
 
     void CPU::execPLA() {
@@ -82,8 +82,7 @@ namespace nes_core {
     }
 
     void CPU::execPLP() {
-        const auto b = regs_.P & (1 << CPURegisters::INDEX_B);
-        regs_.P = (popByte() & ~(1 << CPURegisters::INDEX_B)) | b;
+        regs_.P = (popByte() | 0b00100000) & ~(1 << CPURegisters::INDEX_B);
     }
 
     void CPU::execASL() {
