@@ -19,7 +19,7 @@ TEST_F(CPUTestBase, BCC_Taken) {
 }
 
 TEST_F(CPUTestBase, BCC_Taken_PageCross) {
-    // BCC crossing page boundary
+    // BCC crossing page boundary, taken adds +2 (branch + page cross)
     emulator.cpu().registers().P &= ~0x01;
     emulator.cpu().write(0x02F0, 0x90);
     emulator.cpu().write(0x02F1, 0x20);
@@ -27,6 +27,17 @@ TEST_F(CPUTestBase, BCC_Taken_PageCross) {
     const auto cycles = emulator.cpu().step();
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x0312);
+}
+
+TEST_F(CPUTestBase, BCC_NotTaken_PageCross_NoPenalty) {
+    // BCC not taken should NOT add page cross penalty
+    emulator.cpu().registers().P |= 0x01;
+    emulator.cpu().write(0x02F0, 0x90);
+    emulator.cpu().write(0x02F1, 0x20);
+    emulator.cpu().registers().PC = 0x02F0;
+    const auto cycles = emulator.cpu().step();
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().PC, 0x02F2);
 }
 
 TEST_F(CPUTestBase, BCC_Backward) {

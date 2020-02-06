@@ -541,6 +541,18 @@ TEST_F(CPUTestBase, DCP_ZeroPage_Equal) {
     EXPECT_TRUE(emulator.cpu().registers().C());
 }
 
+TEST_F(CPUTestBase, DCP_IndirectY_PageCross_NoPenalty) {
+    // DCP ($45),Y with page cross - RMW has no page cross penalty
+    emulator.cpu().registers().A = 0x40;
+    emulator.cpu().registers().Y = 0xFF;
+    emulator.cpu().write(0x0045, 0x48);
+    emulator.cpu().write(0x0046, 0x05);  // Base addr = $0548
+    emulator.cpu().write(0x0647, 0xEC);  // $0548 + $FF = $0647
+    const auto cycles = runProgram({0xD3, 0x45}, 1);
+    EXPECT_EQ(cycles, 8);  // Still 8 cycles, no +1 penalty
+    EXPECT_EQ(emulator.cpu().read(0x0647), 0xEB);
+}
+
 // ==================== ISC (Unofficial) ====================
 
 TEST_F(CPUTestBase, ISC_ZeroPage) {

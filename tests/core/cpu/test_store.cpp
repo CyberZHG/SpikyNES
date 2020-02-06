@@ -43,6 +43,15 @@ TEST_F(CPUTestBase, STA_AbsoluteX) {
     EXPECT_EQ(emulator.cpu().read(0x0310), 0x42);
 }
 
+TEST_F(CPUTestBase, STA_AbsoluteX_PageCross_NoPenalty) {
+    // STA $0385,X with X=$80 crosses page, but stores have no page cross penalty
+    emulator.cpu().registers().A = 0x99;
+    emulator.cpu().registers().X = 0x80;
+    const auto cycles = runProgram({0x9D, 0x85, 0x03}, 1);
+    EXPECT_EQ(cycles, 5);
+    EXPECT_EQ(emulator.cpu().read(0x0405), 0x99);
+}
+
 TEST_F(CPUTestBase, STA_AbsoluteY) {
     // STA $0300,Y
     emulator.cpu().registers().A = 0x42;

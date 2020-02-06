@@ -38,14 +38,25 @@ TEST_F(CPUTestBase, PHA_StackWrap) {
 // ==================== PHP ====================
 
 TEST_F(CPUTestBase, PHP) {
-    // PHP ; Push P onto stack (B flag set to 1 when pushed)
-    emulator.cpu().registers().P = 0b00110100;
+    // PHP ; Push P onto stack with B and bit5 set
+    emulator.cpu().registers().P = 0b00100100;
     emulator.cpu().registers().SP = 0xFF;
     const auto cycles = runProgram({0x08}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFE);
+    // Pushed value should have B (bit4) and bit5 set: 0b00110100
     EXPECT_EQ(emulator.cpu().read(0x01FF), 0b00110100);
+}
+
+TEST_F(CPUTestBase, PHP_SetsBAndBit5) {
+    // PHP ; Even if P has B=0 and bit5=0, pushed value has both set
+    emulator.cpu().registers().P = 0b00000100;
+    emulator.cpu().registers().SP = 0xFF;
+    const auto cycles = runProgram({0x08}, 1);
+    EXPECT_EQ(cycles, 3);
+    EXPECT_EQ(emulator.cpu().read(0x01FF), 0b00110100);
+    EXPECT_EQ(emulator.cpu().registers().P, 0b00000100);
 }
 
 TEST_F(CPUTestBase, PHP_WithFlags) {
@@ -158,6 +169,16 @@ TEST_F(CPUTestBase, PLP_IgnoresBFlag) {
     const auto cycles = runProgram({0x28}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_FALSE(emulator.cpu().registers().B());
+}
+
+TEST_F(CPUTestBase, PLP_SetsBit5ClearsBit4) {
+    // PLP ; Bit 5 always set, bit 4 (B) always cleared
+    emulator.cpu().registers().SP = 0xFE;
+    emulator.cpu().registers().P = 0b00100100;
+    emulator.cpu().write(0x01FF, 0b00010100);
+    const auto cycles = runProgram({0x28}, 1);
+    EXPECT_EQ(cycles, 4);
+    EXPECT_EQ(emulator.cpu().registers().P, 0b00100100);
 }
 
 // ==================== PHA + PLA ====================
