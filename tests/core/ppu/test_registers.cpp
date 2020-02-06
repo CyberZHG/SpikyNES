@@ -139,3 +139,128 @@ TEST_F(PPUTestBase, PPUCTRL_UpdatesT_PreservesOtherBits) {
     emulator.ppu().write(0x2000, 0x03);
     EXPECT_EQ(emulator.ppu().registers().t, 0x7FFF);
 }
+
+// ==================== PPUMASK ($2001) ====================
+
+TEST_F(PPUTestBase, PPUMASK_EmphasizeBlue) {
+    // Bit 7: Emphasize blue
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().emphasizeBlue());
+
+    emulator.ppu().write(0x2001, 0x80);
+    EXPECT_TRUE(emulator.ppu().registers().emphasizeBlue());
+
+    emulator.ppu().write(0x2001, 0x7F);
+    EXPECT_FALSE(emulator.ppu().registers().emphasizeBlue());
+}
+
+TEST_F(PPUTestBase, PPUMASK_EmphasizeGreen) {
+    // Bit 6: Emphasize green
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().emphasizeGreen());
+
+    emulator.ppu().write(0x2001, 0x40);
+    EXPECT_TRUE(emulator.ppu().registers().emphasizeGreen());
+
+    emulator.ppu().write(0x2001, 0xBF);
+    EXPECT_FALSE(emulator.ppu().registers().emphasizeGreen());
+}
+
+TEST_F(PPUTestBase, PPUMASK_EmphasizeRed) {
+    // Bit 5: Emphasize red
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().emphasizeRed());
+
+    emulator.ppu().write(0x2001, 0x20);
+    EXPECT_TRUE(emulator.ppu().registers().emphasizeRed());
+
+    emulator.ppu().write(0x2001, 0xDF);
+    EXPECT_FALSE(emulator.ppu().registers().emphasizeRed());
+}
+
+TEST_F(PPUTestBase, PPUMASK_SpriteRenderingEnabled) {
+    // Bit 4: Show sprites
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().spriteRenderingEnabled());
+
+    emulator.ppu().write(0x2001, 0x10);
+    EXPECT_TRUE(emulator.ppu().registers().spriteRenderingEnabled());
+
+    emulator.ppu().write(0x2001, 0xEF);
+    EXPECT_FALSE(emulator.ppu().registers().spriteRenderingEnabled());
+}
+
+TEST_F(PPUTestBase, PPUMASK_BackgroundRenderingEnabled) {
+    // Bit 3: Show background
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().backgroundRenderingEnabled());
+
+    emulator.ppu().write(0x2001, 0x08);
+    EXPECT_TRUE(emulator.ppu().registers().backgroundRenderingEnabled());
+
+    emulator.ppu().write(0x2001, 0xF7);
+    EXPECT_FALSE(emulator.ppu().registers().backgroundRenderingEnabled());
+}
+
+TEST_F(PPUTestBase, PPUMASK_RenderingEnabled) {
+    // Bits 3-4: Rendering enabled if either sprites or background enabled
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().renderingEnabled());
+
+    emulator.ppu().write(0x2001, 0x08);
+    EXPECT_TRUE(emulator.ppu().registers().renderingEnabled());
+
+    emulator.ppu().write(0x2001, 0x10);
+    EXPECT_TRUE(emulator.ppu().registers().renderingEnabled());
+
+    emulator.ppu().write(0x2001, 0x18);
+    EXPECT_TRUE(emulator.ppu().registers().renderingEnabled());
+
+    emulator.ppu().write(0x2001, 0xE7);
+    EXPECT_FALSE(emulator.ppu().registers().renderingEnabled());
+}
+
+TEST_F(PPUTestBase, PPUMASK_ShowSpritesInLeft) {
+    // Bit 2: Show sprites in leftmost 8 pixels
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().showSpritesInLeft());
+
+    emulator.ppu().write(0x2001, 0x04);
+    EXPECT_TRUE(emulator.ppu().registers().showSpritesInLeft());
+
+    emulator.ppu().write(0x2001, 0xFB);
+    EXPECT_FALSE(emulator.ppu().registers().showSpritesInLeft());
+}
+
+TEST_F(PPUTestBase, PPUMASK_ShowBackgroundInLeft) {
+    // Bit 1: Show background in leftmost 8 pixels
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().showBackgroundInLeft());
+
+    emulator.ppu().write(0x2001, 0x02);
+    EXPECT_TRUE(emulator.ppu().registers().showBackgroundInLeft());
+
+    emulator.ppu().write(0x2001, 0xFD);
+    EXPECT_FALSE(emulator.ppu().registers().showBackgroundInLeft());
+}
+
+TEST_F(PPUTestBase, PPUMASK_Grayscale) {
+    // Bit 0: Grayscale mode
+    emulator.ppu().write(0x2001, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().grayscale());
+
+    emulator.ppu().write(0x2001, 0x01);
+    EXPECT_TRUE(emulator.ppu().registers().grayscale());
+
+    emulator.ppu().write(0x2001, 0xFE);
+    EXPECT_FALSE(emulator.ppu().registers().grayscale());
+}
+
+TEST_F(PPUTestBase, PPUMASK_MirroredWrite) {
+    // PPUMASK is mirrored every 8 bytes from $2000 to $3FFF
+    emulator.ppu().write(0x2009, 0x18);
+    EXPECT_TRUE(emulator.ppu().registers().renderingEnabled());
+
+    emulator.ppu().write(0x3FF9, 0x00);
+    EXPECT_FALSE(emulator.ppu().registers().renderingEnabled());
+}

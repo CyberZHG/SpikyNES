@@ -37,6 +37,17 @@ namespace nes_core {
         int spritePatternTableAddr() const { return getBit(ppuCtrl, 4) ? 0x1000 : 0x0000; }
         int vRamIncrement() const { return getBit(ppuCtrl, 3) ? 32 : 1; }
         int baseNametableAddr() const;
+
+        // PPUMASK - Rendering settings ($2001 write)
+        bool emphasizeBlue() const { return getBit(ppuMask, 7); }
+        bool emphasizeGreen() const { return getBit(ppuMask, 6); }
+        bool emphasizeRed() const { return getBit(ppuMask, 5); }
+        bool spriteRenderingEnabled() const { return getBit(ppuMask, 4); }
+        bool backgroundRenderingEnabled() const { return getBit(ppuMask, 3); }
+        bool renderingEnabled() const { return ppuMask & 0b00011000; }
+        bool showSpritesInLeft() const { return getBit(ppuMask, 2); }
+        bool showBackgroundInLeft() const { return getBit(ppuMask, 1); }
+        bool grayscale() const { return getBit(ppuMask, 0); }
     };
 
     class PPU {
