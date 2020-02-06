@@ -61,3 +61,88 @@ TEST_F(CPUTestBase, JAM) {
     EXPECT_TRUE(emulator.cpu().isHalted());
     EXPECT_EQ(emulator.cpu().step(), 0);
 }
+
+// ==================== NMI ====================
+
+TEST_F(CPUTestBase, NMI) {
+    // NMI ; Push PC, push P with B=0, jump to NMI vector
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().registers().P = 0b00100100;
+    emulator.cpu().registers().PC = 0x0300;
+    emulator.bus().write(0xFFFA, 0x00);
+    emulator.bus().write(0xFFFB, 0x05);
+    emulator.cpu().nmi();
+    const auto cycles = emulator.cpu().step();
+    EXPECT_EQ(cycles, 7);
+    EXPECT_EQ(emulator.cpu().registers().PC, 0x0500);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0xFC);
+    EXPECT_TRUE(emulator.cpu().registers().I());
+    EXPECT_EQ(emulator.cpu().read(0x01FF), 0x03);
+    EXPECT_EQ(emulator.cpu().read(0x01FE), 0x00);
+    EXPECT_EQ(emulator.cpu().read(0x01FD) & 0b00110000, 0b00100000);
+}
+
+TEST_F(CPUTestBase, NMI_IgnoresIFlag) {
+    // NMI is non-maskable, fires even when I flag is set
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().registers().P = 0b00100100;
+    emulator.cpu().registers().P |= 0x04;
+    emulator.cpu().registers().PC = 0x0300;
+    emulator.bus().write(0xFFFA, 0x00);
+    emulator.bus().write(0xFFFB, 0x05);
+    emulator.cpu().nmi();
+    const auto cycles = emulator.cpu().step();
+    EXPECT_EQ(cycles, 7);
+    EXPECT_EQ(emulator.cpu().registers().PC, 0x0500);
+}
+
+// ==================== IRQ ====================
+
+TEST_F(CPUTestBase, IRQ) {
+    // IRQ ; Push PC, push P with B=0, jump to IRQ vector
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().registers().P = 0b00100000;
+    emulator.cpu().registers().PC = 0x0300;
+    emulator.bus().write(0xFFFE, 0x00);
+    emulator.bus().write(0xFFFF, 0x04);
+    emulator.cpu().irq();
+    const auto cycles = emulator.cpu().step();
+    EXPECT_EQ(cycles, 7);
+    EXPECT_EQ(emulator.cpu().registers().PC, 0x0400);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0xFC);
+    EXPECT_TRUE(emulator.cpu().registers().I());
+    EXPECT_EQ(emulator.cpu().read(0x01FF), 0x03);
+    EXPECT_EQ(emulator.cpu().read(0x01FE), 0x00);
+    EXPECT_EQ(emulator.cpu().read(0x01FD) & 0b00110000, 0b00100000);
+}
+
+TEST_F(CPUTestBase, IRQ_MaskedByIFlag) {
+    // IRQ is ignored when I flag is set
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().registers().P = 0b00100100;
+    emulator.cpu().registers().PC = CPU_PROGRAM_BEGIN;
+    emulator.cpu().write(CPU_PROGRAM_BEGIN, 0xEA);
+    emulator.bus().write(0xFFFE, 0x00);
+    emulator.bus().write(0xFFFF, 0x04);
+    emulator.cpu().irq();
+    const auto cycles = emulator.cpu().step();
+    EXPECT_EQ(cycles, 2);
+    EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0xFF);
+}
+
+TEST_F(CPUTestBase, NMI_PriorityOverIRQ) {
+    // NMI has priority over IRQ
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().registers().P = 0b00100000;
+    emulator.cpu().registers().PC = 0x0300;
+    emulator.bus().write(0xFFFA, 0x00);
+    emulator.bus().write(0xFFFB, 0x05);
+    emulator.bus().write(0xFFFE, 0x00);
+    emulator.bus().write(0xFFFF, 0x04);
+    emulator.cpu().nmi();
+    emulator.cpu().irq();
+    const auto cycles = emulator.cpu().step();
+    EXPECT_EQ(cycles, 7);
+    EXPECT_EQ(emulator.cpu().registers().PC, 0x0500);
+}

@@ -370,8 +370,10 @@ namespace nes_core {
 
     void CPU::reset() {
         regs_.reset();
-        regs_.PC = bus_->read(0xFFFD) << 8 | bus_->read(0xFFFC);
+        regs_.PC = (bus_->read(CPU_VECTOR_RESET + 1) << 8) | bus_->read(CPU_VECTOR_RESET);
         halted_ = false;
+        nmiPending_ = false;
+        irqPending_ = false;
     }
 
     std::uint8_t CPU::read(const std::uint16_t addr) const {
@@ -384,6 +386,15 @@ namespace nes_core {
 
     int CPU::step() {
         if (halted_) return 0;
+
+        // Handle pending interrupts (NMI has priority)
+        if (nmiPending_) {
+            return handleNMI();
+        }
+        if (irqPending_ && !regs_.I()) {
+            return handleIRQ();
+        }
+
         const auto opCode = bus_->read(regs_.PC++);
         const auto [op, cycles, mode] = OP_INFO[opCode];
         AddressingResult addr;

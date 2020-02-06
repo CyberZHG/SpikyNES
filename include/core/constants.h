@@ -13,6 +13,9 @@ namespace nes_core {
     constexpr std::size_t CPU_STACK_OFFSET = 0x0100;
     constexpr std::size_t CPU_PROGRAM_BEGIN = 0x0200;
     constexpr std::uint16_t CPU_RAM_END = 0x2000;
+    constexpr std::uint16_t CPU_VECTOR_NMI = 0xFFFA;
+    constexpr std::uint16_t CPU_VECTOR_RESET = 0xFFFC;
+    constexpr std::uint16_t CPU_VECTOR_IRQ = 0xFFFE;
 
     constexpr std::uint16_t PPU_REG_START = 0x2000;
     constexpr std::size_t PPU_REG_COUNT = 8;

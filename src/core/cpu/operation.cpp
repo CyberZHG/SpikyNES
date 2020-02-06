@@ -243,7 +243,7 @@ namespace nes_core {
         pushWord(regs_.PC + 1);
         pushByte(regs_.P | 0b00110000);
         setBit(regs_.P, CPURegisters::INDEX_I);
-        regs_.PC = (bus_->read(0xFFFF) << 8) | bus_->read(0xFFFE);
+        regs_.PC = (bus_->read(CPU_VECTOR_IRQ + 1) << 8) | bus_->read(CPU_VECTOR_IRQ);
     }
 
     void CPU::execRTI() {
@@ -341,5 +341,23 @@ namespace nes_core {
 
     void CPU::execSEI() {
         setBit(regs_.P, CPURegisters::INDEX_I);
+    }
+
+    int CPU::handleNMI() {
+        pushWord(regs_.PC);
+        pushByte((regs_.P | 0b00100000) & ~(1 << CPURegisters::INDEX_B));
+        setBit(regs_.P, CPURegisters::INDEX_I);
+        regs_.PC = (bus_->read(CPU_VECTOR_NMI + 1) << 8) | bus_->read(CPU_VECTOR_NMI);
+        nmiPending_ = false;
+        return 7;
+    }
+
+    int CPU::handleIRQ() {
+        pushWord(regs_.PC);
+        pushByte((regs_.P | 0b00100000) & ~(1 << CPURegisters::INDEX_B));
+        setBit(regs_.P, CPURegisters::INDEX_I);
+        regs_.PC = (bus_->read(CPU_VECTOR_IRQ + 1) << 8) | bus_->read(CPU_VECTOR_IRQ);
+        irqPending_ = false;
+        return 7;
     }
 }

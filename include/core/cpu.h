@@ -89,6 +89,11 @@ namespace nes_core {
         /** Check if CPU is halted by JAM/KIL instruction. */
         bool isHalted() const { return halted_; }
 
+        /** Trigger a Non-Maskable Interrupt. */
+        void nmi() { nmiPending_ = true; }
+        /** Trigger an Interrupt Request (ignored if I flag is set). */
+        void irq() { irqPending_ = true; }
+
     protected:
         /** Push a byte onto the stack. */
         void pushByte(std::uint8_t value);
@@ -291,6 +296,11 @@ namespace nes_core {
         /** Non-deterministic operation of accumulator, index register X, memory and bus contents. */
         void execXAA(std::uint16_t addr);
 
+        /** Handle NMI interrupt. */
+        int handleNMI();
+        /** Handle IRQ interrupt. */
+        int handleIRQ();
+
     private:
         /**
          * 2KB internal RAM, mirrored 3 times and up to $2000.
@@ -299,6 +309,8 @@ namespace nes_core {
         CPURegisters regs_;
         Bus* bus_ = nullptr;
         bool halted_ = false;
+        bool nmiPending_ = false;
+        bool irqPending_ = false;
     };
 
 }
