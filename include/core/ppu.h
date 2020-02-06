@@ -24,9 +24,16 @@ namespace nes_core {
 
         // Internal registers
         std::uint16_t v;
+        /**
+        * yyy NN YYYYY XXXXX
+        * ||| || ||||| +++++-- coarse X scroll
+        * ||| || +++++-------- coarse Y scroll
+        * ||| ++-------------- nametable select
+        * +++----------------- fine Y scroll
+        */
         std::uint16_t t;
-        std::uint16_t x;
-        std::uint16_t w;
+        std::uint8_t x;
+        std::uint8_t w;
 
         std::uint8_t& r(int index);
         std::uint8_t r(int index) const;

@@ -341,3 +341,109 @@ TEST_F(PPUTestBase, PPUSTATUS_MirroredRead) {
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
     EXPECT_EQ(emulator.ppu().registers().w, 0);
 }
+
+// ==================== PPUSCROLL ($2005) ====================
+
+TEST_F(PPUTestBase, PPUSCROLL_FirstWrite_SetsX) {
+    // First write (w=0): sets fine X (x) and coarse X (t bits 0-4)
+    emulator.ppu().registers().t = 0x0000;
+    emulator.ppu().registers().x = 0;
+    emulator.ppu().registers().w = 0;
+
+    emulator.ppu().write(0x2005, 0x7D);
+    EXPECT_EQ(emulator.ppu().registers().x, 0x05);
+    EXPECT_EQ(emulator.ppu().registers().t & 0x001F, 0x0F);
+    EXPECT_EQ(emulator.ppu().registers().w, 1);
+}
+
+TEST_F(PPUTestBase, PPUSCROLL_FirstWrite_PreservesT) {
+    // First write should only modify bits 0-4 of t, preserving other bits
+    emulator.ppu().registers().t = 0x7FE0;
+    emulator.ppu().registers().x = 0;
+    emulator.ppu().registers().w = 0;
+
+    emulator.ppu().write(0x2005, 0xFF);
+    EXPECT_EQ(emulator.ppu().registers().x, 0x07);
+    EXPECT_EQ(emulator.ppu().registers().t, 0x7FFF);
+    EXPECT_EQ(emulator.ppu().registers().w, 1);
+}
+
+TEST_F(PPUTestBase, PPUSCROLL_SecondWrite_SetsY) {
+    // Second write (w=1): sets fine Y (t bits 12-14) and coarse Y (t bits 5-9)
+    emulator.ppu().registers().t = 0x0000;
+    emulator.ppu().registers().w = 1;
+
+    emulator.ppu().write(0x2005, 0x7D);
+    EXPECT_EQ(emulator.ppu().registers().t & 0x7000, 0x5000);
+    EXPECT_EQ(emulator.ppu().registers().t & 0x03E0, 0x01E0);
+    EXPECT_EQ(emulator.ppu().registers().w, 0);
+}
+
+TEST_F(PPUTestBase, PPUSCROLL_SecondWrite_PreservesT) {
+    // Second write should only modify bits 5-9 and 12-14 of t
+    emulator.ppu().registers().t = 0x0C1F;
+    emulator.ppu().registers().w = 1;
+
+    emulator.ppu().write(0x2005, 0xFF);
+    EXPECT_EQ(emulator.ppu().registers().t, 0x7FFF);
+    EXPECT_EQ(emulator.ppu().registers().w, 0);
+}
+
+TEST_F(PPUTestBase, PPUSCROLL_DoubleWrite_FullScroll) {
+    // Two writes set complete scroll position
+    emulator.ppu().registers().t = 0x0000;
+    emulator.ppu().registers().x = 0;
+    emulator.ppu().registers().w = 0;
+
+    emulator.ppu().write(0x2005, 0x00);
+    EXPECT_EQ(emulator.ppu().registers().w, 1);
+
+    emulator.ppu().write(0x2005, 0x00);
+    EXPECT_EQ(emulator.ppu().registers().w, 0);
+    EXPECT_EQ(emulator.ppu().registers().t, 0x0000);
+    EXPECT_EQ(emulator.ppu().registers().x, 0x00);
+}
+
+TEST_F(PPUTestBase, PPUSCROLL_DoubleWrite_MaxScroll) {
+    // Two writes with max values
+    emulator.ppu().registers().t = 0x0000;
+    emulator.ppu().registers().x = 0;
+    emulator.ppu().registers().w = 0;
+
+    emulator.ppu().write(0x2005, 0xFF);
+    emulator.ppu().write(0x2005, 0xFF);
+    EXPECT_EQ(emulator.ppu().registers().x, 0x07);
+    EXPECT_EQ(emulator.ppu().registers().t & 0x001F, 0x1F);
+    EXPECT_EQ(emulator.ppu().registers().t & 0x03E0, 0x03E0);
+    EXPECT_EQ(emulator.ppu().registers().t & 0x7000, 0x7000);
+}
+
+TEST_F(PPUTestBase, PPUSCROLL_WToggle) {
+    // w toggles between 0 and 1 on each write
+    emulator.ppu().registers().w = 0;
+
+    emulator.ppu().write(0x2005, 0x00);
+    EXPECT_EQ(emulator.ppu().registers().w, 1);
+
+    emulator.ppu().write(0x2005, 0x00);
+    EXPECT_EQ(emulator.ppu().registers().w, 0);
+
+    emulator.ppu().write(0x2005, 0x00);
+    EXPECT_EQ(emulator.ppu().registers().w, 1);
+}
+
+TEST_F(PPUTestBase, PPUSCROLL_StatusReadResetsW) {
+    // Reading PPUSTATUS resets w, affecting PPUSCROLL sequence
+    emulator.ppu().registers().w = 0;
+    emulator.ppu().write(0x2005, 0x10);
+    EXPECT_EQ(emulator.ppu().registers().w, 1);
+
+    emulator.ppu().read(0x2002);
+    EXPECT_EQ(emulator.ppu().registers().w, 0);
+
+    emulator.ppu().registers().t = 0x0000;
+    emulator.ppu().registers().x = 0;
+    emulator.ppu().write(0x2005, 0x08);
+    EXPECT_EQ(emulator.ppu().registers().x, 0x00);
+    EXPECT_EQ(emulator.ppu().registers().t & 0x001F, 0x01);
+}
