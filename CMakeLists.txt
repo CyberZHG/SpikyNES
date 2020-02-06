@@ -92,6 +92,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/cpu/test_branch.cpp
             tests/core/cpu/test_nop.cpp
             tests/core/test_cartridge.cpp
+            tests/core/ppu/test_registers.cpp
     )
 
     if(SPIKY_NES_ENABLE_ROM_TESTS)
