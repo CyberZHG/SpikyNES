@@ -97,15 +97,44 @@ namespace nes_core {
         }
     }
 
+    std::uint16_t PPU::mirrorNametableAddr(std::uint16_t addr) const {
+        switch (mirroring_) {
+            case Mirroring::HORIZONTAL:
+                if ((0x0400 <= addr && addr < 0x0800) || (0x0C00 <= addr && addr < 0x1000)) {
+                    addr -= 0x0400;
+                }
+                break;
+            case Mirroring::VERTICAL:
+                if (0x0800 <= addr && addr < 0x1000) {
+                    addr -= 0x0800;
+                }
+                break;
+        }
+        return addr;
+    }
+
+    std::uint16_t PPU::mirrorPaletteAddr(std::uint16_t addr) {
+        addr &= 0x1F;
+        if ((addr & 0x13) == 0x10) {
+            addr &= ~0x10;
+        }
+        return addr;
+    }
+
     std::uint8_t PPU::ppuRead(std::uint16_t addr) const {
         addr &= PPU_MEM_MASK;
         if (addr < CHR_ROM_BANK_SIZE) {
             return bus_->ppuRead(addr);
         }
         if (addr < PPU_PALETTE_START) {
-            // TODO
+            if (addr >= PPU_NAMETABLE_MIRRO_START) {
+                addr -= PPU_NAMETABLE_SIZE;
+            }
+            addr -= PPU_NAMETABLE_START;
+            addr = mirrorNametableAddr(addr);
+            return nametable_[addr];
         }
-        return palette_[addr & 0x1F];
+        return palette_[mirrorPaletteAddr(addr)];
     }
 
     void PPU::ppuWrite(std::uint16_t addr, const std::uint8_t value) {
@@ -113,9 +142,14 @@ namespace nes_core {
         if (addr < CHR_ROM_BANK_SIZE) {
             bus_->ppuWrite(addr, value);
         } else if (addr < PPU_PALETTE_START) {
-            // TODO
+            if (addr >= PPU_NAMETABLE_MIRRO_START) {
+                addr -= PPU_NAMETABLE_SIZE;
+            }
+            addr -= PPU_NAMETABLE_START;
+            addr = mirrorNametableAddr(addr);
+            nametable_[addr] = value;
         } else {
-            palette_[addr & 0x1F] = value;
+            palette_[mirrorPaletteAddr(addr)] = value;
         }
     }
 }

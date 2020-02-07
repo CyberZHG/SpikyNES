@@ -83,12 +83,24 @@ namespace nes_core {
         std::uint8_t ppuRead(std::uint16_t addr) const;
         void ppuWrite(std::uint16_t addr, std::uint8_t value);
 
+        enum class Mirroring {
+            HORIZONTAL,
+            VERTICAL,
+        };
+        void setMirroring(const Mirroring mirroring) { mirroring_ = mirroring; }
+
     private:
+        std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
+        static std::uint16_t mirrorPaletteAddr(std::uint16_t addr);
+
         Bus* bus_ = nullptr;
         PPURegisters regs_{};
 
-        std::array<std::uint8_t, 256> oam_;  // 64 sprites
-        std::array<std::uint8_t, 32> palette_;
+        Mirroring mirroring_ = Mirroring::HORIZONTAL;
+
+        std::array<std::uint8_t, PPU_OAM_SIZE> oam_;
+        std::array<std::uint8_t, PPU_NAMETABLE_SIZE> nametable_;
+        std::array<std::uint8_t, PPU_PALETTE_SIZE> palette_;
     };
 
 }

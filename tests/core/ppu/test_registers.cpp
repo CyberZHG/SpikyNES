@@ -767,3 +767,126 @@ TEST_F(PPUTestBase, PPUDATA_AddressWraps) {
     emulator.ppu().registerWrite(0x2007, 0x00);
     EXPECT_EQ(emulator.ppu().registers().v & 0x3FFF, 0x0000);
 }
+
+TEST_F(PPUTestBase, PPUDATA_NametableWriteRead) {
+    // Write and read nametable VRAM ($2000-$2FFF)
+    emulator.ppu().registerWrite(0x2000, 0x00);
+
+    emulator.ppu().registers().v = 0x2000;
+    emulator.ppu().registerWrite(0x2007, 0x41);
+    emulator.ppu().registers().v = 0x2001;
+    emulator.ppu().registerWrite(0x2007, 0x42);
+    emulator.ppu().registers().v = 0x23C0;
+    emulator.ppu().registerWrite(0x2007, 0x55);
+
+    emulator.ppu().registers().v = 0x2000;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0x41);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0x42);
+
+    emulator.ppu().registers().v = 0x23C0;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0x55);
+}
+
+TEST_F(PPUTestBase, PPUDATA_NametableMirror_3000) {
+    // $3000-$3EFF mirrors $2000-$2EFF
+    emulator.ppu().registerWrite(0x2000, 0x00);
+
+    emulator.ppu().registers().v = 0x2000;
+    emulator.ppu().registerWrite(0x2007, 0xAB);
+
+    emulator.ppu().registers().v = 0x3000;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0xAB);
+
+    emulator.ppu().registers().v = 0x3100;
+    emulator.ppu().registerWrite(0x2007, 0xCD);
+
+    emulator.ppu().registers().v = 0x2100;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0xCD);
+}
+
+TEST_F(PPUTestBase, PPUDATA_NametableHorizontalMirroring) {
+    // Horizontal mirroring: $2000=$2400, $2800=$2C00
+    emulator.ppu().setMirroring(PPU::Mirroring::HORIZONTAL);
+    emulator.ppu().registerWrite(0x2000, 0x00);
+
+    emulator.ppu().registers().v = 0x2000;
+    emulator.ppu().registerWrite(0x2007, 0x11);
+
+    emulator.ppu().registers().v = 0x2400;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0x11);
+
+    emulator.ppu().registers().v = 0x2800;
+    emulator.ppu().registerWrite(0x2007, 0x22);
+
+    emulator.ppu().registers().v = 0x2C00;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0x22);
+}
+
+TEST_F(PPUTestBase, PPUDATA_NametableVerticalMirroring) {
+    // Vertical mirroring: $2000=$2800, $2400=$2C00
+    emulator.ppu().setMirroring(PPU::Mirroring::VERTICAL);
+    emulator.ppu().registerWrite(0x2000, 0x00);
+
+    emulator.ppu().registers().v = 0x2000;
+    emulator.ppu().registerWrite(0x2007, 0x33);
+
+    emulator.ppu().registers().v = 0x2800;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0x33);
+
+    emulator.ppu().registers().v = 0x2400;
+    emulator.ppu().registerWrite(0x2007, 0x44);
+
+    emulator.ppu().registers().v = 0x2C00;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0x44);
+}
+
+TEST_F(PPUTestBase, PPUDATA_AttributeTableWriteRead) {
+    // Attribute table at $23C0-$23FF, $27C0-$27FF, etc.
+    emulator.ppu().registerWrite(0x2000, 0x00);
+
+    emulator.ppu().registers().v = 0x23C0;
+    emulator.ppu().registerWrite(0x2007, 0xAA);
+    emulator.ppu().registers().v = 0x23FF;
+    emulator.ppu().registerWrite(0x2007, 0x55);
+
+    emulator.ppu().registers().v = 0x23C0;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0xAA);
+
+    emulator.ppu().registers().v = 0x23FF;
+    emulator.ppu().registerRead(0x2007);
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007), 0x55);
+}
+
+TEST_F(PPUTestBase, PPUDATA_PaletteMirroring) {
+    // $3F10, $3F14, $3F18, $3F1C mirror to $3F00, $3F04, $3F08, $3F0C
+    emulator.ppu().registerWrite(0x2000, 0x00);
+
+    emulator.ppu().registers().v = 0x3F00;
+    emulator.ppu().registerWrite(0x2007, 0x11);
+    emulator.ppu().registers().v = 0x3F10;
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007) & 0x3F, 0x11);
+
+    emulator.ppu().registers().v = 0x3F14;
+    emulator.ppu().registerWrite(0x2007, 0x22);
+    emulator.ppu().registers().v = 0x3F04;
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007) & 0x3F, 0x22);
+
+    emulator.ppu().registers().v = 0x3F08;
+    emulator.ppu().registerWrite(0x2007, 0x33);
+    emulator.ppu().registers().v = 0x3F18;
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007) & 0x3F, 0x33);
+
+    emulator.ppu().registers().v = 0x3F1C;
+    emulator.ppu().registerWrite(0x2007, 0x2A);
+    emulator.ppu().registers().v = 0x3F0C;
+    EXPECT_EQ(emulator.ppu().registerRead(0x2007) & 0x3F, 0x2A);
+}
