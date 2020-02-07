@@ -447,3 +447,110 @@ TEST_F(PPUTestBase, PPUSCROLL_StatusReadResetsW) {
     EXPECT_EQ(emulator.ppu().registers().x, 0x00);
     EXPECT_EQ(emulator.ppu().registers().t & 0x001F, 0x01);
 }
+
+// ==================== OAMADDR ($2003) ====================
+
+TEST_F(PPUTestBase, OAMADDR_Write) {
+    // Writing to OAMADDR sets the OAM address
+    emulator.ppu().write(0x2003, 0x00);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x00);
+
+    emulator.ppu().write(0x2003, 0x40);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x40);
+
+    emulator.ppu().write(0x2003, 0xFF);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0xFF);
+}
+
+TEST_F(PPUTestBase, OAMADDR_MirroredWrite) {
+    // OAMADDR is mirrored every 8 bytes
+    emulator.ppu().write(0x200B, 0x55);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x55);
+
+    emulator.ppu().write(0x3FFB, 0xAA);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0xAA);
+}
+
+// ==================== OAMDATA ($2004) ====================
+
+TEST_F(PPUTestBase, OAMDATA_WriteAndRead) {
+    // Writing to OAMDATA stores data in OAM at oamAddr
+    emulator.ppu().write(0x2003, 0x00);
+    emulator.ppu().write(0x2004, 0x42);
+
+    emulator.ppu().write(0x2003, 0x00);
+    EXPECT_EQ(emulator.ppu().read(0x2004), 0x42);
+}
+
+TEST_F(PPUTestBase, OAMDATA_WriteIncrementsAddr) {
+    // Writing to OAMDATA increments oamAddr by 1
+    emulator.ppu().write(0x2003, 0x00);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x00);
+
+    emulator.ppu().write(0x2004, 0x11);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x01);
+
+    emulator.ppu().write(0x2004, 0x22);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x02);
+
+    emulator.ppu().write(0x2004, 0x33);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x03);
+}
+
+TEST_F(PPUTestBase, OAMDATA_WriteWrapsAt256) {
+    // oamAddr wraps around at 256
+    emulator.ppu().write(0x2003, 0xFF);
+    emulator.ppu().write(0x2004, 0x99);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x00);
+}
+
+TEST_F(PPUTestBase, OAMDATA_ReadDoesNotIncrementAddr) {
+    // Reading OAMDATA does not increment oamAddr
+    emulator.ppu().write(0x2003, 0x10);
+    emulator.ppu().write(0x2004, 0xAB);
+
+    emulator.ppu().write(0x2003, 0x10);
+    emulator.ppu().read(0x2004);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x10);
+
+    emulator.ppu().read(0x2004);
+    EXPECT_EQ(emulator.ppu().registers().oamAddr, 0x10);
+}
+
+TEST_F(PPUTestBase, OAMDATA_WriteMultipleSprites) {
+    // Write sprite data
+    emulator.ppu().write(0x2003, 0x00);
+
+    emulator.ppu().write(0x2004, 0x10);
+    emulator.ppu().write(0x2004, 0x01);
+    emulator.ppu().write(0x2004, 0x00);
+    emulator.ppu().write(0x2004, 0x20);
+
+    emulator.ppu().write(0x2004, 0x30);
+    emulator.ppu().write(0x2004, 0x02);
+    emulator.ppu().write(0x2004, 0x01);
+    emulator.ppu().write(0x2004, 0x40);
+
+    emulator.ppu().write(0x2003, 0x00);
+    EXPECT_EQ(emulator.ppu().read(0x2004), 0x10);
+    emulator.ppu().write(0x2003, 0x01);
+    EXPECT_EQ(emulator.ppu().read(0x2004), 0x01);
+    emulator.ppu().write(0x2003, 0x02);
+    EXPECT_EQ(emulator.ppu().read(0x2004), 0x00);
+    emulator.ppu().write(0x2003, 0x03);
+    EXPECT_EQ(emulator.ppu().read(0x2004), 0x20);
+
+    emulator.ppu().write(0x2003, 0x04);
+    EXPECT_EQ(emulator.ppu().read(0x2004), 0x30);
+    emulator.ppu().write(0x2003, 0x05);
+    EXPECT_EQ(emulator.ppu().read(0x2004), 0x02);
+}
+
+TEST_F(PPUTestBase, OAMDATA_MirroredAccess) {
+    // OAMDATA is mirrored every 8 bytes
+    emulator.ppu().write(0x2003, 0x00);
+    emulator.ppu().write(0x200C, 0x77);
+
+    emulator.ppu().write(0x2003, 0x00);
+    EXPECT_EQ(emulator.ppu().read(0x3FFC), 0x77);
+}

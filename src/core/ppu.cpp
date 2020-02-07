@@ -47,10 +47,12 @@ namespace nes_core {
 
     std::uint8_t PPU::read(const std::uint16_t addr) {
         const auto index = addr & 0b00000111;
-        const auto value = regs_.r(index);
+        auto value = regs_.r(index);
         if (index == 2) {  // PPUSTATUS
             regs_.clearVBlank();
             regs_.w = 0;
+        } else if (index == 4) {  // OAMDATA
+            value = oam_[regs_.oamAddr];
         }
         return value;
     }
@@ -58,8 +60,10 @@ namespace nes_core {
     void PPU::write(const std::uint16_t addr, const std::uint8_t value) {
         const auto index = addr & 0b00000111;
         regs_.r(index) = value;
-        if (index == 0) {  // PPUCTRL
+        if (index == 0) { // PPUCTRL
             regs_.t = (regs_.t & 0xF3FF) | ((value & 0x03) << 10);
+        } else if (index == 4) {  // OAMDATA
+            oam_[regs_.oamAddr++] = value;
         } else if (index == 5) {  // PPUSCROLL
             if (regs_.w == 0) {
                 regs_.w = 1;

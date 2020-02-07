@@ -11,29 +11,31 @@ namespace nes_core {
     class Bus;
 
     struct PPURegisters {
-        // MMIO registers;
-        std::uint8_t ppuCtrl;
-        std::uint8_t ppuMask;
-        std::uint8_t ppuStatus;
-        std::uint8_t oamAddr;
-        std::uint8_t oamData;
-        std::uint8_t ppuScroll;
-        std::uint8_t ppuAddr;
-        std::uint8_t ppuData;
-        std::uint8_t oamDma;
+        // MMIO registers
+        std::uint8_t ppuCtrl;    // $2000: VPHB SINN, write
+        std::uint8_t ppuMask;    // $2001: BGRs bMmG, write
+        std::uint8_t ppuStatus;  // $2002: VSO- ----, read
+        std::uint8_t oamAddr;    // $2003: AAAA AAAA, write
+        std::uint8_t oamData;    // $2004: DDDD DDDD, read/write
+        std::uint8_t ppuScroll;  // $2005: XXXX XXXX, YYYY YYYY, write x2
+        std::uint8_t ppuAddr;    // $2006: ..AA AAAA, AAAA AAAA,  write x2
+        std::uint8_t ppuData;    // $2007: DDDD DDDD, read/write
+        std::uint8_t oamDma;     // $4014: AAAA AAAA, write
 
-        // Internal registers
-        std::uint16_t v;
         /**
-        * yyy NN YYYYY XXXXX
-        * ||| || ||||| +++++-- coarse X scroll
-        * ||| || +++++-------- coarse Y scroll
-        * ||| ++-------------- nametable select
-        * +++----------------- fine Y scroll
-        */
-        std::uint16_t t;
-        std::uint8_t x;
-        std::uint8_t w;
+         * Internal registers
+         *
+         * v and t (15 bits):
+         *   yyy NN YYYYY XXXXX
+         *   ||| || ||||| +++++-- coarse X scroll (0-4)
+         *   ||| || +++++-------- coarse Y scroll (5-9)
+         *   ||| ++-------------- nametable select (10-11)
+         *   +++----------------- fine Y scroll (12-14)
+         */
+        std::uint16_t v;  // Current VRAM address
+        std::uint16_t t;  // Temporary VRAM address
+        std::uint8_t x;   // Fine X scroll (3 bits)
+        std::uint8_t w;   // Write toggle (1 bit)
 
         std::uint8_t& r(int index);
         std::uint8_t r(int index) const;
@@ -78,6 +80,8 @@ namespace nes_core {
     private:
         Bus* bus_ = nullptr;
         PPURegisters regs_{};
+
+        std::array<std::uint8_t, 256> oam_;  // 64 sprites
     };
 
 }
