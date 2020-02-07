@@ -8,6 +8,7 @@ namespace nes_core {
         if (!cartridge_.loadFromFile(path)) {
             return false;
         }
+        ppu_.setMirroring(cartridge_.header().verticalMirroring ? PPU::Mirroring::VERTICAL : PPU::Mirroring::HORIZONTAL);
         reset();
         return true;
     }

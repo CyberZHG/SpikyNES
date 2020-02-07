@@ -39,11 +39,32 @@ namespace nes_core {
         }
     }
 
+    void PPURegisters::reset() {
+        ppuControl = 0;
+        ppuMask = 0;
+        ppuStatus = 0;
+        oamAddr = 0;
+        oamData = 0;
+        ppuScroll = 0;
+        ppuAddr = 0;
+        ppuData = 0;
+        oamDMA = 0;
+        v = 0;
+        t = 0;
+        x = 0;
+        w = 0;
+        ppuDataBuffer = 0;
+    }
+
     PPU::PPU(Bus *bus) {
         bus_ = bus;
     }
 
     void PPU::reset() {
+        regs_.reset();
+        oam_.fill(0);
+        nametable_.fill(0);
+        palette_.fill(0);
     }
 
     std::uint8_t PPU::registerRead(const std::uint16_t addr) {

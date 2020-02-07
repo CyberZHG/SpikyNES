@@ -39,6 +39,8 @@ namespace nes_core {
 
         std::uint8_t ppuDataBuffer;
 
+        void reset();
+
         std::uint8_t& r(int index);
         std::uint8_t r(int index) const;
 
@@ -98,9 +100,9 @@ namespace nes_core {
 
         Mirroring mirroring_ = Mirroring::HORIZONTAL;
 
-        std::array<std::uint8_t, PPU_OAM_SIZE> oam_;
-        std::array<std::uint8_t, PPU_NAMETABLE_SIZE> nametable_;
-        std::array<std::uint8_t, PPU_PALETTE_SIZE> palette_;
+        std::array<std::uint8_t, PPU_OAM_SIZE> oam_{};
+        std::array<std::uint8_t, PPU_NAMETABLE_SIZE> nametable_{};
+        std::array<std::uint8_t, PPU_PALETTE_SIZE> palette_{};
     };
 
 }
