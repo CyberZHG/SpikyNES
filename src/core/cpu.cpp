@@ -370,17 +370,17 @@ namespace nes_core {
 
     void CPU::reset() {
         regs_.reset();
-        regs_.PC = (bus_->read(CPU_VECTOR_RESET + 1) << 8) | bus_->read(CPU_VECTOR_RESET);
+        regs_.PC = (bus_->cpuRead(CPU_VECTOR_RESET + 1) << 8) | bus_->cpuRead(CPU_VECTOR_RESET);
         halted_ = false;
         nmiPending_ = false;
         irqPending_ = false;
     }
 
-    std::uint8_t CPU::read(const std::uint16_t addr) const {
+    std::uint8_t CPU::cpuRead(const std::uint16_t addr) const {
         return mem_[addr % CPU_RAM_SIZE];
     }
 
-    void CPU::write(const std::uint16_t addr, const std::uint16_t value) {
+    void CPU::cpuWrite(const std::uint16_t addr, const std::uint16_t value) {
         mem_[addr % CPU_RAM_SIZE] = value;
     }
 
@@ -395,7 +395,7 @@ namespace nes_core {
             return handleIRQ();
         }
 
-        const auto opCode = bus_->read(regs_.PC++);
+        const auto opCode = bus_->cpuRead(regs_.PC++);
         const auto [op, cycles, mode] = OP_INFO[opCode];
         AddressingResult addr;
         switch (mode) {

@@ -10,7 +10,7 @@ TEST_F(CPUTestBase, PHA) {
     EXPECT_EQ(cycles, 3);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFE);
-    EXPECT_EQ(emulator.cpu().read(0x01FF), 0x42);
+    EXPECT_EQ(emulator.cpu().cpuRead(0x01FF), 0x42);
 }
 
 TEST_F(CPUTestBase, PHA_NoFlagChange) {
@@ -20,7 +20,7 @@ TEST_F(CPUTestBase, PHA_NoFlagChange) {
     emulator.cpu().registers().P = 0b00110100;
     const auto cycles = runProgram({0x48}, 1);
     EXPECT_EQ(cycles, 3);
-    EXPECT_EQ(emulator.cpu().read(0x01FF), 0x00);
+    EXPECT_EQ(emulator.cpu().cpuRead(0x01FF), 0x00);
     EXPECT_FALSE(emulator.cpu().registers().Z());
     EXPECT_FALSE(emulator.cpu().registers().N());
 }
@@ -32,7 +32,7 @@ TEST_F(CPUTestBase, PHA_StackWrap) {
     const auto cycles = runProgram({0x48}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFF);
-    EXPECT_EQ(emulator.cpu().read(0x0100), 0x42);
+    EXPECT_EQ(emulator.cpu().cpuRead(0x0100), 0x42);
 }
 
 // ==================== PHP ====================
@@ -46,7 +46,7 @@ TEST_F(CPUTestBase, PHP) {
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFE);
     // Pushed value should have B (bit4) and bit5 set: 0b00110100
-    EXPECT_EQ(emulator.cpu().read(0x01FF), 0b00110100);
+    EXPECT_EQ(emulator.cpu().cpuRead(0x01FF), 0b00110100);
 }
 
 TEST_F(CPUTestBase, PHP_SetsBAndBit5) {
@@ -55,7 +55,7 @@ TEST_F(CPUTestBase, PHP_SetsBAndBit5) {
     emulator.cpu().registers().SP = 0xFF;
     const auto cycles = runProgram({0x08}, 1);
     EXPECT_EQ(cycles, 3);
-    EXPECT_EQ(emulator.cpu().read(0x01FF), 0b00110100);
+    EXPECT_EQ(emulator.cpu().cpuRead(0x01FF), 0b00110100);
     EXPECT_EQ(emulator.cpu().registers().P, 0b00000100);
 }
 
@@ -65,7 +65,7 @@ TEST_F(CPUTestBase, PHP_WithFlags) {
     emulator.cpu().registers().SP = 0xFF;
     const auto cycles = runProgram({0x08}, 1);
     EXPECT_EQ(cycles, 3);
-    EXPECT_EQ(emulator.cpu().read(0x01FF), 0b10110110);
+    EXPECT_EQ(emulator.cpu().cpuRead(0x01FF), 0b10110110);
 }
 
 TEST_F(CPUTestBase, PHP_NoFlagChange) {
@@ -82,7 +82,7 @@ TEST_F(CPUTestBase, PHP_NoFlagChange) {
 TEST_F(CPUTestBase, PLA) {
     // PLA ; Pull A from stack
     emulator.cpu().registers().SP = 0xFE;
-    emulator.cpu().write(0x01FF, 0x42);
+    emulator.cpu().cpuWrite(0x01FF, 0x42);
     const auto cycles = runProgram({0x68}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
@@ -95,7 +95,7 @@ TEST_F(CPUTestBase, PLA) {
 TEST_F(CPUTestBase, PLA_Zero) {
     // PLA ; Pull zero, Z flag set
     emulator.cpu().registers().SP = 0xFE;
-    emulator.cpu().write(0x01FF, 0x00);
+    emulator.cpu().cpuWrite(0x01FF, 0x00);
     const auto cycles = runProgram({0x68}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x00);
@@ -106,7 +106,7 @@ TEST_F(CPUTestBase, PLA_Zero) {
 TEST_F(CPUTestBase, PLA_Negative) {
     // PLA ; Pull negative value, N flag set
     emulator.cpu().registers().SP = 0xFE;
-    emulator.cpu().write(0x01FF, 0x80);
+    emulator.cpu().cpuWrite(0x01FF, 0x80);
     const auto cycles = runProgram({0x68}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x80);
@@ -117,7 +117,7 @@ TEST_F(CPUTestBase, PLA_Negative) {
 TEST_F(CPUTestBase, PLA_StackWrap) {
     // PLA ; Stack wraps from $FF to $00
     emulator.cpu().registers().SP = 0xFF;
-    emulator.cpu().write(0x0100, 0x42);
+    emulator.cpu().cpuWrite(0x0100, 0x42);
     const auto cycles = runProgram({0x68}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().SP, 0x00);
@@ -130,7 +130,7 @@ TEST_F(CPUTestBase, PLP) {
     // PLP ; Pull P from stack
     emulator.cpu().registers().SP = 0xFE;
     emulator.cpu().registers().P = 0b00110100;
-    emulator.cpu().write(0x01FF, 0b11000011);
+    emulator.cpu().cpuWrite(0x01FF, 0b11000011);
     const auto cycles = runProgram({0x28}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
@@ -143,7 +143,7 @@ TEST_F(CPUTestBase, PLP_ClearsFlags) {
     // PLP ; Pull P that clears flags
     emulator.cpu().registers().SP = 0xFE;
     emulator.cpu().registers().P = 0b10110110;
-    emulator.cpu().write(0x01FF, 0b00110100);
+    emulator.cpu().cpuWrite(0x01FF, 0b00110100);
     const auto cycles = runProgram({0x28}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_FALSE(emulator.cpu().registers().N());
@@ -154,7 +154,7 @@ TEST_F(CPUTestBase, PLP_SetsFlags) {
     // PLP ; Pull P that sets flags
     emulator.cpu().registers().SP = 0xFE;
     emulator.cpu().registers().P = 0b00110100;
-    emulator.cpu().write(0x01FF, 0b10110110);
+    emulator.cpu().cpuWrite(0x01FF, 0b10110110);
     const auto cycles = runProgram({0x28}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_TRUE(emulator.cpu().registers().N());
@@ -165,7 +165,7 @@ TEST_F(CPUTestBase, PLP_IgnoresBFlag) {
     // PLP ; B flag (bit 4) should be ignored when pulling
     emulator.cpu().registers().SP = 0xFE;
     emulator.cpu().registers().P = 0b00100100;
-    emulator.cpu().write(0x01FF, 0b00110100);
+    emulator.cpu().cpuWrite(0x01FF, 0b00110100);
     const auto cycles = runProgram({0x28}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_FALSE(emulator.cpu().registers().B());
@@ -175,7 +175,7 @@ TEST_F(CPUTestBase, PLP_SetsBit5ClearsBit4) {
     // PLP ; Bit 5 always set, bit 4 (B) always cleared
     emulator.cpu().registers().SP = 0xFE;
     emulator.cpu().registers().P = 0b00100100;
-    emulator.cpu().write(0x01FF, 0b00010100);
+    emulator.cpu().cpuWrite(0x01FF, 0b00010100);
     const auto cycles = runProgram({0x28}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().P, 0b00100100);

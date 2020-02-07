@@ -131,8 +131,8 @@ TEST_F(NestestTest, RunNestest) {
             << "  Actual cycles: " << std::dec << totalCycles;
         totalCycles += emulator.cpu().step();
     }
-    const auto mem02 = emulator.cpu().read(0x02);
-    const auto mem03 = emulator.cpu().read(0x03);
+    const auto mem02 = emulator.cpu().cpuRead(0x02);
+    const auto mem03 = emulator.cpu().cpuRead(0x03);
     EXPECT_EQ(mem02, 0x00)
         << "Official opcode tests failed with code: " << std::hex << static_cast<int>(mem02);
     EXPECT_EQ(mem03, 0x00)

@@ -22,9 +22,14 @@ namespace nes_core {
 
         /** Initialize PRG ROM with given size (for testing). */
         void initPRG(std::size_t size);
+        /** Initialize PRG ROM with given size (for testing). */
+        void initCHR(std::size_t size);
 
-        std::uint8_t read(std::uint16_t addr) const;
-        void write(std::uint16_t addr, std::uint8_t value);
+        std::uint8_t cpuRead(std::uint16_t addr) const;
+        void cpuWrite(std::uint16_t addr, std::uint8_t value);
+
+        std::uint8_t ppuRead(std::uint16_t addr) const;
+        void ppuWrite(std::uint16_t addr, std::uint8_t value);
 
         const INESHeader& header() const { return header_; }
 

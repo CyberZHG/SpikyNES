@@ -3,41 +3,41 @@
 
 namespace nes_core {
     void CPU::execLAX(const std::uint16_t addr) {
-        regs_.updateNZ(regs_.A = regs_.X = bus_->read(addr));
+        regs_.updateNZ(regs_.A = regs_.X = bus_->cpuRead(addr));
     }
 
     void CPU::execLAS(const std::uint16_t addr) {
-        regs_.updateNZ(regs_.A = regs_.X = regs_.SP = regs_.SP & bus_->read(addr));
+        regs_.updateNZ(regs_.A = regs_.X = regs_.SP = regs_.SP & bus_->cpuRead(addr));
     }
 
     void CPU::execSAX(const std::uint16_t addr) const {
-        bus_->write(addr, regs_.A & regs_.X);
+        bus_->cpuWrite(addr, regs_.A & regs_.X);
     }
 
     void CPU::execSHA(const std::uint16_t addr) const {
-        bus_->write(addr, regs_.A & regs_.X & ((addr >> 8) + 1));
+        bus_->cpuWrite(addr, regs_.A & regs_.X & ((addr >> 8) + 1));
     }
 
     void CPU::execSHX(const std::uint16_t addr) const {
-        bus_->write(addr, regs_.X & ((addr >> 8) + 1));
+        bus_->cpuWrite(addr, regs_.X & ((addr >> 8) + 1));
     }
 
     void CPU::execSHY(const std::uint16_t addr) const {
-        bus_->write(addr, regs_.Y & ((addr >> 8) + 1));
+        bus_->cpuWrite(addr, regs_.Y & ((addr >> 8) + 1));
     }
 
     void CPU::execSHS(const std::uint16_t addr) {
         regs_.SP = regs_.A & regs_.X;
-        bus_->write(addr, regs_.SP & ((addr >> 8) + 1));
+        bus_->cpuWrite(addr, regs_.SP & ((addr >> 8) + 1));
     }
 
     void CPU::execANC(const std::uint16_t addr) {
-        regs_.updateNZ(regs_.A &= bus_->read(addr));
+        regs_.updateNZ(regs_.A &= bus_->cpuRead(addr));
         updateBit(regs_.P, CPURegisters::INDEX_C, regs_.N());
     }
 
     void CPU::execARR(const std::uint16_t addr) {
-        regs_.A &= bus_->read(addr);
+        regs_.A &= bus_->cpuRead(addr);
         regs_.A = (regs_.A >> 1) | (regs_.C() << 7);
         regs_.updateNZ(regs_.A);
         updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 6));
@@ -45,22 +45,22 @@ namespace nes_core {
     }
 
     void CPU::execASR(const std::uint16_t addr) {
-        regs_.A &= bus_->read(addr);
+        regs_.A &= bus_->cpuRead(addr);
         updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 0));
         regs_.updateNZ(regs_.A >>= 1);
     }
 
     void CPU::execDCP(const std::uint16_t addr) {
-        const auto val = static_cast<std::uint8_t>(bus_->read(addr) - 1);
-        bus_->write(addr, val);
+        const auto val = static_cast<std::uint8_t>(bus_->cpuRead(addr) - 1);
+        bus_->cpuWrite(addr, val);
         const auto result = regs_.A - val;
         regs_.updateNZ(result);
         updateBit(regs_.P, CPURegisters::INDEX_C, regs_.A >= val);
     }
 
     void CPU::execISC(const std::uint16_t addr) {
-        const auto m = static_cast<std::uint8_t>(bus_->read(addr) + 1);
-        bus_->write(addr, m);
+        const auto m = static_cast<std::uint8_t>(bus_->cpuRead(addr) + 1);
+        bus_->cpuWrite(addr, m);
         const auto val = static_cast<int>(regs_.A) - static_cast<int>(m) - (1 - regs_.C());
         const auto result = static_cast<std::uint8_t>(val);
         updateBit(regs_.P, CPURegisters::INDEX_C, val >= 0);
@@ -70,19 +70,19 @@ namespace nes_core {
 
     void CPU::execRLA(const std::uint16_t addr) {
         const auto c = regs_.C();
-        auto val = bus_->read(addr);
+        auto val = bus_->cpuRead(addr);
         updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 7));
         val = (val << 1) | c;
-        bus_->write(addr, val);
+        bus_->cpuWrite(addr, val);
         regs_.updateNZ(regs_.A &= val);
     }
 
     void CPU::execRRA(const std::uint16_t addr) {
         const auto c = regs_.C();
-        auto val = bus_->read(addr);
+        auto val = bus_->cpuRead(addr);
         updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 0));
         val = (val >> 1) | (c << 7);
-        bus_->write(addr, val);
+        bus_->cpuWrite(addr, val);
         const auto sum = static_cast<int>(regs_.A) + static_cast<int>(val) + regs_.C();
         const auto result = static_cast<std::uint8_t>(sum);
         updateBit(regs_.P, CPURegisters::INDEX_C, sum > 255);
@@ -92,28 +92,28 @@ namespace nes_core {
 
     void CPU::execSBX(const std::uint16_t addr) {
         const auto val = regs_.A & regs_.X;
-        const auto m = bus_->read(addr);
+        const auto m = bus_->cpuRead(addr);
         updateBit(regs_.P, CPURegisters::INDEX_C, val >= m);
         regs_.updateNZ(regs_.X = val - m);
     }
 
     void CPU::execSLO(const std::uint16_t addr) {
-        auto val = bus_->read(addr);
+        auto val = bus_->cpuRead(addr);
         updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 7));
         val <<= 1;
-        bus_->write(addr, val);
+        bus_->cpuWrite(addr, val);
         regs_.updateNZ(regs_.A |= val);
     }
 
     void CPU::execSRE(const std::uint16_t addr) {
-        auto val = bus_->read(addr);
+        auto val = bus_->cpuRead(addr);
         updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 0));
         val >>= 1;
-        bus_->write(addr, val);
+        bus_->cpuWrite(addr, val);
         regs_.updateNZ(regs_.A ^= val);
     }
 
     void CPU::execXAA(const std::uint16_t addr) {
-        regs_.updateNZ(regs_.A = (regs_.A | 0xEE) & regs_.X & bus_->read(addr));
+        regs_.updateNZ(regs_.A = (regs_.A | 0xEE) & regs_.X & bus_->cpuRead(addr));
     }
 }

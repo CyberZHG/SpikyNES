@@ -36,7 +36,7 @@ TEST_F(CPUTestBase, AND_Immediate_Negative) {
 TEST_F(CPUTestBase, AND_ZeroPage) {
     // AND $10
     emulator.cpu().registers().A = 0x3C;
-    emulator.cpu().write(0x0010, 0x0F);
+    emulator.cpu().cpuWrite(0x0010, 0x0F);
     const auto cycles = runProgram({0x25, 0x10}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
@@ -47,7 +47,7 @@ TEST_F(CPUTestBase, AND_ZeroPageX) {
     // AND $10,X
     emulator.cpu().registers().A = 0x3C;
     emulator.cpu().registers().X = 0x05;
-    emulator.cpu().write(0x0015, 0x0F);
+    emulator.cpu().cpuWrite(0x0015, 0x0F);
     const auto cycles = runProgram({0x35, 0x10}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x0C);
@@ -56,7 +56,7 @@ TEST_F(CPUTestBase, AND_ZeroPageX) {
 TEST_F(CPUTestBase, AND_Absolute) {
     // AND $0300
     emulator.cpu().registers().A = 0x3C;
-    emulator.cpu().write(0x0300, 0x0F);
+    emulator.cpu().cpuWrite(0x0300, 0x0F);
     const auto cycles = runProgram({0x2D, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 3);
@@ -67,7 +67,7 @@ TEST_F(CPUTestBase, AND_AbsoluteX) {
     // AND $0300,X
     emulator.cpu().registers().A = 0x3C;
     emulator.cpu().registers().X = 0x10;
-    emulator.cpu().write(0x0310, 0x0F);
+    emulator.cpu().cpuWrite(0x0310, 0x0F);
     const auto cycles = runProgram({0x3D, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x0C);
@@ -77,7 +77,7 @@ TEST_F(CPUTestBase, AND_AbsoluteY) {
     // AND $0300,Y
     emulator.cpu().registers().A = 0x3C;
     emulator.cpu().registers().Y = 0x10;
-    emulator.cpu().write(0x0310, 0x0F);
+    emulator.cpu().cpuWrite(0x0310, 0x0F);
     const auto cycles = runProgram({0x39, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x0C);
@@ -87,9 +87,9 @@ TEST_F(CPUTestBase, AND_IndirectX) {
     // AND ($10,X)
     emulator.cpu().registers().A = 0x3C;
     emulator.cpu().registers().X = 0x05;
-    emulator.cpu().write(0x0015, 0x00);
-    emulator.cpu().write(0x0016, 0x03);
-    emulator.cpu().write(0x0300, 0x0F);
+    emulator.cpu().cpuWrite(0x0015, 0x00);
+    emulator.cpu().cpuWrite(0x0016, 0x03);
+    emulator.cpu().cpuWrite(0x0300, 0x0F);
     const auto cycles = runProgram({0x21, 0x10}, 1);
     EXPECT_EQ(cycles, 6);
     EXPECT_EQ(emulator.cpu().registers().A, 0x0C);
@@ -99,9 +99,9 @@ TEST_F(CPUTestBase, AND_IndirectY) {
     // AND ($10),Y
     emulator.cpu().registers().A = 0x3C;
     emulator.cpu().registers().Y = 0x05;
-    emulator.cpu().write(0x0010, 0x00);
-    emulator.cpu().write(0x0011, 0x03);
-    emulator.cpu().write(0x0305, 0x0F);
+    emulator.cpu().cpuWrite(0x0010, 0x00);
+    emulator.cpu().cpuWrite(0x0011, 0x03);
+    emulator.cpu().cpuWrite(0x0305, 0x0F);
     const auto cycles = runProgram({0x31, 0x10}, 1);
     EXPECT_EQ(cycles, 5);
     EXPECT_EQ(emulator.cpu().registers().A, 0x0C);
@@ -143,7 +143,7 @@ TEST_F(CPUTestBase, ORA_Immediate_Negative) {
 TEST_F(CPUTestBase, ORA_ZeroPage) {
     // ORA $10
     emulator.cpu().registers().A = 0x30;
-    emulator.cpu().write(0x0010, 0x0F);
+    emulator.cpu().cpuWrite(0x0010, 0x0F);
     const auto cycles = runProgram({0x05, 0x10}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_EQ(emulator.cpu().registers().A, 0x3F);
@@ -153,7 +153,7 @@ TEST_F(CPUTestBase, ORA_ZeroPageX) {
     // ORA $10,X
     emulator.cpu().registers().A = 0x30;
     emulator.cpu().registers().X = 0x05;
-    emulator.cpu().write(0x0015, 0x0F);
+    emulator.cpu().cpuWrite(0x0015, 0x0F);
     const auto cycles = runProgram({0x15, 0x10}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x3F);
@@ -162,7 +162,7 @@ TEST_F(CPUTestBase, ORA_ZeroPageX) {
 TEST_F(CPUTestBase, ORA_Absolute) {
     // ORA $0300
     emulator.cpu().registers().A = 0x30;
-    emulator.cpu().write(0x0300, 0x0F);
+    emulator.cpu().cpuWrite(0x0300, 0x0F);
     const auto cycles = runProgram({0x0D, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x3F);
@@ -172,7 +172,7 @@ TEST_F(CPUTestBase, ORA_AbsoluteX) {
     // ORA $0300,X
     emulator.cpu().registers().A = 0x30;
     emulator.cpu().registers().X = 0x10;
-    emulator.cpu().write(0x0310, 0x0F);
+    emulator.cpu().cpuWrite(0x0310, 0x0F);
     const auto cycles = runProgram({0x1D, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x3F);
@@ -182,7 +182,7 @@ TEST_F(CPUTestBase, ORA_AbsoluteY) {
     // ORA $0300,Y
     emulator.cpu().registers().A = 0x30;
     emulator.cpu().registers().Y = 0x10;
-    emulator.cpu().write(0x0310, 0x0F);
+    emulator.cpu().cpuWrite(0x0310, 0x0F);
     const auto cycles = runProgram({0x19, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0x3F);
@@ -192,9 +192,9 @@ TEST_F(CPUTestBase, ORA_IndirectX) {
     // ORA ($10,X)
     emulator.cpu().registers().A = 0x30;
     emulator.cpu().registers().X = 0x05;
-    emulator.cpu().write(0x0015, 0x00);
-    emulator.cpu().write(0x0016, 0x03);
-    emulator.cpu().write(0x0300, 0x0F);
+    emulator.cpu().cpuWrite(0x0015, 0x00);
+    emulator.cpu().cpuWrite(0x0016, 0x03);
+    emulator.cpu().cpuWrite(0x0300, 0x0F);
     const auto cycles = runProgram({0x01, 0x10}, 1);
     EXPECT_EQ(cycles, 6);
     EXPECT_EQ(emulator.cpu().registers().A, 0x3F);
@@ -204,9 +204,9 @@ TEST_F(CPUTestBase, ORA_IndirectY) {
     // ORA ($10),Y
     emulator.cpu().registers().A = 0x30;
     emulator.cpu().registers().Y = 0x05;
-    emulator.cpu().write(0x0010, 0x00);
-    emulator.cpu().write(0x0011, 0x03);
-    emulator.cpu().write(0x0305, 0x0F);
+    emulator.cpu().cpuWrite(0x0010, 0x00);
+    emulator.cpu().cpuWrite(0x0011, 0x03);
+    emulator.cpu().cpuWrite(0x0305, 0x0F);
     const auto cycles = runProgram({0x11, 0x10}, 1);
     EXPECT_EQ(cycles, 5);
     EXPECT_EQ(emulator.cpu().registers().A, 0x3F);
@@ -248,7 +248,7 @@ TEST_F(CPUTestBase, EOR_Immediate_NotNegative) {
 TEST_F(CPUTestBase, EOR_ZeroPage) {
     // EOR $10
     emulator.cpu().registers().A = 0x55;
-    emulator.cpu().write(0x0010, 0xFF);
+    emulator.cpu().cpuWrite(0x0010, 0xFF);
     const auto cycles = runProgram({0x45, 0x10}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_EQ(emulator.cpu().registers().A, 0xAA);
@@ -258,7 +258,7 @@ TEST_F(CPUTestBase, EOR_ZeroPageX) {
     // EOR $10,X
     emulator.cpu().registers().A = 0x55;
     emulator.cpu().registers().X = 0x05;
-    emulator.cpu().write(0x0015, 0xFF);
+    emulator.cpu().cpuWrite(0x0015, 0xFF);
     const auto cycles = runProgram({0x55, 0x10}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0xAA);
@@ -267,7 +267,7 @@ TEST_F(CPUTestBase, EOR_ZeroPageX) {
 TEST_F(CPUTestBase, EOR_Absolute) {
     // EOR $0300
     emulator.cpu().registers().A = 0x55;
-    emulator.cpu().write(0x0300, 0xFF);
+    emulator.cpu().cpuWrite(0x0300, 0xFF);
     const auto cycles = runProgram({0x4D, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0xAA);
@@ -277,7 +277,7 @@ TEST_F(CPUTestBase, EOR_AbsoluteX) {
     // EOR $0300,X
     emulator.cpu().registers().A = 0x55;
     emulator.cpu().registers().X = 0x10;
-    emulator.cpu().write(0x0310, 0xFF);
+    emulator.cpu().cpuWrite(0x0310, 0xFF);
     const auto cycles = runProgram({0x5D, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0xAA);
@@ -287,7 +287,7 @@ TEST_F(CPUTestBase, EOR_AbsoluteY) {
     // EOR $0300,Y
     emulator.cpu().registers().A = 0x55;
     emulator.cpu().registers().Y = 0x10;
-    emulator.cpu().write(0x0310, 0xFF);
+    emulator.cpu().cpuWrite(0x0310, 0xFF);
     const auto cycles = runProgram({0x59, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().A, 0xAA);
@@ -297,9 +297,9 @@ TEST_F(CPUTestBase, EOR_IndirectX) {
     // EOR ($10,X)
     emulator.cpu().registers().A = 0x55;
     emulator.cpu().registers().X = 0x05;
-    emulator.cpu().write(0x0015, 0x00);
-    emulator.cpu().write(0x0016, 0x03);
-    emulator.cpu().write(0x0300, 0xFF);
+    emulator.cpu().cpuWrite(0x0015, 0x00);
+    emulator.cpu().cpuWrite(0x0016, 0x03);
+    emulator.cpu().cpuWrite(0x0300, 0xFF);
     const auto cycles = runProgram({0x41, 0x10}, 1);
     EXPECT_EQ(cycles, 6);
     EXPECT_EQ(emulator.cpu().registers().A, 0xAA);
@@ -309,9 +309,9 @@ TEST_F(CPUTestBase, EOR_IndirectY) {
     // EOR ($10),Y
     emulator.cpu().registers().A = 0x55;
     emulator.cpu().registers().Y = 0x05;
-    emulator.cpu().write(0x0010, 0x00);
-    emulator.cpu().write(0x0011, 0x03);
-    emulator.cpu().write(0x0305, 0xFF);
+    emulator.cpu().cpuWrite(0x0010, 0x00);
+    emulator.cpu().cpuWrite(0x0011, 0x03);
+    emulator.cpu().cpuWrite(0x0305, 0xFF);
     const auto cycles = runProgram({0x51, 0x10}, 1);
     EXPECT_EQ(cycles, 5);
     EXPECT_EQ(emulator.cpu().registers().A, 0xAA);
@@ -322,7 +322,7 @@ TEST_F(CPUTestBase, EOR_IndirectY) {
 TEST_F(CPUTestBase, BIT_ZeroPage) {
     // BIT $10 ; Test bits, A & M != 0
     emulator.cpu().registers().A = 0x0F;
-    emulator.cpu().write(0x0010, 0x0F);
+    emulator.cpu().cpuWrite(0x0010, 0x0F);
     const auto cycles = runProgram({0x24, 0x10}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 2);
@@ -335,7 +335,7 @@ TEST_F(CPUTestBase, BIT_ZeroPage) {
 TEST_F(CPUTestBase, BIT_ZeroPage_Zero) {
     // BIT $10 ; A & M == 0, Z flag set
     emulator.cpu().registers().A = 0x0F;
-    emulator.cpu().write(0x0010, 0xF0);
+    emulator.cpu().cpuWrite(0x0010, 0xF0);
     const auto cycles = runProgram({0x24, 0x10}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_EQ(emulator.cpu().registers().A, 0x0F);  // A unchanged
@@ -347,7 +347,7 @@ TEST_F(CPUTestBase, BIT_ZeroPage_Zero) {
 TEST_F(CPUTestBase, BIT_ZeroPage_NFlag) {
     // BIT $10 ; N = bit 7 of memory
     emulator.cpu().registers().A = 0xFF;
-    emulator.cpu().write(0x0010, 0x80);
+    emulator.cpu().cpuWrite(0x0010, 0x80);
     const auto cycles = runProgram({0x24, 0x10}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_TRUE(emulator.cpu().registers().N());
@@ -357,7 +357,7 @@ TEST_F(CPUTestBase, BIT_ZeroPage_NFlag) {
 TEST_F(CPUTestBase, BIT_ZeroPage_VFlag) {
     // BIT $10 ; V = bit 6 of memory
     emulator.cpu().registers().A = 0xFF;
-    emulator.cpu().write(0x0010, 0x40);
+    emulator.cpu().cpuWrite(0x0010, 0x40);
     const auto cycles = runProgram({0x24, 0x10}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_FALSE(emulator.cpu().registers().N());
@@ -367,7 +367,7 @@ TEST_F(CPUTestBase, BIT_ZeroPage_VFlag) {
 TEST_F(CPUTestBase, BIT_ZeroPage_AllFlags) {
     // BIT $10 ; N=1, V=1 from memory, Z=1 because A & M == 0
     emulator.cpu().registers().A = 0x00;
-    emulator.cpu().write(0x0010, 0xC0);
+    emulator.cpu().cpuWrite(0x0010, 0xC0);
     const auto cycles = runProgram({0x24, 0x10}, 1);
     EXPECT_EQ(cycles, 3);
     EXPECT_TRUE(emulator.cpu().registers().Z());
@@ -378,7 +378,7 @@ TEST_F(CPUTestBase, BIT_ZeroPage_AllFlags) {
 TEST_F(CPUTestBase, BIT_Absolute) {
     // BIT $0300
     emulator.cpu().registers().A = 0x0F;
-    emulator.cpu().write(0x0300, 0x0F);
+    emulator.cpu().cpuWrite(0x0300, 0x0F);
     const auto cycles = runProgram({0x2C, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 3);
@@ -389,7 +389,7 @@ TEST_F(CPUTestBase, BIT_Absolute) {
 TEST_F(CPUTestBase, BIT_Absolute_AllFlags) {
     // BIT $0300 ; N=1, V=1 from memory
     emulator.cpu().registers().A = 0x00;
-    emulator.cpu().write(0x0300, 0xC0);
+    emulator.cpu().cpuWrite(0x0300, 0xC0);
     const auto cycles = runProgram({0x2C, 0x00, 0x03}, 1);
     EXPECT_EQ(cycles, 4);
     EXPECT_TRUE(emulator.cpu().registers().Z());

@@ -49,7 +49,11 @@ namespace nes_core {
         prg_.resize(size, 0);
     }
 
-    std::uint8_t Cartridge::read(const std::uint16_t addr) const {
+    void Cartridge::initCHR(const std::size_t size) {
+        chr_.resize(size, 0);
+    }
+
+    std::uint8_t Cartridge::cpuRead(const std::uint16_t addr) const {
         if (prg_.empty()) {
             return 0;
         }
@@ -57,7 +61,7 @@ namespace nes_core {
         return prg_[offset];
     }
 
-    void Cartridge::write(const std::uint16_t addr, const std::uint8_t value) {
+    void Cartridge::cpuWrite(const std::uint16_t addr, const std::uint8_t value) {
         if (prg_.empty()) {
             return;
         }
@@ -65,4 +69,22 @@ namespace nes_core {
         prg_[offset] = value;
     }
 
+    std::uint8_t Cartridge::ppuRead(const std::uint16_t addr) const {
+        if (chr_.empty()) {
+            return 0;
+        }
+        if (addr < CHR_ROM_BANK_SIZE) {
+            return chr_[addr];
+        }
+        return 0;
+    }
+
+    void Cartridge::ppuWrite(const std::uint16_t addr, const std::uint8_t value) {
+        if (chr_.empty()) {
+            return;
+        }
+        if (addr < CHR_ROM_BANK_SIZE) {
+            chr_[addr] = value;
+        }
+    }
 }

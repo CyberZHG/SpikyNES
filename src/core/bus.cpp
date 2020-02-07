@@ -13,31 +13,46 @@ namespace nes_core {
         cartridge_ = cartridge;
     }
 
-    std::uint8_t Bus::read(const std::uint16_t addr) const {
+    std::uint8_t Bus::cpuRead(const std::uint16_t addr) const {
         if (addr < CPU_RAM_END) {
-            return cpu_->read(addr);
+            return cpu_->cpuRead(addr);
         }
         if (addr < PPU_REG_END) {
-            return ppu_->read(addr);
+            return ppu_->registerRead(addr);
         }
         if (addr < APU_REG_END) {
             return apu_->read(addr);
         }
         if (addr >= PRG_ROM_START) {
-            return cartridge_->read(addr);
+            return cartridge_->cpuRead(addr);
         }
         return 0;
     }
 
-    void Bus::write(const std::uint16_t addr, const std::uint8_t value) const {
+    void Bus::cpuWrite(const std::uint16_t addr, const std::uint8_t value) const {
         if (addr < CPU_RAM_END) {
-            cpu_->write(addr, value);
+            cpu_->cpuWrite(addr, value);
         } else if (addr < PPU_REG_END) {
-            ppu_->write(addr, value);
+            ppu_->registerWrite(addr, value);
         } else if (addr < APU_REG_END) {
             apu_->write(addr, value);
         } else if (addr >= PRG_ROM_START) {
-            cartridge_->write(addr, value);
+            cartridge_->cpuWrite(addr, value);
+        }
+    }
+
+    std::uint8_t Bus::ppuRead(std::uint16_t addr) const {
+        addr &= PPU_MEM_MASK;
+        if (addr < CHR_ROM_BANK_SIZE) {
+            return cartridge_->ppuRead(addr);
+        }
+        return 0.0;
+    }
+
+    void Bus::ppuWrite(std::uint16_t addr, const std::uint8_t value) const {
+        addr &= PPU_MEM_MASK;
+        if (addr < CHR_ROM_BANK_SIZE) {
+            cartridge_->ppuWrite(addr, value);
         }
     }
 }

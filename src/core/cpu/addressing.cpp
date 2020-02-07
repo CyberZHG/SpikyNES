@@ -12,7 +12,7 @@ namespace nes_core {
 
     AddressingResult CPU::addrAbsolute() {
         AddressingResult result;
-        result.addr = bus_->read(regs_.PC + 1) << 8 | bus_->read(regs_.PC);
+        result.addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
         result.pageCrossed = false;
         regs_.PC += 2;
         return result;
@@ -20,7 +20,7 @@ namespace nes_core {
 
     AddressingResult CPU::addrAbsoluteX() {
         AddressingResult result;
-        const auto addr = bus_->read(regs_.PC + 1) << 8 | bus_->read(regs_.PC);
+        const auto addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
         result.addr = addr + regs_.X;
         result.pageCrossed = hasPageCross(addr, result.addr);
         regs_.PC += 2;
@@ -29,7 +29,7 @@ namespace nes_core {
 
     AddressingResult CPU::addrAbsoluteY() {
         AddressingResult result;
-        const auto addr = bus_->read(regs_.PC + 1) << 8 | bus_->read(regs_.PC);
+        const auto addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
         result.addr = addr + regs_.Y;
         result.pageCrossed = hasPageCross(addr, result.addr);
         regs_.PC += 2;
@@ -38,20 +38,20 @@ namespace nes_core {
 
     AddressingResult CPU::addrAbsoluteIndirect() {
         AddressingResult result;
-        const auto addr = bus_->read(regs_.PC + 1) << 8 | bus_->read(regs_.PC);
-        result.addr = bus_->read((addr & 0xFF00) | ((addr + 1) & 0x00FF)) << 8 | bus_->read(addr);
+        const auto addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
+        result.addr = bus_->cpuRead((addr & 0xFF00) | ((addr + 1) & 0x00FF)) << 8 | bus_->cpuRead(addr);
         result.pageCrossed = false;
         regs_.PC += 2;
         return result;
     }
 
     AddressingResult CPU::addrZeroPage() {
-        return {bus_->read(regs_.PC++), false};
+        return {bus_->cpuRead(regs_.PC++), false};
     }
 
     AddressingResult CPU::addrZeroPageX() {
         AddressingResult result;
-        result.addr = static_cast<std::uint16_t>(bus_->read(regs_.PC++));
+        result.addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
         result.addr = (result.addr + regs_.X) & 0xFF;
         result.pageCrossed = false;
         return result;
@@ -59,24 +59,24 @@ namespace nes_core {
 
     AddressingResult CPU::addrZeroPageY() {
         AddressingResult result;
-        result.addr = static_cast<std::uint16_t>(bus_->read(regs_.PC++));
+        result.addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
         result.addr = (result.addr + regs_.Y) & 0xFF;
         result.pageCrossed = false;
         return result;
     }
 
     AddressingResult CPU::addrZeroPageIndirectX() {
-        auto addr = static_cast<std::uint16_t>(bus_->read(regs_.PC++));
+        auto addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
         addr = (addr + regs_.X) & 0xFF;
         AddressingResult result;
-        result.addr = bus_->read((addr + 1) & 0xFF) << 8 | bus_->read(addr);
+        result.addr = bus_->cpuRead((addr + 1) & 0xFF) << 8 | bus_->cpuRead(addr);
         result.pageCrossed = false;
         return result;
     }
 
     AddressingResult CPU::addrZeroPageIndirectY() {
-        auto addr = static_cast<std::uint16_t>(bus_->read(regs_.PC++));
-        addr = bus_->read((addr + 1) & 0xFF) << 8 | bus_->read(addr);
+        auto addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
+        addr = bus_->cpuRead((addr + 1) & 0xFF) << 8 | bus_->cpuRead(addr);
         AddressingResult result;
         result.addr = addr + regs_.Y;
         result.pageCrossed = hasPageCross(addr, result.addr);
@@ -84,7 +84,7 @@ namespace nes_core {
     }
 
     AddressingResult CPU::addrRelative() {
-        const auto offset = static_cast<std::int8_t>(bus_->read(regs_.PC++));
+        const auto offset = static_cast<std::int8_t>(bus_->cpuRead(regs_.PC++));
         const auto addr = static_cast<std::uint16_t>(regs_.PC + offset);
         return {addr, hasPageCross(regs_.PC, addr)};
     }

@@ -41,8 +41,8 @@ TEST(CartridgeTest, LoadValidNES) {
     EXPECT_EQ(emulator.cartridge().header().chrRomBanks, 0);
     EXPECT_EQ(emulator.cartridge().header().mapper, 0);
 
-    EXPECT_EQ(emulator.bus().read(0x8000), 0xEA);
-    EXPECT_EQ(emulator.bus().read(0xC000), 0xEA);
+    EXPECT_EQ(emulator.bus().cpuRead(0x8000), 0xEA);
+    EXPECT_EQ(emulator.bus().cpuRead(0xC000), 0xEA);
 
     std::remove(path.c_str());
 }

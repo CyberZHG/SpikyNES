@@ -75,10 +75,8 @@ namespace nes_core {
         CPURegisters& registers() { return regs_; }
         const CPURegisters& registers() const { return regs_; }
 
-        /** Read a byte from CPU RAM. */
-        std::uint8_t read(std::uint16_t addr) const;
-        /** Set a byte to CPU RAM. */
-        void write(std::uint16_t addr, std::uint16_t value);
+        std::uint8_t cpuRead(std::uint16_t addr) const;
+        void cpuWrite(std::uint16_t addr, std::uint16_t value);
 
         /**
          * Execute one instruction.

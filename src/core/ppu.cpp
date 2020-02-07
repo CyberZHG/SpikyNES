@@ -1,9 +1,10 @@
 #include "core/ppu.h"
+#include "core/bus.h"
 
 namespace nes_core {
     std::uint8_t& PPURegisters::r(const int index) {
         switch (index) {
-            case 0: return ppuCtrl;
+            case 0: return ppuControl;
             case 1: return ppuMask;
             case 2: return ppuStatus;
             case 3: return oamAddr;
@@ -11,13 +12,13 @@ namespace nes_core {
             case 5: return ppuScroll;
             case 6: return ppuAddr;
             case 7: return ppuData;
-            default: return oamDma;
+            default: return oamDMA;
         }
     }
 
     std::uint8_t PPURegisters::r(const int index) const {
         switch (index) {
-            case 0: return ppuCtrl;
+            case 0: return ppuControl;
             case 1: return ppuMask;
             case 2: return ppuStatus;
             case 3: return oamAddr;
@@ -25,12 +26,12 @@ namespace nes_core {
             case 5: return ppuScroll;
             case 6: return ppuAddr;
             case 7: return ppuData;
-            default: return oamDma;
+            default: return oamDMA;
         }
     }
 
     int PPURegisters::baseNametableAddr() const {
-        switch (ppuCtrl & 0b00000011) {
+        switch (ppuControl & 0b00000011) {
             case 0: return 0x2000;
             case 1: return 0x2400;
             case 2: return 0x2800;
@@ -45,26 +46,33 @@ namespace nes_core {
     void PPU::reset() {
     }
 
-    std::uint8_t PPU::read(const std::uint16_t addr) {
+    std::uint8_t PPU::registerRead(const std::uint16_t addr) {
         const auto index = addr & 0b00000111;
         auto value = regs_.r(index);
-        if (index == 2) {  // PPUSTATUS
+        if (index == 2) {  // PPU_STATUS
             regs_.clearVBlank();
             regs_.w = 0;
-        } else if (index == 4) {  // OAMDATA
+        } else if (index == 4) {  // OAM_DATA
             value = oam_[regs_.oamAddr];
+        } else if (index == 7) {  // PPU_DATA
+            value = regs_.ppuDataBuffer;
+            regs_.ppuDataBuffer = ppuRead(regs_.v);
+            if ((regs_.v & PPU_MEM_MASK) >= PPU_PALETTE_START) {
+                value = regs_.ppuDataBuffer;
+            }
+            regs_.v += regs_.vRamIncrement();
         }
         return value;
     }
 
-    void PPU::write(const std::uint16_t addr, const std::uint8_t value) {
+    void PPU::registerWrite(const std::uint16_t addr, const std::uint8_t value) {
         const auto index = addr & 0b00000111;
         regs_.r(index) = value;
-        if (index == 0) { // PPUCTRL
+        if (index == 0) { // PPU_CTRL
             regs_.t = (regs_.t & 0xF3FF) | ((value & 0x03) << 10);
-        } else if (index == 4) {  // OAMDATA
+        } else if (index == 4) {  // OAM_DATA
             oam_[regs_.oamAddr++] = value;
-        } else if (index == 5) {  // PPUSCROLL
+        } else if (index == 5) {  // PPU_SCROLL
             if (regs_.w == 0) {
                 regs_.w = 1;
                 regs_.t = (regs_.t & 0xFFE0) | (value >> 3);
@@ -74,6 +82,40 @@ namespace nes_core {
                 regs_.t = (regs_.t & 0x8C1F) | ((value & 0x07) << 12);
                 regs_.t = (regs_.t & 0xFC1F) | ((value & 0xF8) << 2);
             }
+        } else if (index == 6) {  // PPU_ADDR
+            if (regs_.w == 0) {
+                regs_.w = 1;
+                regs_.t = (regs_.t & 0x00FF) | ((value & 0x3F) << 8);
+            } else {
+                regs_.w = 0;
+                regs_.t = (regs_.t & 0xFF00) | value;
+                regs_.v = regs_.t;
+            }
+        } else if (index == 7) {  // PPU_DATA
+            ppuWrite(regs_.v, value);
+            regs_.v += regs_.vRamIncrement();
+        }
+    }
+
+    std::uint8_t PPU::ppuRead(std::uint16_t addr) const {
+        addr &= PPU_MEM_MASK;
+        if (addr < CHR_ROM_BANK_SIZE) {
+            return bus_->ppuRead(addr);
+        }
+        if (addr < PPU_PALETTE_START) {
+            // TODO
+        }
+        return palette_[addr & 0x1F];
+    }
+
+    void PPU::ppuWrite(std::uint16_t addr, const std::uint8_t value) {
+        addr &= PPU_MEM_MASK;
+        if (addr < CHR_ROM_BANK_SIZE) {
+            bus_->ppuWrite(addr, value);
+        } else if (addr < PPU_PALETTE_START) {
+            // TODO
+        } else {
+            palette_[addr & 0x1F] = value;
         }
     }
 }

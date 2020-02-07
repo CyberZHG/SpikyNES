@@ -12,7 +12,7 @@ namespace nes_core {
 
     struct PPURegisters {
         // MMIO registers
-        std::uint8_t ppuCtrl;    // $2000: VPHB SINN, write
+        std::uint8_t ppuControl; // $2000: VPHB SINN, write
         std::uint8_t ppuMask;    // $2001: BGRs bMmG, write
         std::uint8_t ppuStatus;  // $2002: VSO- ----, read
         std::uint8_t oamAddr;    // $2003: AAAA AAAA, write
@@ -20,7 +20,7 @@ namespace nes_core {
         std::uint8_t ppuScroll;  // $2005: XXXX XXXX, YYYY YYYY, write x2
         std::uint8_t ppuAddr;    // $2006: ..AA AAAA, AAAA AAAA,  write x2
         std::uint8_t ppuData;    // $2007: DDDD DDDD, read/write
-        std::uint8_t oamDma;     // $4014: AAAA AAAA, write
+        std::uint8_t oamDMA;     // $4014: AAAA AAAA, write
 
         /**
          * Internal registers
@@ -37,14 +37,17 @@ namespace nes_core {
         std::uint8_t x;   // Fine X scroll (3 bits)
         std::uint8_t w;   // Write toggle (1 bit)
 
+        std::uint8_t ppuDataBuffer;
+
         std::uint8_t& r(int index);
         std::uint8_t r(int index) const;
 
         // PPUCTRL - Miscellaneous settings ($2000 write)
-        bool vBlankNmiEnabled() const { return getBit(ppuCtrl, 7); }
-        int spriteSize() const { return getBit(ppuCtrl, 5) ? 16 : 8; }
-        int spritePatternTableAddr() const { return getBit(ppuCtrl, 4) ? 0x1000 : 0x0000; }
-        int vRamIncrement() const { return getBit(ppuCtrl, 3) ? 32 : 1; }
+        bool vBlankNmiEnabled() const { return getBit(ppuControl, 7); }
+        int spriteSize() const { return getBit(ppuControl, 5) ? 16 : 8; }
+        int backgroundPatternTableAddr() const { return getBit(ppuControl, 4) ? 0x1000 : 0x0000; }
+        int spritePatternTableAddr() const { return getBit(ppuControl, 3) ? 0x1000 : 0x0000; }
+        int vRamIncrement() const { return getBit(ppuControl, 2) ? 32 : 1; }
         int baseNametableAddr() const;
 
         // PPUMASK - Rendering settings ($2001 write)
@@ -74,14 +77,18 @@ namespace nes_core {
         PPURegisters& registers() { return regs_; }
         const PPURegisters& registers() const { return regs_; }
 
-        std::uint8_t read(std::uint16_t addr);
-        void write(std::uint16_t addr, std::uint8_t value);
+        std::uint8_t registerRead(std::uint16_t addr);
+        void registerWrite(std::uint16_t addr, std::uint8_t value);
+
+        std::uint8_t ppuRead(std::uint16_t addr) const;
+        void ppuWrite(std::uint16_t addr, std::uint8_t value);
 
     private:
         Bus* bus_ = nullptr;
         PPURegisters regs_{};
 
         std::array<std::uint8_t, 256> oam_;  // 64 sprites
+        std::array<std::uint8_t, 32> palette_;
     };
 
 }

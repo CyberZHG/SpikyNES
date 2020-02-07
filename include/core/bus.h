@@ -14,10 +14,11 @@ namespace nes_core {
     public:
         Bus(CPU* cpu, PPU* ppu, APU* apu, Cartridge* cartridge);
 
-        /** Read a byte from a device. */
-        std::uint8_t read(std::uint16_t addr) const;
-        /** Set a byte to a device. */
-        void write(std::uint16_t addr, std::uint8_t value) const;
+        std::uint8_t cpuRead(std::uint16_t addr) const;
+        void cpuWrite(std::uint16_t addr, std::uint8_t value) const;
+
+        std::uint8_t ppuRead(std::uint16_t addr) const;
+        void ppuWrite(std::uint16_t addr, std::uint8_t value) const;
 
     private:
         CPU* cpu_ = nullptr;
