@@ -94,9 +94,11 @@ namespace nes_core {
         };
         void setMirroring(const Mirroring mirroring) { mirroring_ = mirroring; }
 
-        int scanline() const { return scanline_; }
-        int cycle() const { return cycle_; }
-        int frame() const { return frame_; }
+        std::int32_t scanline() const { return scanline_; }
+        std::int32_t cycle() const { return cycle_; }
+        std::int64_t frame() const { return frame_; }
+
+        void dmaTransfer(std::uint8_t page);
 
     private:
         std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
@@ -110,9 +112,9 @@ namespace nes_core {
         std::array<std::uint8_t, PPU_PALETTE_SIZE> palette_{};
 
         Mirroring mirroring_ = Mirroring::HORIZONTAL;
-        int scanline_ = 0;
-        int cycle_ = 0;
-        int frame_ = 1;
+        std::int32_t scanline_ = 0;
+        std::int32_t cycle_ = 0;
+        std::int64_t frame_ = 1;
         bool suppressVBlank_ = false;
     };
 

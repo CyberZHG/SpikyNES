@@ -83,6 +83,8 @@ namespace nes_core {
          * @return Cycles consumed.
          */
         int step();
+        std::int64_t cycles() const { return cycles_; }
+        void addCycles(const std::int64_t cycles) { cycles_ += cycles; }
 
         /** Check if CPU is halted by JAM/KIL instruction. */
         bool isHalted() const { return halted_; }
@@ -93,6 +95,15 @@ namespace nes_core {
         bool nmiPending() const { return nmiPending_; }
         /** Trigger an Interrupt Request (ignored if I flag is set). */
         void irq() { irqPending_ = true; }
+
+        /** Trigger OAM DMA transfer. */
+        void triggerDMA(const std::uint8_t page) { dmaPending_ = true; dmaPage_ = page; }
+        /** Check if DMA is pending. */
+        bool dmaPending() const { return dmaPending_; }
+        /** Get DMA page. */
+        std::uint8_t dmaPage() const { return dmaPage_; }
+        /** Clear DMA pending state. */
+        void clearDMA() { dmaPending_ = false; }
 
     protected:
         /** Push a byte onto the stack. */
@@ -308,9 +319,13 @@ namespace nes_core {
         std::array<std::uint8_t, CPU_RAM_SIZE> mem_ = {};
         CPURegisters regs_;
         Bus* bus_ = nullptr;
+
+        std::int64_t cycles_ = 0;
         bool halted_ = false;
         bool nmiPending_ = false;
         bool irqPending_ = false;
+        bool dmaPending_ = false;
+        std::uint8_t dmaPage_ = 0;
     };
 
 }

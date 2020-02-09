@@ -371,6 +371,7 @@ namespace nes_core {
     void CPU::reset() {
         regs_.reset();
         regs_.PC = (bus_->cpuRead(CPU_VECTOR_RESET + 1) << 8) | bus_->cpuRead(CPU_VECTOR_RESET);
+        cycles_ = 0;
         halted_ = false;
         nmiPending_ = false;
         irqPending_ = false;
@@ -513,6 +514,7 @@ namespace nes_core {
                 ++finalCycles;
             }
         }
+        cycles_ += finalCycles;
         return finalCycles;
     }
 }

@@ -34,6 +34,8 @@ namespace nes_core {
             cpu_->cpuWrite(addr, value);
         } else if (addr < PPU_REG_END) {
             ppu_->registerWrite(addr, value);
+        } else if (addr == 0x4014) {  // OAM DMA
+            cpu_->triggerDMA(value);
         } else if (addr < APU_REG_END) {
             apu_->write(addr, value);
         } else if (addr >= PRG_RAM_START) {
@@ -59,4 +61,5 @@ namespace nes_core {
     void Bus::cpuNMI() const {
         cpu_->nmi();
     }
+
 }

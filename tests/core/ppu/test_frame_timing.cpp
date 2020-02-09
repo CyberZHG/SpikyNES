@@ -82,6 +82,63 @@ TEST_F(PPUFrameTimingTest, VBlank_SetAgainNextFrame) {
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 }
 
+// ==================== VBlank Suppression ====================
+
+TEST_F(PPUFrameTimingTest, VBlank_Suppressed_WhenReadingAt241Cycle1) {
+    // Reading $2002 at the exact cycle VBlank would be set suppresses the flag
+    stepPPU(241 * 341 + 1);
+    expectNextPosition(1, 241, 1);
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+
+    emulator.ppu().registerRead(0x2002);
+
+    stepPPU(1);
+    expectNextPosition(1, 241, 2);
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+}
+
+TEST_F(PPUFrameTimingTest, VBlank_NotSuppressed_WhenReadingBeforeSetCycle) {
+    // Reading $2002 before the VBlank set cycle does not suppress it
+    stepPPU(241 * 341);
+    expectNextPosition(1, 241, 0);
+
+    emulator.ppu().registerRead(0x2002);
+
+    stepPPU(2);
+    expectNextPosition(1, 241, 2);
+    EXPECT_TRUE(emulator.ppu().registers().vBlank());
+}
+
+TEST_F(PPUFrameTimingTest, VBlank_NotSuppressed_WhenReadingAfterSetCycle) {
+    // Reading $2002 after the VBlank set cycle clears it but doesn't affect next frame
+    stepPPU(241 * 341 + 2);
+    expectNextPosition(1, 241, 2);
+    EXPECT_TRUE(emulator.ppu().registers().vBlank());
+
+    emulator.ppu().registerRead(0x2002);
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+
+    stepPPU(21 * 341 - 1 + 241 * 341 + 1);
+    expectNextPosition(2, 241, 2);
+    EXPECT_TRUE(emulator.ppu().registers().vBlank());
+}
+
+TEST_F(PPUFrameTimingTest, VBlank_SuppressionAlsoSuppressesNMI) {
+    // When VBlank is suppressed, NMI should also not be triggered
+    emulator.ppu().registerWrite(0x2000, 0x80);
+    EXPECT_FALSE(emulator.cpu().nmiPending());
+
+    stepPPU(241 * 341 + 1);
+    expectNextPosition(1, 241, 1);
+
+    emulator.ppu().registerRead(0x2002);
+
+    stepPPU(1);
+    expectNextPosition(1, 241, 2);
+    EXPECT_FALSE(emulator.ppu().registers().vBlank());
+    EXPECT_FALSE(emulator.cpu().nmiPending());
+}
+
 // ==================== NMI ====================
 
 TEST_F(PPUFrameTimingTest, NMI_NotTriggeredWhenDisabled) {

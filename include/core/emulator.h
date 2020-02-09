@@ -33,6 +33,8 @@ namespace nes_core {
 
         void run(double milliseconds);
 
+        int step();
+
     private:
         CPU cpu_;
         PPU ppu_;
@@ -40,7 +42,7 @@ namespace nes_core {
         Bus bus_;
         Cartridge cartridge_;
 
-        int remainingCycles_ = 0;
+        int availableCycles_ = 0;
     };
 
 }
