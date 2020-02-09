@@ -94,6 +94,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/test_cartridge.cpp
             tests/core/ppu/test_registers.cpp
             tests/core/test_utils.cpp
+            tests/core/ppu/test_frame_timing.cpp
     )
 
     if(SPIKY_NES_ENABLE_ROM_TESTS)

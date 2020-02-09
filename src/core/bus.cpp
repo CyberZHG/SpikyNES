@@ -55,4 +55,8 @@ namespace nes_core {
             cartridge_->ppuWrite(addr, value);
         }
     }
+
+    void Bus::cpuNMI() const {
+        cpu_->nmi();
+    }
 }

@@ -15,4 +15,7 @@ namespace nes_core {
     void APU::write(const std::uint16_t addr, const std::uint8_t value) {
         regs_[addr - APU_REG_START] = value;
     }
+
+    void APU::step() {
+    }
 }

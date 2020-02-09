@@ -89,6 +89,8 @@ namespace nes_core {
 
         /** Trigger a Non-Maskable Interrupt. */
         void nmi() { nmiPending_ = true; }
+        /** Check if NMI is pending. */
+        bool nmiPending() const { return nmiPending_; }
         /** Trigger an Interrupt Request (ignored if I flag is set). */
         void irq() { irqPending_ = true; }
 

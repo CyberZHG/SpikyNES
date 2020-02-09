@@ -18,6 +18,8 @@ namespace nes_core {
         std::uint8_t read(std::uint16_t addr) const;
         void write(std::uint16_t addr, std::uint8_t value);
 
+        void step();
+
     private:
         Bus* bus_ = nullptr;
         std::array<std::uint8_t, APU_REG_COUNT> regs_ = {};

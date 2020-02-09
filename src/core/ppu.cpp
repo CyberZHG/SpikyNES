@@ -65,6 +65,9 @@ namespace nes_core {
         oam_.fill(0);
         nametable_.fill(0);
         palette_.fill(0);
+        scanline_ = 0;
+        cycle_ = 0;
+        frame_ = 0;
     }
 
     std::uint8_t PPU::registerRead(const std::uint16_t addr) {
@@ -171,6 +174,32 @@ namespace nes_core {
             nametable_[addr] = value;
         } else {
             palette_[mirrorPaletteAddr(addr)] = value;
+        }
+    }
+
+    void PPU::step() {
+        const auto renderingEnabled = regs_.renderingEnabled();
+        if (scanline_ == 241 && cycle_ == 0) {
+            regs_.setVBlank();
+            if (regs_.vBlankNmiEnabled()) {
+                bus_->cpuNMI();
+            }
+            ++frame_;
+        }
+        if (scanline_ == 261) {
+            if (cycle_ == 1) {
+                regs_.clearVBlank();
+            }
+            if (renderingEnabled && cycle_ == 339 && frame_ % 2 == 1) {
+                cycle_ = -1;
+                scanline_ = 0;
+            }
+        }
+        if (++cycle_ > 340) {
+            cycle_ = 0;
+            if (++scanline_ > 261) {
+                scanline_ = 0;
+            }
         }
     }
 }

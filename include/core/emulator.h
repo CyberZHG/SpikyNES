@@ -31,7 +31,7 @@ namespace nes_core {
         bool loadROM(const std::string& path);
         void reset();
 
-        // void run(double milliseconds);
+        void run(double milliseconds);
 
     private:
         CPU cpu_;
@@ -39,6 +39,8 @@ namespace nes_core {
         APU apu_;
         Bus bus_;
         Cartridge cartridge_;
+
+        int remainingCycles_ = 0;
     };
 
 }

@@ -17,5 +17,20 @@ namespace nes_core {
         cpu_.reset();
         ppu_.reset();
         apu_.reset();
+        remainingCycles_ = 0;
+    }
+
+    void Emulator::run(const double milliseconds) {
+        remainingCycles_ += CPU_FREQUENCY_NTSC * milliseconds / 1000.0;
+        while (remainingCycles_ > 0) {
+            const auto cycles = cpu_.step();
+            remainingCycles_ -= cycles;
+            for (int i = 0; i < cycles * 3; ++i) {
+                ppu_.step();
+            }
+            for (int i = 0; i < cycles; ++i) {
+                apu_.step();
+            }
+        }
     }
 }

@@ -20,6 +20,8 @@ namespace nes_core {
         std::uint8_t ppuRead(std::uint16_t addr) const;
         void ppuWrite(std::uint16_t addr, std::uint8_t value) const;
 
+        void cpuNMI() const;
+
     private:
         CPU* cpu_ = nullptr;
         PPU* ppu_ = nullptr;

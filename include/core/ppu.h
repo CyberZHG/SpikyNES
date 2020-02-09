@@ -44,7 +44,7 @@ namespace nes_core {
         std::uint8_t& r(int index);
         std::uint8_t r(int index) const;
 
-        // PPUCTRL - Miscellaneous settings ($2000 write)
+        // PPU_CTRL - Miscellaneous settings ($2000 write)
         bool vBlankNmiEnabled() const { return getBit(ppuControl, 7); }
         int spriteSize() const { return getBit(ppuControl, 5) ? 16 : 8; }
         int backgroundPatternTableAddr() const { return getBit(ppuControl, 4) ? 0x1000 : 0x0000; }
@@ -52,7 +52,7 @@ namespace nes_core {
         int vRamIncrement() const { return getBit(ppuControl, 2) ? 32 : 1; }
         int baseNametableAddr() const;
 
-        // PPUMASK - Rendering settings ($2001 write)
+        // PPU_MASK - Rendering settings ($2001 write)
         bool emphasizeBlue() const { return getBit(ppuMask, 7); }
         bool emphasizeGreen() const { return getBit(ppuMask, 6); }
         bool emphasizeRed() const { return getBit(ppuMask, 5); }
@@ -63,8 +63,9 @@ namespace nes_core {
         bool showBackgroundInLeft() const { return getBit(ppuMask, 1); }
         bool grayscale() const { return getBit(ppuMask, 0); }
 
-        // PPUSTATUS - Rendering events ($2002 read)
+        // PPU_STATUS - Rendering events ($2002 read)
         bool vBlank() const { return getBit(ppuStatus, 7); }
+        void setVBlank() { setBit(ppuStatus, 7); }
         void clearVBlank() { clearBit(ppuStatus, 7); }
         bool sprite0Hit() const { return getBit(ppuStatus, 6); }
         bool spriteOverflow() const { return getBit(ppuStatus, 5); }
@@ -85,11 +86,17 @@ namespace nes_core {
         std::uint8_t ppuRead(std::uint16_t addr) const;
         void ppuWrite(std::uint16_t addr, std::uint8_t value);
 
+        void step();
+
         enum class Mirroring {
             HORIZONTAL,
             VERTICAL,
         };
         void setMirroring(const Mirroring mirroring) { mirroring_ = mirroring; }
+
+        int scanline() const { return scanline_; }
+        int cycle() const { return cycle_; }
+        int frame() const { return frame_; }
 
     private:
         std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
@@ -98,11 +105,14 @@ namespace nes_core {
         Bus* bus_ = nullptr;
         PPURegisters regs_{};
 
-        Mirroring mirroring_ = Mirroring::HORIZONTAL;
-
         std::array<std::uint8_t, PPU_OAM_SIZE> oam_{};
         std::array<std::uint8_t, PPU_NAMETABLE_SIZE> nametable_{};
         std::array<std::uint8_t, PPU_PALETTE_SIZE> palette_{};
+
+        Mirroring mirroring_ = Mirroring::HORIZONTAL;
+        int scanline_ = 0;
+        int cycle_ = 0;
+        int frame_ = 0;
     };
 
 }
