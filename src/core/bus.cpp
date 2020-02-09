@@ -23,7 +23,7 @@ namespace nes_core {
         if (addr < APU_REG_END) {
             return apu_->read(addr);
         }
-        if (addr >= PRG_ROM_START) {
+        if (addr >= PRG_RAM_START) {
             return cartridge_->cpuRead(addr);
         }
         return 0;
@@ -36,7 +36,7 @@ namespace nes_core {
             ppu_->registerWrite(addr, value);
         } else if (addr < APU_REG_END) {
             apu_->write(addr, value);
-        } else if (addr >= PRG_ROM_START) {
+        } else if (addr >= PRG_RAM_START) {
             cartridge_->cpuWrite(addr, value);
         }
     }

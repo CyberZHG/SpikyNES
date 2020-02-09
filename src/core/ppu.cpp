@@ -67,13 +67,18 @@ namespace nes_core {
         palette_.fill(0);
         scanline_ = 0;
         cycle_ = 0;
-        frame_ = 0;
+        frame_ = 1;
+        suppressVBlank_ = false;
     }
 
     std::uint8_t PPU::registerRead(const std::uint16_t addr) {
         const auto index = addr & 0b00000111;
         auto value = regs_.r(index);
         if (index == 2) {  // PPU_STATUS
+            // Reading $2002 at the exact cycle VBlank is set suppresses the flag
+            if (scanline_ == 241 && cycle_ == 1) {
+                suppressVBlank_ = true;
+            }
             regs_.clearVBlank();
             regs_.w = 0;
         } else if (index == 4) {  // OAM_DATA
@@ -179,12 +184,14 @@ namespace nes_core {
 
     void PPU::step() {
         const auto renderingEnabled = regs_.renderingEnabled();
-        if (scanline_ == 241 && cycle_ == 0) {
-            regs_.setVBlank();
-            if (regs_.vBlankNmiEnabled()) {
-                bus_->cpuNMI();
+        if (scanline_ == 241 && cycle_ == 1) {
+            if (!suppressVBlank_) {
+                regs_.setVBlank();
+                if (regs_.vBlankNmiEnabled()) {
+                    bus_->cpuNMI();
+                }
             }
-            ++frame_;
+            suppressVBlank_ = false;
         }
         if (scanline_ == 261) {
             if (cycle_ == 1) {
@@ -193,12 +200,14 @@ namespace nes_core {
             if (renderingEnabled && cycle_ == 339 && frame_ % 2 == 1) {
                 cycle_ = -1;
                 scanline_ = 0;
+                ++frame_;
             }
         }
         if (++cycle_ > 340) {
             cycle_ = 0;
             if (++scanline_ > 261) {
                 scanline_ = 0;
+                ++frame_;
             }
         }
     }

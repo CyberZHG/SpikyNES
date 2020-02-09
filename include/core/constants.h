@@ -32,6 +32,8 @@ namespace nes_core {
     constexpr std::size_t APU_REG_COUNT = 0x18;
     constexpr std::uint16_t APU_REG_END = 0x4018;
 
+    constexpr std::uint16_t PRG_RAM_START = 0x6000;
+    constexpr std::size_t PRG_RAM_SIZE = 0x2000;
     constexpr std::size_t PRG_ROM_SIZE = 0x8000;
     constexpr std::uint16_t PRG_ROM_START = 0x8000;
     constexpr std::size_t PRG_ROM_BANK_SIZE = 0x4000;

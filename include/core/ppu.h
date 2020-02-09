@@ -112,7 +112,8 @@ namespace nes_core {
         Mirroring mirroring_ = Mirroring::HORIZONTAL;
         int scanline_ = 0;
         int cycle_ = 0;
-        int frame_ = 0;
+        int frame_ = 1;
+        bool suppressVBlank_ = false;
     };
 
 }

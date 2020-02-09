@@ -1,6 +1,7 @@
 #ifndef SPIKYNES_CARTRIDGE_H
 #define SPIKYNES_CARTRIDGE_H
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -35,7 +36,8 @@ namespace nes_core {
 
     private:
         INESHeader header_;
-        std::vector<std::uint8_t> prg_;
+        std::vector<std::uint8_t> prgRom_;
+        std::array<std::uint8_t, 0x2000> prgRam_{};
         std::vector<std::uint8_t> chr_;
     };
 

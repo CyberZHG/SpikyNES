@@ -30,8 +30,8 @@ namespace nes_core {
         }
 
         const auto prgSize = header_.prgRomBanks * PRG_ROM_BANK_SIZE;
-        prg_.resize(prgSize);
-        file.read(reinterpret_cast<char*>(prg_.data()), prgSize);
+        prgRom_.resize(prgSize);
+        file.read(reinterpret_cast<char*>(prgRom_.data()), prgSize);
         if (!file) {
             return false;
         }
@@ -46,7 +46,7 @@ namespace nes_core {
     }
 
     void Cartridge::initPRG(const std::size_t size) {
-        prg_.resize(size, 0);
+        prgRom_.resize(size, 0);
     }
 
     void Cartridge::initCHR(const std::size_t size) {
@@ -54,19 +54,26 @@ namespace nes_core {
     }
 
     std::uint8_t Cartridge::cpuRead(const std::uint16_t addr) const {
-        if (prg_.empty()) {
+        if (addr >= PRG_RAM_START && addr < PRG_ROM_START) {
+            return prgRam_[addr - PRG_RAM_START];
+        }
+        if (prgRom_.empty()) {
             return 0;
         }
-        const auto offset = (addr - PRG_ROM_START) % prg_.size();
-        return prg_[offset];
+        const auto offset = (addr - PRG_ROM_START) % prgRom_.size();
+        return prgRom_[offset];
     }
 
     void Cartridge::cpuWrite(const std::uint16_t addr, const std::uint8_t value) {
-        if (prg_.empty()) {
+        if (addr >= PRG_RAM_START && addr < PRG_ROM_START) {
+            prgRam_[addr - PRG_RAM_START] = value;
             return;
         }
-        const auto offset = (addr - PRG_ROM_START) % prg_.size();
-        prg_[offset] = value;
+        if (prgRom_.empty()) {
+            return;
+        }
+        const auto offset = (addr - PRG_ROM_START) % prgRom_.size();
+        prgRom_[offset] = value;
     }
 
     std::uint8_t Cartridge::ppuRead(const std::uint16_t addr) const {

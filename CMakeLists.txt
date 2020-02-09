@@ -100,6 +100,7 @@ if(SPIKY_NES_ENABLE_TESTS)
     if(SPIKY_NES_ENABLE_ROM_TESTS)
         target_sources(runTests PRIVATE
                 tests/core/cpu/rom/test_nestest.cpp
+                tests/core/ppu/rom/test_ppu_vbl_nmi.cpp
         )
         target_compile_definitions(runTests PRIVATE SPIKY_NES_ROM_TESTS_ENABLED)
     endif()
