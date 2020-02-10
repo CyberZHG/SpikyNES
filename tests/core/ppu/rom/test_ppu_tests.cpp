@@ -3,6 +3,7 @@
 #include <format>
 
 #include "core/emulator.h"
+#include "../test_ppu_utils.h"
 
 using namespace nes_core;
 
@@ -28,10 +29,8 @@ TEST_F(BlarggPPUTestsRoms, PaletteRAM) {
     while (emulator.ppu().frame() < 30) {
         emulator.step();
     }
-    const auto info = testing::UnitTest::GetInstance()->current_test_info();
-    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
-    writePPM(filename, emulator.ppu().frameBuffer());
-    compareWithExpectedOutput(filename);
+    const auto filepath = saveFrameBuffer(emulator.ppu());
+    compareWithExpectedOutput(filepath);
 }
 
 TEST_F(BlarggPPUTestsRoms, PowerUpPalette) {
@@ -41,9 +40,7 @@ TEST_F(BlarggPPUTestsRoms, PowerUpPalette) {
     while (emulator.ppu().frame() < 30) {
         emulator.step();
     }
-    const auto info = testing::UnitTest::GetInstance()->current_test_info();
-    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
-    writePPM(filename, emulator.ppu().frameBuffer());
+    saveFrameBuffer(emulator.ppu());
 }
 
 TEST_F(BlarggPPUTestsRoms, SpriteRAM) {
@@ -52,10 +49,8 @@ TEST_F(BlarggPPUTestsRoms, SpriteRAM) {
     while (emulator.ppu().frame() < 30) {
         emulator.step();
     }
-    const auto info = testing::UnitTest::GetInstance()->current_test_info();
-    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
-    writePPM(filename, emulator.ppu().frameBuffer());
-    compareWithExpectedOutput(filename);
+    const auto filepath = saveFrameBuffer(emulator.ppu());
+    compareWithExpectedOutput(filepath);
 }
 
 TEST_F(BlarggPPUTestsRoms, VBLClearTime) {
@@ -64,10 +59,8 @@ TEST_F(BlarggPPUTestsRoms, VBLClearTime) {
     while (emulator.ppu().frame() < 30) {
         emulator.step();
     }
-    const auto info = testing::UnitTest::GetInstance()->current_test_info();
-    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
-    writePPM(filename, emulator.ppu().frameBuffer());
-    compareWithExpectedOutput(filename);
+    const auto filepath = saveFrameBuffer(emulator.ppu());
+    compareWithExpectedOutput(filepath);
 }
 
 TEST_F(BlarggPPUTestsRoms, VRAMAccess) {
@@ -76,8 +69,6 @@ TEST_F(BlarggPPUTestsRoms, VRAMAccess) {
     while (emulator.ppu().frame() < 30) {
         emulator.step();
     }
-    const auto info = testing::UnitTest::GetInstance()->current_test_info();
-    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
-    writePPM(filename, emulator.ppu().frameBuffer());
-    compareWithExpectedOutput(filename);
+    const auto filepath = saveFrameBuffer(emulator.ppu());
+    compareWithExpectedOutput(filepath);
 }

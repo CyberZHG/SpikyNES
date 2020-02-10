@@ -115,6 +115,8 @@ namespace nes_core {
         void fetchPatternTableTileHi();
 
         void updateShiftRegisters();
+        void reloadShiftRegistersHi();
+
         void incrementScrollX();
         void incrementScrollY();
         void copyScrollX();

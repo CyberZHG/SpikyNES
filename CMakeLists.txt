@@ -97,7 +97,10 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/ppu/test_frame_timing.cpp
             tests/core/ppu/test_shift_registers.cpp
             tests/core/ppu/test_scroll.cpp
+            tests/core/ppu/test_background_rendering.cpp
             tests/core/ppu/rom/test_ppu_tests.cpp
+            tests/core/ppu/test_ppu_utils.h
+            tests/core/ppu/test_ppu_utils.cpp
     )
 
     if(SPIKY_NES_ENABLE_ROM_TESTS)
