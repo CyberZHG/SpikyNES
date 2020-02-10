@@ -205,8 +205,8 @@ namespace nes_core {
     void PPU::incrementScrollY() {
         // yyy + 1
         if ((regs_.v & 0x7000) == 0x7000) {
+            regs_.v &= ~0x7000;
             // YYYYY + 1
-            regs_.v += 0x1000;
             auto coarseY = (regs_.v & 0x03E0) >> 5;
             if (coarseY == 29) {
                 // Switch vertical nametable
@@ -219,7 +219,7 @@ namespace nes_core {
             }
             regs_.v = (regs_.v & ~0x03E0) | (coarseY << 5);
         } else {
-            regs_.v &= ~0x7000;
+            regs_.v += 0x1000;
         }
     }
 
