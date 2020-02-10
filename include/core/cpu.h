@@ -97,13 +97,9 @@ namespace nes_core {
         void irq() { irqPending_ = true; }
 
         /** Trigger OAM DMA transfer. */
-        void triggerDMA(const std::uint8_t page) { dmaPending_ = true; dmaPage_ = page; }
-        /** Check if DMA is pending. */
+        void triggerDMA(std::uint8_t page);
+        /** Check if DMA is in progress. */
         bool dmaPending() const { return dmaPending_; }
-        /** Get DMA page. */
-        std::uint8_t dmaPage() const { return dmaPage_; }
-        /** Clear DMA pending state. */
-        void clearDMA() { dmaPending_ = false; }
 
     protected:
         /** Push a byte onto the stack. */
@@ -326,6 +322,8 @@ namespace nes_core {
         bool irqPending_ = false;
         bool dmaPending_ = false;
         std::uint8_t dmaPage_ = 0;
+        std::int32_t dmaIndex_ = 0;
+        bool dmaAlignCycle_ = false;
     };
 
 }

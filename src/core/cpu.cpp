@@ -375,6 +375,10 @@ namespace nes_core {
         halted_ = false;
         nmiPending_ = false;
         irqPending_ = false;
+        dmaPending_ = false;
+        dmaIndex_ = 0;
+        dmaPage_ = 0;
+        dmaAlignCycle_ = false;
     }
 
     std::uint8_t CPU::cpuRead(const std::uint16_t addr) const {
@@ -385,8 +389,36 @@ namespace nes_core {
         mem_[addr % CPU_RAM_SIZE] = value;
     }
 
+    void CPU::triggerDMA(const std::uint8_t page) {
+        dmaPending_ = true;
+        dmaPage_ = page;
+        dmaIndex_ = 0;
+        dmaAlignCycle_ = true;
+    }
+
     int CPU::step() {
-        if (halted_) return 0;
+        if (halted_) {
+            return 0;
+        }
+        if (dmaPending_) {
+            if (dmaAlignCycle_) {
+                dmaAlignCycle_ = false;
+                if (cycles_ % 2 == 1) {
+                    cycles_ += 2;
+                    return 2;
+                }
+                cycles_ += 1;
+                return 1;
+            }
+            const auto addr = (static_cast<std::uint16_t>(dmaPage_) << 8) | dmaIndex_;
+            const auto value = bus_->cpuRead(addr);
+            bus_->cpuWrite(0x2004, value);
+            cycles_ += 2;
+            if (++dmaIndex_ >= 256) {
+                dmaPending_ = false;
+            }
+            return 2;
+        }
 
         // Handle pending interrupts (NMI has priority)
         if (nmiPending_) {

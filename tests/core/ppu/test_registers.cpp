@@ -907,7 +907,9 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage00) {
     emulator.cpu().registers().PC = programAddr;
     emulator.step();
     emulator.step();
-
+    while (emulator.cpu().dmaPending()) {
+        emulator.step();
+    }
     for (int i = 0; i < 256; ++i) {
         emulator.ppu().registerWrite(0x2003, static_cast<std::uint8_t>(i));
         EXPECT_EQ(emulator.ppu().registerRead(0x2004), static_cast<std::uint8_t>(i));
@@ -928,7 +930,9 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage02) {
     emulator.cpu().registers().PC = programAddr;
     emulator.step();
     emulator.step();
-
+    while (emulator.cpu().dmaPending()) {
+        emulator.step();
+    }
     for (int i = 0; i < 256; ++i) {
         emulator.ppu().registerWrite(0x2003, static_cast<std::uint8_t>(i));
         EXPECT_EQ(emulator.ppu().registerRead(0x2004), static_cast<std::uint8_t>(255 - i));
@@ -940,7 +944,6 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage07) {
     for (int i = 0; i < 256; ++i) {
         emulator.bus().cpuWrite(0x0700 + i, static_cast<std::uint8_t>((i * 3) & 0xFF));
     }
-    // Program: LDA #$07, STA $4014 at $0300
     constexpr std::uint16_t programAddr = 0x0300;
     emulator.bus().cpuWrite(programAddr + 0, 0xA9);  // LDA #$07
     emulator.bus().cpuWrite(programAddr + 1, 0x07);
@@ -950,7 +953,9 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage07) {
     emulator.cpu().registers().PC = programAddr;
     emulator.step();
     emulator.step();
-
+    while (emulator.cpu().dmaPending()) {
+        emulator.step();
+    }
     for (int i = 0; i < 256; ++i) {
         emulator.ppu().registerWrite(0x2003, static_cast<std::uint8_t>(i));
         EXPECT_EQ(emulator.ppu().registerRead(0x2004), static_cast<std::uint8_t>((i * 3) & 0xFF));
@@ -972,93 +977,60 @@ TEST_F(PPUTestBase, OAMDMA_StartsFromOAMADDR) {
     emulator.cpu().registers().PC = programAddr;
     emulator.step();
     emulator.step();
-
+    while (emulator.cpu().dmaPending()) {
+        emulator.step();
+    }
     for (int i = 0; i < 256; ++i) {
         emulator.ppu().registerWrite(0x2003, static_cast<std::uint8_t>((i + 4) & 0xFF));
         EXPECT_EQ(emulator.ppu().registerRead(0x2004), static_cast<std::uint8_t>(i + 0x10));
     }
 }
 
-TEST_F(PPUTestBase, OAMDMA_Cycles_WithRealInstruction) {
-    for (int i = 0; i < 256; ++i) {
-        emulator.bus().cpuWrite(0x0200 + i, static_cast<std::uint8_t>(i));
-    }
-    constexpr std::uint16_t programAddr = 0x0300;
-    emulator.bus().cpuWrite(programAddr + 0, 0xA9);  // LDA #$02
-    emulator.bus().cpuWrite(programAddr + 1, 0x02);
-    emulator.bus().cpuWrite(programAddr + 2, 0x8D);  // STA $4014
-    emulator.bus().cpuWrite(programAddr + 3, 0x14);
-    emulator.bus().cpuWrite(programAddr + 4, 0x40);
-    emulator.cpu().registers().PC = programAddr;
-    const auto cyclesBefore = emulator.cpu().cycles();
-    emulator.step();
-    emulator.step();
-
-    const auto cyclesTaken = emulator.cpu().cycles() - cyclesBefore;
-
-    // LDA #$02 = 2 cycles
-    // STA $4014 = 4 cycles
-    // DMA = 513 or 514 cycles
-    // Total = 519 or 520 cycles
-    EXPECT_TRUE(cyclesTaken == 519 || cyclesTaken == 520)
-        << "Total cycles: " << cyclesTaken << ", expected 519 or 520";
-}
-
 TEST_F(PPUTestBase, OAMDMA_Cycles_OddAlignment) {
-    // Use NOP to align to odd cycle, then trigger DMA
     for (int i = 0; i < 256; ++i) {
         emulator.bus().cpuWrite(0x0200 + i, static_cast<std::uint8_t>(i));
     }
     constexpr std::uint16_t programAddr = 0x0300;
-    // Program: NOP, NOP, NOP, LDA #$02, STA $4014
-    // 3 NOPs = 6 cycles, LDA = 2 cycles, total before STA write = 8 cycles (even)
-    emulator.bus().cpuWrite(programAddr + 0, 0xEA);  // NOP
-    emulator.bus().cpuWrite(programAddr + 1, 0xEA);  // NOP
-    emulator.bus().cpuWrite(programAddr + 2, 0xEA);  // NOP
-    emulator.bus().cpuWrite(programAddr + 3, 0xA9);  // LDA #$02
-    emulator.bus().cpuWrite(programAddr + 4, 0x02);
-    emulator.bus().cpuWrite(programAddr + 5, 0x8D);  // STA $4014
-    emulator.bus().cpuWrite(programAddr + 6, 0x14);
-    emulator.bus().cpuWrite(programAddr + 7, 0x40);
-    emulator.cpu().registers().PC = programAddr;
-    const auto cyclesBefore = emulator.cpu().cycles();
-    for (int i = 0; i < 5; ++i) {
-        emulator.step();
-    }
-    const auto cyclesTaken = emulator.cpu().cycles() - cyclesBefore;
-    // 3 NOPs = 6 cycles
-    // LDA #$02 = 2 cycles
-    // STA $4014 = 4 cycles
-    // DMA = 513 or 514 cycles
-    // Total = 525 or 526 cycles
-    EXPECT_TRUE(cyclesTaken == 525 || cyclesTaken == 526)
-        << "Total cycles: " << cyclesTaken << ", expected 525 or 526";
-}
-
-TEST_F(PPUTestBase, OAMDMA_Cycles_EvenAlignment) {
-    // Use NOPs to align to even cycle before DMA
-    for (int i = 0; i < 256; ++i) {
-        emulator.bus().cpuWrite(0x0200 + i, static_cast<std::uint8_t>(i));
-    }
-    constexpr std::uint16_t programAddr = 0x0300;
-    emulator.bus().cpuWrite(programAddr + 0, 0xEA);  // NOP
-    emulator.bus().cpuWrite(programAddr + 1, 0xEA);  // NOP
+    emulator.bus().cpuWrite(programAddr + 0, 0x04);  // NOP $00
+    emulator.bus().cpuWrite(programAddr + 1, 0x00);
     emulator.bus().cpuWrite(programAddr + 2, 0xA9);  // LDA #$02
     emulator.bus().cpuWrite(programAddr + 3, 0x02);
     emulator.bus().cpuWrite(programAddr + 4, 0x8D);  // STA $4014
     emulator.bus().cpuWrite(programAddr + 5, 0x14);
     emulator.bus().cpuWrite(programAddr + 6, 0x40);
     emulator.cpu().registers().PC = programAddr;
+    for (int i = 0; i < 3; ++i) {
+        emulator.step();
+    }
     const auto cyclesBefore = emulator.cpu().cycles();
-    for (int i = 0; i < 4; ++i) {
+    ASSERT_TRUE(cyclesBefore % 2 == 1);
+    while (emulator.cpu().dmaPending()) {
         emulator.step();
     }
     const auto cyclesTaken = emulator.cpu().cycles() - cyclesBefore;
-    // 2 NOPs = 4 cycles
-    // LDA #$02 = 2 cycles
-    // STA $4014 = 4 cycles
-    // DMA = 513 or 514 cycles
-    // Total = 523 or 524 cycles
-    EXPECT_TRUE(cyclesTaken == 523 || cyclesTaken == 524)
-        << "Total cycles: " << cyclesTaken << ", expected 523 or 524";
+    EXPECT_EQ(cyclesTaken, 514);
+}
+
+TEST_F(PPUTestBase, OAMDMA_Cycles_EvenAlignment) {
+    for (int i = 0; i < 256; ++i) {
+        emulator.bus().cpuWrite(0x0200 + i, static_cast<std::uint8_t>(i));
+    }
+    constexpr std::uint16_t programAddr = 0x0300;
+    emulator.bus().cpuWrite(programAddr + 0, 0xEA);  // NOP
+    emulator.bus().cpuWrite(programAddr + 1, 0xA9);  // LDA #$02
+    emulator.bus().cpuWrite(programAddr + 2, 0x02);
+    emulator.bus().cpuWrite(programAddr + 3, 0x8D);  // STA $4014
+    emulator.bus().cpuWrite(programAddr + 4, 0x14);
+    emulator.bus().cpuWrite(programAddr + 5, 0x40);
+    emulator.cpu().registers().PC = programAddr;
+    for (int i = 0; i < 3; ++i) {
+        emulator.step();
+    }
+    const auto cyclesBefore = emulator.cpu().cycles();
+    ASSERT_TRUE(cyclesBefore % 2 == 0);
+    while (emulator.cpu().dmaPending()) {
+        emulator.step();
+    }
+    const auto cyclesTaken = emulator.cpu().cycles() - cyclesBefore;
+    EXPECT_EQ(cyclesTaken, 513);
 }

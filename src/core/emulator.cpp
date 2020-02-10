@@ -28,14 +28,7 @@ namespace nes_core {
     }
 
     int Emulator::step() {
-        auto cycles = cpu_.step();
-        if (cpu_.dmaPending()) {
-            ppu_.dmaTransfer(cpu_.dmaPage());
-            const auto dmaCycles = 513 + (cpu_.cycles() % 2 == 0 ? 1 : 0);
-            cpu_.addCycles(dmaCycles);
-            cycles += dmaCycles;
-            cpu_.clearDMA();
-        }
+        const auto cycles = cpu_.step();
         for (int i = 0; i < cycles * 3; ++i) {
             ppu_.step();
         }

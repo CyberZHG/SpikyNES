@@ -98,8 +98,6 @@ namespace nes_core {
         std::int32_t cycle() const { return cycle_; }
         std::int64_t frame() const { return frame_; }
 
-        void dmaTransfer(std::uint8_t page);
-
     private:
         std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
         static std::uint16_t mirrorPaletteAddr(std::uint16_t addr);

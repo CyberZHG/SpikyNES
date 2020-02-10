@@ -95,10 +95,6 @@ namespace nes_core {
     }
 
     void PPU::registerWrite(const std::uint16_t addr, const std::uint8_t value) {
-        if (addr == 0x4014) {
-            dmaTransfer(value);
-            return;
-        }
         const auto index = addr & 0b00000111;
         regs_.r(index) = value;
         if (index == 0) { // PPU_CTRL
@@ -216,10 +212,4 @@ namespace nes_core {
         }
     }
 
-    void PPU::dmaTransfer(const std::uint8_t baseAddr) {
-        const auto page = static_cast<std::uint16_t>(baseAddr) << 8;
-        for (int i = 0; i < 256; ++i) {
-            oam_[regs_.oamAddr++] = bus_->cpuRead(page + i);
-        }
-    }
 }
