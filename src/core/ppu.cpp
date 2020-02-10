@@ -2,6 +2,17 @@
 #include "core/bus.h"
 
 namespace nes_core {
+    constexpr std::array<std::uint32_t, 64> PALETTE = {
+        0x666666, 0x002A88, 0x1412A7, 0x3B00A4, 0x5C007E, 0x6E0040, 0x6C0600, 0x561D00,
+        0x333500, 0x0B4800, 0x005200, 0x004F08, 0x00404D, 0x000000, 0x000000, 0x000000,
+        0xADADAD, 0x155FD9, 0x4240FF, 0x7527FE, 0xA01ACC, 0xB71E7B, 0xB53120, 0x994E00,
+        0x6B6D00, 0x388700, 0x0C9300, 0x008F32, 0x007C8D, 0x000000, 0x000000, 0x000000,
+        0xFFFEFF, 0x64B0FF, 0x9290FF, 0xC676FF, 0xF36AFF, 0xFE6ECC, 0xFE8170, 0xEA9E22,
+        0xBCBE00, 0x88D800, 0x5CE430, 0x45E082, 0x48CDDE, 0x4F4F4F, 0x000000, 0x000000,
+        0xFFFEFF, 0xC0DFFF, 0xD3D2FF, 0xE8C8FF, 0xFBC2FF, 0xFEC4EA, 0xFECCC5, 0xF7D8A5,
+        0xE4E594, 0xCFEF96, 0xBDF4AB, 0xB3F3CC, 0xB5EBF2, 0xB8B8B8, 0x000000, 0x000000,
+    };
+
     std::uint8_t& PPURegisters::r(const int index) {
         switch (index) {
             case 0: return ppuControl;
@@ -69,6 +80,7 @@ namespace nes_core {
         oam_.fill(0);
         nametable_.fill(0);
         palette_.fill(0);
+        frameBuffer_.fill(0);
         scanline_ = 0;
         cycle_ = 0;
         frame_ = 1;
@@ -93,9 +105,9 @@ namespace nes_core {
             value = oam_[regs_.oamAddr];
         } else if (index == 7) {  // PPU_DATA
             value = regs_.ppuDataBuffer;
-            regs_.ppuDataBuffer = ppuRead(regs_.v);
+            regs_.ppuDataBuffer = ppuRead(regs_.v & 0x2FFF);
             if ((regs_.v & PPU_MEM_MASK) >= PPU_PALETTE_START) {
-                value = regs_.ppuDataBuffer;
+                value = ppuRead(regs_.v);
             }
             regs_.v += regs_.vRamIncrement();
         }
@@ -256,6 +268,27 @@ namespace nes_core {
         }
     }
 
+    void PPU::renderPixel() {
+        const auto y = scanline_, x = cycle_ - 1;
+        std::uint8_t bgPattern = 0, bgPalette = 0;
+        if (regs_.backgroundRenderingEnabled()) {
+            const auto mask = 0x8000 >> regs_.x;
+            const auto patternLo = (regs_.bgPatternShiftLo & mask) ? 1 : 0;
+            const auto patternHi = (regs_.bgPatternShiftHi & mask) ? 2 : 0;
+            bgPattern = patternHi | patternLo;
+            if (bgPattern != 0) {
+                const auto paletteLo = (regs_.bgAttrShiftLo >> (15 - regs_.x)) & 1;
+                const auto paletteHi = (regs_.bgAttrShiftHi >> (14 - regs_.x)) & 2;
+                bgPalette = paletteHi | paletteLo;
+            }
+        }
+        // TODO: Add OAM
+        const auto finalPattern = bgPattern;
+        const auto finalPalette = bgPalette;
+        const auto color = ppuRead(PPU_PALETTE_START + (finalPalette * 4) + finalPattern);
+        frameBuffer_[y * 256 + x] = 0xFF000000 | PALETTE[color];
+    }
+
     std::uint8_t PPU::ppuRead(std::uint16_t addr) const {
         addr &= PPU_MEM_MASK;
         if (addr < CHR_ROM_BANK_SIZE) {
@@ -293,6 +326,7 @@ namespace nes_core {
         if (0 <= scanline_ && scanline_ < 240) {
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {
+                    renderPixel();
                     regs_.bgPatternShiftLo <<= 1;
                     regs_.bgPatternShiftHi <<= 1;
                     regs_.bgAttrShiftLo <<= 1;

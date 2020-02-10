@@ -27,6 +27,7 @@ namespace nes_core {
     constexpr std::uint16_t PPU_PALETTE_START = 0x3F00;
     constexpr std::size_t PPU_PALETTE_SIZE = 0x20;
     constexpr std::uint16_t PPU_OAM_SIZE = 0x100;
+    constexpr std::uint16_t PPU_FRAME_BUFFER_SIZE = 256 * 240;
 
     constexpr std::uint16_t APU_REG_START = 0x4000;
     constexpr std::size_t APU_REG_COUNT = 0x18;

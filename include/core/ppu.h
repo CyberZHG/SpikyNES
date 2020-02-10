@@ -103,6 +103,7 @@ namespace nes_core {
         std::int32_t scanline() const { return scanline_; }
         std::int32_t cycle() const { return cycle_; }
         std::int64_t frame() const { return frame_; }
+        const std::array<std::uint32_t, PPU_FRAME_BUFFER_SIZE>& frameBuffer() const { return frameBuffer_; }
 
     protected:
         std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
@@ -120,6 +121,7 @@ namespace nes_core {
         void copyScrollY();
 
         void fetchTileData();
+        void renderPixel();
 
     private:
         Bus* bus_ = nullptr;
@@ -128,6 +130,7 @@ namespace nes_core {
         std::array<std::uint8_t, PPU_OAM_SIZE> oam_{};
         std::array<std::uint8_t, PPU_NAMETABLE_SIZE> nametable_{};
         std::array<std::uint8_t, PPU_PALETTE_SIZE> palette_{};
+        std::array<std::uint32_t, PPU_FRAME_BUFFER_SIZE> frameBuffer_{};
 
         Mirroring mirroring_ = Mirroring::HORIZONTAL;
         std::int32_t scanline_ = 0;

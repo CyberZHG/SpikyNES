@@ -42,6 +42,16 @@ namespace nes_core {
         return file.good();
     }
 
+    bool writePPM(const std::string& path, const std::array<std::uint32_t, 256 * 240>& data, const bool binary) {
+        std::vector<std::uint8_t> rgb(data.size() * 3);
+        for (int i = 0; i < data.size(); ++i) {
+            rgb[i * 3] = static_cast<std::uint8_t>((data[i] & 0x00FF0000) >> 4);
+            rgb[i * 3 + 1] = static_cast<std::uint8_t>((data[i] & 0x0000FF00) >> 2);
+            rgb[i * 3 + 2] = static_cast<std::uint8_t>(data[i] & 0x000000FF);
+        }
+        return writePPM(path, 256, 240, rgb.data(), binary);
+    }
+
     std::vector<std::uint8_t> readPGM(const std::string& path, int& width, int& height) {
         std::ifstream file(path, std::ios::binary);
         if (!file) {

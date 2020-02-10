@@ -1,0 +1,83 @@
+#include <gtest/gtest.h>
+#include <string>
+#include <format>
+
+#include "core/emulator.h"
+
+using namespace nes_core;
+
+class BlarggPPUTestsRoms : public testing::Test {
+protected:
+    Emulator emulator;
+
+    static void compareWithExpectedOutput(const std::string& actualPath) {
+        const std::string expectedPath = "../tests/roms/ppu/blargg_ppu_tests_expected.ppm";
+        int expectedWidth = 0, expectedHeight = 0;
+        const auto expected = readPPM(expectedPath, expectedWidth, expectedHeight);
+        int actualWidth = 0, actualHeight = 0;
+        const auto actual = readPPM(actualPath, actualWidth, actualHeight);
+        ASSERT_EQ(actualWidth, expectedWidth);
+        ASSERT_EQ(actualHeight, expectedHeight);
+        EXPECT_EQ(actual, expected);
+    }
+};
+
+TEST_F(BlarggPPUTestsRoms, PaletteRAM) {
+    const std::string romPath = "../tests/roms/ppu/palette_ram.nes";
+    ASSERT_TRUE(emulator.loadROM(romPath)) << "Failed to load palette_ram.nes";
+    while (emulator.ppu().frame() < 30) {
+        emulator.step();
+    }
+    const auto info = testing::UnitTest::GetInstance()->current_test_info();
+    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
+    writePPM(filename, emulator.ppu().frameBuffer());
+    compareWithExpectedOutput(filename);
+}
+
+TEST_F(BlarggPPUTestsRoms, PowerUpPalette) {
+    // Not going to pass this one
+    const std::string romPath = "../tests/roms/ppu/power_up_palette.nes";
+    ASSERT_TRUE(emulator.loadROM(romPath)) << "Failed to load power_up_palette.nes";
+    while (emulator.ppu().frame() < 30) {
+        emulator.step();
+    }
+    const auto info = testing::UnitTest::GetInstance()->current_test_info();
+    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
+    writePPM(filename, emulator.ppu().frameBuffer());
+}
+
+TEST_F(BlarggPPUTestsRoms, SpriteRAM) {
+    const std::string romPath = "../tests/roms/ppu/sprite_ram.nes";
+    ASSERT_TRUE(emulator.loadROM(romPath)) << "Failed to load sprite_ram.nes";
+    while (emulator.ppu().frame() < 30) {
+        emulator.step();
+    }
+    const auto info = testing::UnitTest::GetInstance()->current_test_info();
+    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
+    writePPM(filename, emulator.ppu().frameBuffer());
+    compareWithExpectedOutput(filename);
+}
+
+TEST_F(BlarggPPUTestsRoms, VBLClearTime) {
+    const std::string romPath = "../tests/roms/ppu/vbl_clear_time.nes";
+    ASSERT_TRUE(emulator.loadROM(romPath)) << "Failed to load vbl_clear_time.nes";
+    while (emulator.ppu().frame() < 30) {
+        emulator.step();
+    }
+    const auto info = testing::UnitTest::GetInstance()->current_test_info();
+    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
+    writePPM(filename, emulator.ppu().frameBuffer());
+    compareWithExpectedOutput(filename);
+}
+
+TEST_F(BlarggPPUTestsRoms, VRAMAccess) {
+    const std::string romPath = "../tests/roms/ppu/vram_access.nes";
+    ASSERT_TRUE(emulator.loadROM(romPath)) << "Failed to load vram_access.nes";
+    while (emulator.ppu().frame() < 30) {
+        emulator.step();
+    }
+    const auto info = testing::UnitTest::GetInstance()->current_test_info();
+    const auto filename = std::format("{}_{}.ppm", info->test_suite_name(), info->name());
+    writePPM(filename, emulator.ppu().frameBuffer());
+    compareWithExpectedOutput(filename);
+}

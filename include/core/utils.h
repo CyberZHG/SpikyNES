@@ -37,6 +37,15 @@ namespace nes_core {
     bool writePPM(const std::string& path, int width, int height, const std::uint8_t* data, bool binary = true);
 
     /**
+     * Write frame buffer to a PPM (color) image file.
+     * @param path Output file path
+     * @param data ARGB pixel data (AARRGGBB)
+     * @param binary true for binary format (P6), false for ASCII format (P3)
+     * @return true on success
+     */
+    bool writePPM(const std::string& path, const std::array<std::uint32_t, 256 * 240>& data, bool binary = true);
+
+    /**
      * Read a PGM (grayscale) image file. Supports P2 (ASCII) and P5 (binary).
      * @param path Input file path
      * @param width Output image width

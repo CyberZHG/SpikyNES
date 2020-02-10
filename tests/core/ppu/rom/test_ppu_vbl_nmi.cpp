@@ -50,7 +50,7 @@ TEST_F(PPUVblNmiTest, RunPPUVblNmiTest) {
     while (emulator.ppu().frame() < 2000) {
         emulator.step();
         if (isMagicValid() && getStatus() != STATUS_RUNNING) {
-            return;
+            break;
         }
     }
     ASSERT_TRUE(isMagicValid()) << "Invalid magic bytes)";
@@ -59,5 +59,4 @@ TEST_F(PPUVblNmiTest, RunPPUVblNmiTest) {
     EXPECT_EQ(status, STATUS_PASSED)
         << "Test failed: 0x" << std::hex << static_cast<int>(status) << "\n"
         << "Output:\n" << output;
-    std::cout << output << std::endl;
 }
