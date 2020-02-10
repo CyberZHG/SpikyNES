@@ -65,6 +65,7 @@ namespace nes_core {
         bool spriteRenderingEnabled() const { return getBit(ppuMask, 4); }
         bool backgroundRenderingEnabled() const { return getBit(ppuMask, 3); }
         bool renderingEnabled() const { return ppuMask & 0b00011000; }
+        bool bothRenderingEnabled() const { return (ppuMask & 0b00011000) == 0b00011000; }
         bool showSpritesInLeft() const { return getBit(ppuMask, 2); }
         bool showBackgroundInLeft() const { return getBit(ppuMask, 1); }
         bool grayscale() const { return getBit(ppuMask, 0); }
@@ -74,7 +75,9 @@ namespace nes_core {
         void setVBlank() { setBit(ppuStatus, 7); }
         void clearVBlank() { clearBit(ppuStatus, 7); }
         bool sprite0Hit() const { return getBit(ppuStatus, 6); }
+        void setSprite0Hit() { setBit(ppuStatus, 6); }
         bool spriteOverflow() const { return getBit(ppuStatus, 5); }
+        void setSpriteOverflow() { setBit(ppuStatus, 5); }
     };
 
     class PPU {
@@ -122,8 +125,12 @@ namespace nes_core {
         void copyScrollX();
         void copyScrollY();
 
-        void fetchTileData();
+        void fetchBackgroundTileData();
         void renderPixel();
+
+        void evaluateSprites();
+        void fetchSprites();
+        void shiftSprites();
 
     private:
         Bus* bus_ = nullptr;
@@ -133,6 +140,23 @@ namespace nes_core {
         std::array<std::uint8_t, PPU_NAMETABLE_SIZE> nametable_{};
         std::array<std::uint8_t, PPU_PALETTE_SIZE> palette_{};
         std::array<std::uint32_t, PPU_FRAME_BUFFER_SIZE> frameBuffer_{};
+
+        struct SpriteData {
+            std::uint8_t y = 0xFF;
+            std::uint8_t tile = 0xFF;
+            std::uint8_t attribute = 0xFF;
+            std::uint8_t x = 0xFF;
+            std::uint8_t patternLo = 0;
+            std::uint8_t patternHi = 0;
+
+            int palette() const { return 4 + (attribute & 0x03); }
+            bool behindBackground() const { return getBit(attribute, 5); }
+            bool horizontalFlip() const { return getBit(attribute, 6); }
+            bool verticalFlip() const { return getBit(attribute, 7); }
+        };
+        std::array<SpriteData, 8> sprites_{};
+        int spriteCount_ = 0;
+        bool sprite0Rendering_ = false;
 
         Mirroring mirroring_ = Mirroring::HORIZONTAL;
         std::int32_t scanline_ = 0;

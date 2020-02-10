@@ -2,6 +2,13 @@
 #include <fstream>
 
 namespace nes_core {
+    std::uint8_t reverseBits(std::uint8_t value) {
+        value = (value >> 4) | (value << 4);
+        value = ((value & 0xCC) >> 2) | ((value & 0x33) << 2);
+        value = ((value & 0xAA) >> 1) | ((value & 0x55) << 1);
+        return value;
+    }
+
     bool writePGM(const std::string& path, const int width, const int height, const std::uint8_t* data, const bool binary) {
         std::ofstream file(path, binary ? std::ios::binary : std::ios::out);
         if (!file) {

@@ -3,14 +3,14 @@
 
 namespace nes_core {
     constexpr std::array<std::uint32_t, 64> PALETTE = {
-        0x666666, 0x002A88, 0x1412A7, 0x3B00A4, 0x5C007E, 0x6E0040, 0x6C0600, 0x561D00,
-        0x333500, 0x0B4800, 0x005200, 0x004F08, 0x00404D, 0x000000, 0x000000, 0x000000,
-        0xADADAD, 0x155FD9, 0x4240FF, 0x7527FE, 0xA01ACC, 0xB71E7B, 0xB53120, 0x994E00,
-        0x6B6D00, 0x388700, 0x0C9300, 0x008F32, 0x007C8D, 0x000000, 0x000000, 0x000000,
-        0xFFFEFF, 0x64B0FF, 0x9290FF, 0xC676FF, 0xF36AFF, 0xFE6ECC, 0xFE8170, 0xEA9E22,
-        0xBCBE00, 0x88D800, 0x5CE430, 0x45E082, 0x48CDDE, 0x4F4F4F, 0x000000, 0x000000,
-        0xFFFEFF, 0xC0DFFF, 0xD3D2FF, 0xE8C8FF, 0xFBC2FF, 0xFEC4EA, 0xFECCC5, 0xF7D8A5,
-        0xE4E594, 0xCFEF96, 0xBDF4AB, 0xB3F3CC, 0xB5EBF2, 0xB8B8B8, 0x000000, 0x000000,
+        0x7C7C7C, 0x0000FC, 0x0000BC, 0x4428BC, 0x940084, 0xA80020, 0xA81000, 0x881400,
+        0x503000, 0x007800, 0x006800, 0x005800, 0x004058, 0x000000, 0x000000, 0x000000,
+        0xBCBCBC, 0x0078F8, 0x0058F8, 0x6844FC, 0xD800CC, 0xE40058, 0xF83800, 0xE45C10,
+        0xAC7C00, 0x00B800, 0x00A800, 0x00A844, 0x008888, 0x000000, 0x000000, 0x000000,
+        0xF8F8F8, 0x3CBCFC, 0x6888FC, 0x9878F8, 0xF878F8, 0xF85898, 0xF87858, 0xFCA044,
+        0xF8B800, 0xB8F818, 0x58D854, 0x58F898, 0x00E8D8, 0x787878, 0x000000, 0x000000,
+        0xFCFCFC, 0xA4E4FC, 0xB8B8F8, 0xD8B8F8, 0xF8B8F8, 0xF8A4C0, 0xF0D0B0, 0xFCE0A8,
+        0xF8D878, 0xD8F878, 0xB8F8B8, 0xB8F8D8, 0x00FCFC, 0xF8D8F8, 0x000000, 0x000000,
     };
 
     std::uint8_t& PPURegisters::r(const int index) {
@@ -81,6 +81,9 @@ namespace nes_core {
         nametable_.fill(0);
         palette_.fill(0);
         frameBuffer_.fill(0);
+        sprites_.fill({});
+        spriteCount_ = 0;
+        sprite0Rendering_ = false;
         scanline_ = 0;
         cycle_ = 0;
         frame_ = 1;
@@ -258,7 +261,7 @@ namespace nes_core {
         regs_.v = (regs_.v & ~0x7BE0) | (regs_.t & 0x7BE0);
     }
 
-    void PPU::fetchTileData() {
+    void PPU::fetchBackgroundTileData() {
         switch ((cycle_ - 1) % 8) {
             case 0:
                 fetchNametableByte();
@@ -287,8 +290,9 @@ namespace nes_core {
 
     void PPU::renderPixel() {
         const auto y = scanline_, x = cycle_ - 1;
+        // Background
         std::uint8_t bgPattern = 0, bgPalette = 0;
-        if (regs_.renderingEnabled() && x < 8 && !regs_.showBackgroundInLeft()) {
+        if (regs_.bothRenderingEnabled() && x < 8 && !regs_.showBackgroundInLeft()) {
             bgPattern = 0;
         } else if (regs_.backgroundRenderingEnabled()) {
             const auto mask = 0x8000 >> regs_.x;
@@ -301,11 +305,116 @@ namespace nes_core {
                 bgPalette = paletteHi | paletteLo;
             }
         }
-        // TODO: Add OAM
-        const auto finalPattern = bgPattern;
-        const auto finalPalette = bgPalette;
+        // OAM
+        std::uint8_t spritePattern = 0, spritePalette = 0;
+        bool behindBackground = false, isSprite0 = false;
+        if (regs_.bothRenderingEnabled() && x < 8 && !regs_.showSpritesInLeft()) {
+            spritePattern = 0;
+        } else if (regs_.spriteRenderingEnabled()) {
+            for (int i = 0; i < spriteCount_; ++i) {
+                if (sprites_[i].x == 0) {
+                    const auto lo = (sprites_[i].patternLo & 0x80) ? 1 : 0;
+                    const auto hi = (sprites_[i].patternHi & 0x80) ? 2 : 0;
+                    spritePattern = hi | lo;
+                    spritePalette = sprites_[i].palette();
+                    if (spritePattern != 0) {
+                        behindBackground = sprites_[i].behindBackground();
+                        isSprite0 = i == 0 && sprite0Rendering_;
+                        break;
+                    }
+                }
+            }
+        }
+        // Sprite 0 Hit
+        if (isSprite0 && x != 255 && bgPattern != 0 && spritePattern != 0) {
+            regs_.setSprite0Hit();
+        }
+        // Ordering
+        auto finalPattern = 0, finalPalette = 0;
+        if (bgPattern != 0 && spritePattern == 0) {
+            finalPattern = bgPattern;
+            finalPalette = bgPalette;
+        } else if (bgPattern == 0 && spritePattern != 0) {
+            finalPattern = spritePattern;
+            finalPalette = spritePalette;
+        } else if (bgPattern != 0 && spritePattern != 0) {
+            if (behindBackground) {
+                finalPattern = bgPattern;
+                finalPalette = bgPalette;
+            } else {
+                finalPattern = spritePattern;
+                finalPalette = spritePalette;
+            }
+        }
         const auto color = ppuRead(PPU_PALETTE_START + (finalPalette * 4) + finalPattern);
         frameBuffer_[y * 256 + x] = 0xFF000000 | PALETTE[color];
+    }
+
+    void PPU::evaluateSprites() {
+        const auto spriteHeight = regs_.spriteSize();
+        spriteCount_ = 0;
+        sprite0Rendering_ = false;
+        for (int i = 0; i < 64; ++i) {
+            const auto y = oam_[i * 4];
+            const auto tile = oam_[i * 4 + 1];
+            const auto attribute = oam_[i * 4 + 2];
+            const auto x = oam_[i * 4 + 3];
+            if (const auto row = scanline_ - y; 0 <= row && row < spriteHeight) {
+                if (spriteCount_ < 8) {
+                    if (i == 0) {
+                        sprite0Rendering_ = true;
+                    }
+                    sprites_[spriteCount_].y = y;
+                    sprites_[spriteCount_].tile = tile;
+                    sprites_[spriteCount_].attribute = attribute;
+                    sprites_[spriteCount_].x = x;
+                    ++spriteCount_;
+                } else {
+                    regs_.setSpriteOverflow();
+                    break;
+                }
+            }
+        }
+    }
+
+    void PPU::fetchSprites() {
+        const auto spriteHeight = regs_.spriteSize();
+        for (int i = 0; i < spriteCount_; ++i) {
+            int row = scanline_ - sprites_[i].y;
+            if (sprites_[i].verticalFlip()) {
+                row = spriteHeight - 1 - row;
+            }
+            auto patternTable = 0;
+            auto tile = sprites_[i].tile;
+            if (spriteHeight == 8) {
+                patternTable = regs_.spritePatternTableAddr();
+            } else {
+                patternTable = (tile & 1) ? 0x1000 : 0x0000;
+                tile &= 0xFE;
+                if (row >= 8) {
+                    ++tile;
+                    row -= 8;
+                }
+            }
+            const auto patternAddr = patternTable + tile * 16 + row;
+            sprites_[i].patternLo = ppuRead(patternAddr);
+            sprites_[i].patternHi = ppuRead(patternAddr + 8);
+            if (sprites_[i].horizontalFlip()) {
+                sprites_[i].patternLo = reverseBits(sprites_[i].patternLo);
+                sprites_[i].patternHi = reverseBits(sprites_[i].patternHi);
+            }
+        }
+    }
+
+    void PPU::shiftSprites() {
+        for (int i = 0; i < spriteCount_; ++i) {
+            if (sprites_[i].x > 0) {
+                --sprites_[i].x;
+            } else {
+                sprites_[i].patternLo <<= 1;
+                sprites_[i].patternHi <<= 1;
+            }
+        }
     }
 
     std::uint8_t PPU::ppuRead(std::uint16_t addr) const {
@@ -346,21 +455,24 @@ namespace nes_core {
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {
                     renderPixel();
+                    shiftSprites();
                     regs_.bgPatternShiftLo <<= 1;
                     regs_.bgPatternShiftHi <<= 1;
                     regs_.bgAttrShiftLo <<= 1;
                     regs_.bgAttrShiftHi <<= 1;
-                    fetchTileData();
+                    fetchBackgroundTileData();
                     if (cycle_ == 256) {
                         incrementScrollY();
                     }
                 } else if (257 <= cycle_ && cycle_ <= 320) {
                     if (cycle_ == 257) {
+                        regs_.oamAddr = 0;
                         copyScrollX();
+                        evaluateSprites();
+                        fetchSprites();
                     }
-                    // TODO
                 } else if (321 <= cycle_ && cycle_ <= 336) {
-                    fetchTileData();
+                    fetchBackgroundTileData();
                 }
             }
         } else if (scanline_ == 241) {
@@ -375,7 +487,7 @@ namespace nes_core {
             }
         } else if (scanline_ == 261) {
             if (cycle_ == 1) {
-                regs_.clearVBlank();
+                regs_.ppuStatus &= ~0xE0;
             }
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {
@@ -383,19 +495,21 @@ namespace nes_core {
                     regs_.bgPatternShiftHi <<= 1;
                     regs_.bgAttrShiftLo <<= 1;
                     regs_.bgAttrShiftHi <<= 1;
-                    fetchTileData();
+                    fetchBackgroundTileData();
                     if (cycle_ == 256) {
                         incrementScrollY();
                     }
                 } else if (257 <= cycle_ && cycle_ <= 320) {
                     if (cycle_ == 257) {
                         copyScrollX();
+                        // evaluateSprites();
+                        // fetchSprites();
                     }
                     if (cycle_ >= 280 && cycle_ <= 304) {
                         copyScrollY();
                     }
                 } else if (321 <= cycle_ && cycle_ <= 336) {
-                    fetchTileData();
+                    fetchBackgroundTileData();
                 }
                 if (cycle_ == 339 && frame_ % 2 == 1) {
                     cycle_ = -1;

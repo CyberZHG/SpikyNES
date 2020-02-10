@@ -13,6 +13,7 @@ namespace nes_core {
     inline void updateBit(std::uint8_t& byte, const int bit, const bool flag) {
         updateBit(byte, bit, static_cast<std::uint8_t>(flag << bit));
     }
+    std::uint8_t reverseBits(std::uint8_t value);
 
     /**
      * Write a PGM (grayscale) image file.
