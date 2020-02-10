@@ -48,10 +48,7 @@ TEST_F(PPUVblNmiTest, RunPPUVblNmiTest) {
     const std::string romPath = "../tests/roms/ppu/ppu_vbl_nmi.nes";
     ASSERT_TRUE(emulator.loadROM(romPath)) << "Failed to load ppu_vbl_nmi.nes";
     while (emulator.ppu().frame() < 2000) {
-        const auto cycles = emulator.cpu().step();
-        for (int p = 0; p < 3 * cycles; ++p) {
-            emulator.ppu().step();
-        }
+        emulator.step();
         if (isMagicValid() && getStatus() != STATUS_RUNNING) {
             return;
         }

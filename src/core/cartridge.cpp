@@ -40,6 +40,8 @@ namespace nes_core {
             const auto chrSize = header_.chrRomBanks * CHR_ROM_BANK_SIZE;
             chr_.resize(chrSize);
             file.read(reinterpret_cast<char*>(chr_.data()), chrSize);
+        } else {
+            chr_.resize(CHR_ROM_BANK_SIZE, 0);
         }
 
         return true;

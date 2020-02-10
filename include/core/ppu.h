@@ -37,6 +37,12 @@ namespace nes_core {
         std::uint8_t x;   // Fine X scroll (3 bits)
         std::uint8_t w;   // Write toggle (1 bit)
 
+        // Shift registers
+        std::uint16_t bgPatternShiftLo;
+        std::uint16_t bgPatternShiftHi;
+        std::uint16_t bgAttrShiftLo;
+        std::uint16_t bgAttrShiftHi;
+
         std::uint8_t ppuDataBuffer;
 
         void reset();
@@ -98,10 +104,24 @@ namespace nes_core {
         std::int32_t cycle() const { return cycle_; }
         std::int64_t frame() const { return frame_; }
 
-    private:
+    protected:
         std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
         static std::uint16_t mirrorPaletteAddr(std::uint16_t addr);
 
+        void fetchNametableByte();
+        void fetchAttributeTableByte();
+        void fetchPatternTableTileLo();
+        void fetchPatternTableTileHi();
+
+        void updateShiftRegisters();
+        void incrementScrollX();
+        void incrementScrollY();
+        void copyScrollX();
+        void copyScrollY();
+
+        void fetchTileData();
+
+    private:
         Bus* bus_ = nullptr;
         PPURegisters regs_{};
 
@@ -114,6 +134,11 @@ namespace nes_core {
         std::int32_t cycle_ = 0;
         std::int64_t frame_ = 1;
         bool suppressVBlank_ = false;
+
+        std::uint8_t nametableByte_ = 0;
+        std::uint8_t attrTableByte_ = 0;
+        std::uint8_t patternTableTileLo_ = 0;
+        std::uint8_t patternTableTileHi_ = 0;
     };
 
 }
