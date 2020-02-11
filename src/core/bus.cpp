@@ -60,7 +60,7 @@ namespace nes_core {
         if (addr < CHR_ROM_BANK_SIZE) {
             return cartridge_->ppuRead(addr);
         }
-        return 0.0;
+        return 0;
     }
 
     void Bus::ppuWrite(std::uint16_t addr, const std::uint8_t value) const {
