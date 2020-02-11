@@ -1,0 +1,28 @@
+#include "core/mapper.h"
+#include "core/mapper/mapper_000.h"
+
+namespace nes_core {
+    std::unique_ptr<Mapper> Mapper::create(
+        const std::uint16_t mapperId,
+        const std::uint8_t prgRomBanks,
+        const std::uint8_t prgRamBanks,
+        const std::uint8_t chrRomBanks,
+        std::vector<std::uint8_t>* prgRom,
+        std::vector<std::uint8_t>* prgRam,
+        std::vector<std::uint8_t>* chrRom) {
+        std::unique_ptr<Mapper> mapper = nullptr;
+        switch (mapperId) {
+            case 0: mapper = std::make_unique<Mapper000>(); break;
+            default: break;
+        }
+        if (mapper != nullptr) {
+            mapper->prgRomBanks_ = prgRomBanks;
+            mapper->prgRamBanks_ = prgRamBanks;
+            mapper->chrRomBanks_ = chrRomBanks;
+            mapper->prgRom_ = prgRom;
+            mapper->prgRam_ = prgRam;
+            mapper->chrRom_ = chrRom;
+        }
+        return mapper;
+    }
+}

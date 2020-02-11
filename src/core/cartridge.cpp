@@ -24,38 +24,60 @@ namespace nes_core {
         header_.verticalMirroring = headerBytes[6] & 0x01;
         header_.batteryBacked = headerBytes[6] & 0x02;
         header_.trainer = headerBytes[6] & 0x04;
+        header_.prgRamBanks = headerBytes[8] > 0 ? headerBytes[8] : 1;
 
         if (header_.trainer) {
             file.seekg(512, std::ios::cur);
         }
 
-        const auto prgSize = header_.prgRomBanks * PRG_ROM_BANK_SIZE;
-        prgRom_.resize(prgSize);
-        file.read(reinterpret_cast<char*>(prgRom_.data()), prgSize);
+        const auto prgRomSize = header_.prgRomBanks * PRG_ROM_BANK_SIZE;
+        prgRom_.resize(prgRomSize);
+        file.read(reinterpret_cast<char*>(prgRom_.data()), static_cast<std::streamsize>(prgRomSize));
         if (!file) {
             return false;
         }
 
+        const auto prgRamSize = header_.prgRamBanks * PRG_RAM_BANK_SIZE;
+        prgRam_.resize(prgRamSize);
+
         if (header_.chrRomBanks > 0) {
             const auto chrSize = header_.chrRomBanks * CHR_ROM_BANK_SIZE;
-            chr_.resize(chrSize);
-            file.read(reinterpret_cast<char*>(chr_.data()), chrSize);
+            chrRom_.resize(chrSize);
+            file.read(reinterpret_cast<char*>(chrRom_.data()), static_cast<std::streamsize>(chrSize));
         } else {
-            chr_.resize(CHR_ROM_BANK_SIZE, 0);
+            chrRom_.resize(CHR_ROM_BANK_SIZE, 0);
         }
+
+        initMapper(header_.mapper, header_.prgRomBanks, header_.prgRamBanks, header_.chrRomBanks);
 
         return true;
     }
 
-    void Cartridge::initPRG(const std::size_t size) {
+    void Cartridge::initPrgRom(const std::size_t size) {
         prgRom_.resize(size, 0);
     }
 
-    void Cartridge::initCHR(const std::size_t size) {
-        chr_.resize(size, 0);
+    void Cartridge::initPrgRam(const std::size_t size) {
+        prgRam_.resize(size, 0);
+    }
+
+    void Cartridge::initChrRom(const std::size_t size) {
+        chrRom_.resize(size, 0);
+    }
+
+    void Cartridge::initMapper(const std::uint16_t mapperId,
+        const std::uint8_t prgRomBanks, const std::uint8_t prgRamBanks, const std::uint8_t chrRomBanks) {
+        mapper_ = Mapper::create(
+            mapperId,
+            prgRomBanks, prgRamBanks, chrRomBanks,
+            &prgRom_, &prgRam_, &chrRom_
+        );
     }
 
     std::uint8_t Cartridge::cpuRead(const std::uint16_t addr) const {
+        if (mapper_ != nullptr) {
+            return mapper_->cpuRead(addr);
+        }
         if (addr >= PRG_RAM_START && addr < PRG_ROM_START) {
             return prgRam_[addr - PRG_RAM_START];
         }
@@ -67,6 +89,10 @@ namespace nes_core {
     }
 
     void Cartridge::cpuWrite(const std::uint16_t addr, const std::uint8_t value) {
+        if (mapper_ != nullptr) {
+            mapper_->cpuWrite(addr, value);
+            return;
+        }
         if (addr >= PRG_RAM_START && addr < PRG_ROM_START) {
             prgRam_[addr - PRG_RAM_START] = value;
             return;
@@ -79,21 +105,28 @@ namespace nes_core {
     }
 
     std::uint8_t Cartridge::ppuRead(const std::uint16_t addr) const {
-        if (chr_.empty()) {
+        if (mapper_ != nullptr) {
+            return mapper_->ppuRead(addr);
+        }
+        if (chrRom_.empty()) {
             return 0;
         }
         if (addr < CHR_ROM_BANK_SIZE) {
-            return chr_[addr];
+            return chrRom_[addr];
         }
         return 0;
     }
 
     void Cartridge::ppuWrite(const std::uint16_t addr, const std::uint8_t value) {
-        if (chr_.empty()) {
+        if (mapper_ != nullptr) {
+            mapper_->ppuWrite(addr, value);
+            return;
+        }
+        if (chrRom_.empty()) {
             return;
         }
         if (addr < CHR_ROM_BANK_SIZE) {
-            chr_[addr] = value;
+            chrRom_[addr] = value;
         }
     }
 }

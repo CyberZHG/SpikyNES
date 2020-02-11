@@ -9,7 +9,7 @@ protected:
     Emulator emulator;
 
     void SetUp() override {
-        emulator.cartridge().initCHR(CHR_ROM_BANK_SIZE);
+        emulator.cartridge().initChrRom(CHR_ROM_BANK_SIZE);
         emulator.reset();
         emulator.ppu().registerWrite(0x2001, 0x0A);
     }

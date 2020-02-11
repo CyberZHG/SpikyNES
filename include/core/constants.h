@@ -35,6 +35,7 @@ namespace nes_core {
 
     constexpr std::uint16_t PRG_RAM_START = 0x6000;
     constexpr std::size_t PRG_RAM_SIZE = 0x2000;
+    constexpr std::size_t PRG_RAM_BANK_SIZE = 0x2000;
     constexpr std::size_t PRG_ROM_SIZE = 0x8000;
     constexpr std::uint16_t PRG_ROM_START = 0x8000;
     constexpr std::size_t PRG_ROM_BANK_SIZE = 0x4000;

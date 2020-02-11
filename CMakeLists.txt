@@ -57,6 +57,11 @@ add_library(SpikyNESCore STATIC
         src/core/cpu/unofficial.cpp
         include/core/controller.h
         src/core/controller.cpp
+        include/core/mapper.h
+        src/core/mapper.cpp
+        src/core/mapper.cpp
+        include/core/mapper/mapper_000.h
+        src/core/mapper/mapper_000.cpp
 )
 
 target_include_directories(SpikyNESCore
@@ -104,6 +109,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/ppu/test_sprite_rendering.cpp
             tests/core/ppu/test_ppu_utils.h
             tests/core/ppu/test_ppu_utils.cpp
+            tests/core/mapper/test_mapper_000.cpp
     )
 
     if(SPIKY_NES_ENABLE_ROM_TESTS)
