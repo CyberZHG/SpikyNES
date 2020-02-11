@@ -488,6 +488,7 @@ namespace nes_core {
         } else if (scanline_ == 261) {
             if (cycle_ == 1) {
                 regs_.ppuStatus &= ~0xE0;
+                sprites_.fill({});
             }
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {
@@ -502,8 +503,6 @@ namespace nes_core {
                 } else if (257 <= cycle_ && cycle_ <= 320) {
                     if (cycle_ == 257) {
                         copyScrollX();
-                        // evaluateSprites();
-                        // fetchSprites();
                     }
                     if (cycle_ >= 280 && cycle_ <= 304) {
                         copyScrollY();

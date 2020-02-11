@@ -99,15 +99,17 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/ppu/test_scroll.cpp
             tests/core/ppu/test_background_rendering.cpp
             tests/core/ppu/test_sprite_rendering.cpp
-            tests/core/ppu/rom/test_ppu_tests.cpp
             tests/core/ppu/test_ppu_utils.h
             tests/core/ppu/test_ppu_utils.cpp
+            tests/core/ppu/rom/test_sprite_hit_tests.cpp
     )
 
     if(SPIKY_NES_ENABLE_ROM_TESTS)
         target_sources(runTests PRIVATE
                 tests/core/cpu/rom/test_nestest.cpp
                 tests/core/ppu/rom/test_ppu_vbl_nmi.cpp
+                tests/core/ppu/rom/test_ppu_tests.cpp
+                tests/core/ppu/rom/test_sprite_hit_tests.cpp
         )
         target_compile_definitions(runTests PRIVATE SPIKY_NES_ROM_TESTS_ENABLED)
     endif()
