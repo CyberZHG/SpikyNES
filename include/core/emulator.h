@@ -6,6 +6,7 @@
 #include "apu.h"
 #include "bus.h"
 #include "cartridge.h"
+#include "controller.h"
 
 #include <memory>
 #include <string>
@@ -27,6 +28,10 @@ namespace nes_core {
         const Bus& bus() const { return bus_; }
         Cartridge& cartridge() { return cartridge_; }
         const Cartridge& cartridge() const { return cartridge_; }
+        Controller& controller1() { return controller1_; }
+        const Controller& controller1() const { return controller1_; }
+        Controller& controller2() { return controller2_; }
+        const Controller& controller2() const { return controller2_; }
 
         bool loadROM(const std::string& path);
         void reset();
@@ -41,6 +46,8 @@ namespace nes_core {
         APU apu_;
         Bus bus_;
         Cartridge cartridge_;
+        Controller controller1_;
+        Controller controller2_;
 
         int availableCycles_ = 0;
     };

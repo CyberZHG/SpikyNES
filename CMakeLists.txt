@@ -55,6 +55,8 @@ add_library(SpikyNESCore STATIC
         src/core/cpu/addressing.cpp
         src/core/cpu/operation.cpp
         src/core/cpu/unofficial.cpp
+        include/core/controller.h
+        src/core/controller.cpp
 )
 
 target_include_directories(SpikyNESCore
@@ -92,6 +94,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/cpu/test_branch.cpp
             tests/core/cpu/test_nop.cpp
             tests/core/test_cartridge.cpp
+            tests/core/test_controller.cpp
             tests/core/ppu/test_registers.cpp
             tests/core/test_utils.cpp
             tests/core/ppu/test_frame_timing.cpp

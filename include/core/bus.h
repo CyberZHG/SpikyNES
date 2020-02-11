@@ -9,10 +9,11 @@ namespace nes_core {
     class PPU;
     class APU;
     class Cartridge;
+    class Controller;
 
     class Bus {
     public:
-        Bus(CPU* cpu, PPU* ppu, APU* apu, Cartridge* cartridge);
+        Bus(CPU* cpu, PPU* ppu, APU* apu, Cartridge* cartridge, Controller* controller1, Controller* controller2);
 
         std::uint8_t cpuRead(std::uint16_t addr) const;
         void cpuWrite(std::uint16_t addr, std::uint8_t value) const;
@@ -27,6 +28,8 @@ namespace nes_core {
         PPU* ppu_ = nullptr;
         APU* apu_ = nullptr;
         Cartridge* cartridge_ = nullptr;
+        Controller* controller1_ = nullptr;
+        Controller* controller2_ = nullptr;
     };
 
 }

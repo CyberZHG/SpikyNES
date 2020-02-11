@@ -4,13 +4,16 @@
 #include "core/ppu.h"
 #include "core/apu.h"
 #include "core/cartridge.h"
+#include "core/controller.h"
 
 namespace nes_core {
-    Bus::Bus(CPU* cpu, PPU* ppu, APU* apu, Cartridge* cartridge) {
+    Bus::Bus(CPU* cpu, PPU* ppu, APU* apu, Cartridge* cartridge, Controller* controller1, Controller* controller2) {
         cpu_ = cpu;
         ppu_ = ppu;
         apu_ = apu;
         cartridge_ = cartridge;
+        controller1_ = controller1;
+        controller2_ = controller2;
     }
 
     std::uint8_t Bus::cpuRead(const std::uint16_t addr) const {
@@ -19,6 +22,12 @@ namespace nes_core {
         }
         if (addr < PPU_REG_END) {
             return ppu_->registerRead(addr);
+        }
+        if (addr == 0x4016) {
+            return controller1_->read();
+        }
+        if (addr == 0x4017) {
+            return controller2_->read();
         }
         if (addr < APU_REG_END) {
             return apu_->read(addr);
@@ -36,6 +45,9 @@ namespace nes_core {
             ppu_->registerWrite(addr, value);
         } else if (addr == 0x4014) {  // OAM DMA
             cpu_->triggerDMA(value);
+        } else if (addr == 0x4016) {
+            controller1_->write(value);
+            controller2_->write(value);
         } else if (addr < APU_REG_END) {
             apu_->write(addr, value);
         } else if (addr >= PRG_RAM_START) {
