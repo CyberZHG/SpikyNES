@@ -8,6 +8,7 @@ CPU_TEST_FILE_URLS = [
     "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/other/nestest.nes",
     "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/other/nestest.log",
     "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/cpu_timing_test6/cpu_timing_test.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/instr_test-v5/all_instrs.nes",
 ]
 
 download_dir = CURRENT_DIR / "cpu"
