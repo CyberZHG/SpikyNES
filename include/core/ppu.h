@@ -112,6 +112,8 @@ namespace nes_core {
         [[nodiscard]] std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
         static std::uint16_t mirrorPaletteAddr(std::uint16_t addr);
 
+        void updateVBlankNMI();
+
         void fetchNametableByte();
         void fetchAttributeTableByte();
         void fetchPatternTableTileLo();
@@ -163,6 +165,8 @@ namespace nes_core {
         std::int32_t cycle_ = 0;
         std::int64_t frame_ = 1;
         bool suppressVBlank_ = false;
+        bool isVBlankNMIOn_ = false;
+        bool isVBlankNMIOnPrev_ = false;
 
         std::uint8_t nametableByte_ = 0;
         std::uint8_t attrTableByte_ = 0;

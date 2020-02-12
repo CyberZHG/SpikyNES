@@ -62,3 +62,18 @@ download_dir.mkdir(parents=True, exist_ok=True)
 for url in PPU_SPRITE_OVERFLOW_TEST_FILE_URLS:
     filename = url.split("/")[-1]
     urllib.request.urlretrieve(url, download_dir / filename)
+
+PPU_VBL_NMI_TIMING_FILE_URLS = [
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/vbl_nmi_timing/1.frame_basics.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/vbl_nmi_timing/2.vbl_timing.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/vbl_nmi_timing/3.even_odd_frames.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/vbl_nmi_timing/4.vbl_clear_timing.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/vbl_nmi_timing/5.nmi_suppression.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/vbl_nmi_timing/6.nmi_disable.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/vbl_nmi_timing/7.nmi_timing.nes",
+]
+download_dir = CURRENT_DIR / "ppu" / "vbl_nmi_timing"
+download_dir.mkdir(parents=True, exist_ok=True)
+for url in PPU_VBL_NMI_TIMING_FILE_URLS:
+    filename = url.split("/")[-1]
+    urllib.request.urlretrieve(url, download_dir / filename)

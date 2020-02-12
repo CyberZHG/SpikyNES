@@ -88,6 +88,8 @@ namespace nes_core {
         cycle_ = 0;
         frame_ = 1;
         suppressVBlank_ = false;
+        isVBlankNMIOn_ = false;
+        isVBlankNMIOnPrev_ = false;
         nametableByte_ = 0;
         attrTableByte_ = 0;
         patternTableTileLo_ = 0;
@@ -104,6 +106,7 @@ namespace nes_core {
             }
             regs_.clearVBlank();
             regs_.w = 0;
+            updateVBlankNMI();
         } else if (index == 4) {  // OAM_DATA
             value = oam_[regs_.oamAddr];
         } else if (index == 7) {  // PPU_DATA
@@ -122,6 +125,7 @@ namespace nes_core {
         regs_.r(index) = value;
         if (index == 0) { // PPU_CTRL
             regs_.t = (regs_.t & 0xF3FF) | ((value & 0x03) << 10);
+            updateVBlankNMI();
         } else if (index == 4) {  // OAM_DATA
             oam_[regs_.oamAddr++] = value;
         } else if (index == 5) {  // PPU_SCROLL
@@ -171,6 +175,15 @@ namespace nes_core {
             addr &= ~0x10;
         }
         return addr;
+    }
+
+    void PPU::updateVBlankNMI() {
+        // See: https://forums.nesdev.org/viewtopic.php?t=20769
+        isVBlankNMIOnPrev_ = isVBlankNMIOn_;
+        isVBlankNMIOn_ = regs_.vBlank() && regs_.vBlankNmiEnabled();
+        if (!isVBlankNMIOnPrev_ && isVBlankNMIOn_) {
+            bus_->cpuNMI();
+        }
     }
 
     void PPU::fetchNametableByte() {
@@ -490,15 +503,14 @@ namespace nes_core {
             if (cycle_ == 1) {
                 if (!suppressVBlank_) {
                     regs_.setVBlank();
-                    if (regs_.vBlankNmiEnabled()) {
-                        bus_->cpuNMI();
-                    }
                 }
                 suppressVBlank_ = false;
+                updateVBlankNMI();
             }
         } else if (scanline_ == 261) {
             if (cycle_ == 1) {
                 regs_.ppuStatus &= ~0xE0;
+                updateVBlankNMI();
             }
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {
