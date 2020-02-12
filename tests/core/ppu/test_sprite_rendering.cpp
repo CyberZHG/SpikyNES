@@ -70,7 +70,7 @@ protected:
 
     void clearOAM() {
         for (int i = 0; i < 64; ++i) {
-            writeOAM(i, 0xFF, 0, 0, 0);
+            writeOAM(i, 0xFF, 0xFF, 0xFF, 0xFF);
         }
     }
 

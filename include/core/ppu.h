@@ -48,35 +48,35 @@ namespace nes_core {
         void reset();
 
         std::uint8_t& r(int index);
-        std::uint8_t r(int index) const;
+        [[nodiscard]] std::uint8_t r(int index) const;
 
         // PPU_CTRL - Miscellaneous settings ($2000 write)
-        bool vBlankNmiEnabled() const { return getBit(ppuControl, 7); }
-        int spriteSize() const { return getBit(ppuControl, 5) ? 16 : 8; }
-        int backgroundPatternTableAddr() const { return getBit(ppuControl, 4) ? 0x1000 : 0x0000; }
-        int spritePatternTableAddr() const { return getBit(ppuControl, 3) ? 0x1000 : 0x0000; }
-        int vRamIncrement() const { return getBit(ppuControl, 2) ? 32 : 1; }
-        int baseNametableAddr() const;
+        [[nodiscard]] bool vBlankNmiEnabled() const { return getBit(ppuControl, 7); }
+        [[nodiscard]] int spriteSize() const { return getBit(ppuControl, 5) ? 16 : 8; }
+        [[nodiscard]] int backgroundPatternTableAddr() const { return getBit(ppuControl, 4) ? 0x1000 : 0x0000; }
+        [[nodiscard]] int spritePatternTableAddr() const { return getBit(ppuControl, 3) ? 0x1000 : 0x0000; }
+        [[nodiscard]] int vRamIncrement() const { return getBit(ppuControl, 2) ? 32 : 1; }
+        [[nodiscard]] int baseNametableAddr() const;
 
         // PPU_MASK - Rendering settings ($2001 write)
-        bool emphasizeBlue() const { return getBit(ppuMask, 7); }
-        bool emphasizeGreen() const { return getBit(ppuMask, 6); }
-        bool emphasizeRed() const { return getBit(ppuMask, 5); }
-        bool spriteRenderingEnabled() const { return getBit(ppuMask, 4); }
-        bool backgroundRenderingEnabled() const { return getBit(ppuMask, 3); }
-        bool renderingEnabled() const { return ppuMask & 0b00011000; }
-        bool bothRenderingEnabled() const { return (ppuMask & 0b00011000) == 0b00011000; }
-        bool showSpritesInLeft() const { return getBit(ppuMask, 2); }
-        bool showBackgroundInLeft() const { return getBit(ppuMask, 1); }
-        bool grayscale() const { return getBit(ppuMask, 0); }
+        [[nodiscard]] bool emphasizeBlue() const { return getBit(ppuMask, 7); }
+        [[nodiscard]] bool emphasizeGreen() const { return getBit(ppuMask, 6); }
+        [[nodiscard]] bool emphasizeRed() const { return getBit(ppuMask, 5); }
+        [[nodiscard]] bool spriteRenderingEnabled() const { return getBit(ppuMask, 4); }
+        [[nodiscard]] bool backgroundRenderingEnabled() const { return getBit(ppuMask, 3); }
+        [[nodiscard]] bool renderingEnabled() const { return ppuMask & 0b00011000; }
+        [[nodiscard]] bool bothRenderingEnabled() const { return (ppuMask & 0b00011000) == 0b00011000; }
+        [[nodiscard]] bool showSpritesInLeft() const { return getBit(ppuMask, 2); }
+        [[nodiscard]] bool showBackgroundInLeft() const { return getBit(ppuMask, 1); }
+        [[nodiscard]] bool grayscale() const { return getBit(ppuMask, 0); }
 
         // PPU_STATUS - Rendering events ($2002 read)
-        bool vBlank() const { return getBit(ppuStatus, 7); }
+        [[nodiscard]] bool vBlank() const { return getBit(ppuStatus, 7); }
         void setVBlank() { setBit(ppuStatus, 7); }
         void clearVBlank() { clearBit(ppuStatus, 7); }
-        bool sprite0Hit() const { return getBit(ppuStatus, 6); }
+        [[nodiscard]] bool sprite0Hit() const { return getBit(ppuStatus, 6); }
         void setSprite0Hit() { setBit(ppuStatus, 6); }
-        bool spriteOverflow() const { return getBit(ppuStatus, 5); }
+        [[nodiscard]] bool spriteOverflow() const { return getBit(ppuStatus, 5); }
         void setSpriteOverflow() { setBit(ppuStatus, 5); }
     };
 
@@ -87,12 +87,12 @@ namespace nes_core {
         void reset();
 
         PPURegisters& registers() { return regs_; }
-        const PPURegisters& registers() const { return regs_; }
+        [[nodiscard]] const PPURegisters& registers() const { return regs_; }
 
         std::uint8_t registerRead(std::uint16_t addr);
         void registerWrite(std::uint16_t addr, std::uint8_t value);
 
-        std::uint8_t ppuRead(std::uint16_t addr) const;
+        [[nodiscard]] std::uint8_t ppuRead(std::uint16_t addr) const;
         void ppuWrite(std::uint16_t addr, std::uint8_t value);
 
         void step();
@@ -103,13 +103,13 @@ namespace nes_core {
         };
         void setMirroring(const Mirroring mirroring) { mirroring_ = mirroring; }
 
-        std::int32_t scanline() const { return scanline_; }
-        std::int32_t cycle() const { return cycle_; }
-        std::int64_t frame() const { return frame_; }
-        const std::array<std::uint32_t, PPU_FRAME_BUFFER_SIZE>& frameBuffer() const { return frameBuffer_; }
+        [[nodiscard]] std::int32_t scanline() const { return scanline_; }
+        [[nodiscard]] std::int32_t cycle() const { return cycle_; }
+        [[nodiscard]] std::int64_t frame() const { return frame_; }
+        [[nodiscard]] const std::array<std::uint32_t, PPU_FRAME_BUFFER_SIZE>& frameBuffer() const { return frameBuffer_; }
 
     protected:
-        std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
+        [[nodiscard]] std::uint16_t mirrorNametableAddr(std::uint16_t addr) const;
         static std::uint16_t mirrorPaletteAddr(std::uint16_t addr);
 
         void fetchNametableByte();
@@ -149,10 +149,10 @@ namespace nes_core {
             std::uint8_t patternLo = 0;
             std::uint8_t patternHi = 0;
 
-            int palette() const { return 4 + (attribute & 0x03); }
-            bool behindBackground() const { return getBit(attribute, 5); }
-            bool horizontalFlip() const { return getBit(attribute, 6); }
-            bool verticalFlip() const { return getBit(attribute, 7); }
+            [[nodiscard]] int palette() const { return 4 + (attribute & 0x03); }
+            [[nodiscard]] bool behindBackground() const { return getBit(attribute, 5); }
+            [[nodiscard]] bool horizontalFlip() const { return getBit(attribute, 6); }
+            [[nodiscard]] bool verticalFlip() const { return getBit(attribute, 7); }
         };
         std::array<SpriteData, 8> sprites_{};
         int spriteCount_ = 0;

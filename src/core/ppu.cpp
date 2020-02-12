@@ -306,7 +306,7 @@ namespace nes_core {
             }
         }
         // OAM
-        std::uint8_t spritePattern = 0, spritePalette = 0;
+        std::uint8_t spritePattern = 0, spritePalette = 0, spriteY = 0;
         bool behindBackground = false, isSprite0 = false;
         if (regs_.bothRenderingEnabled() && x < 8 && !regs_.showSpritesInLeft()) {
             spritePattern = 0;
@@ -318,6 +318,7 @@ namespace nes_core {
                     spritePattern = hi | lo;
                     spritePalette = sprites_[i].palette();
                     if (spritePattern != 0) {
+                        spriteY = sprites_[i].y;
                         behindBackground = sprites_[i].behindBackground();
                         isSprite0 = i == 0 && sprite0Rendering_;
                         break;
@@ -326,7 +327,7 @@ namespace nes_core {
             }
         }
         // Sprite 0 Hit
-        if (isSprite0 && x != 255 && bgPattern != 0 && spritePattern != 0) {
+        if (isSprite0 && x != 255 && spriteY != 0xFF && bgPattern != 0 && spritePattern != 0) {
             regs_.setSprite0Hit();
         }
         // Ordering
@@ -352,6 +353,10 @@ namespace nes_core {
 
     void PPU::evaluateSprites() {
         const auto spriteHeight = regs_.spriteSize();
+        auto scanline = static_cast<std::uint8_t>(scanline_);
+        if (scanline_ == 261) {
+            scanline = 0xFF;
+        }
         spriteCount_ = 0;
         sprite0Rendering_ = false;
         for (int i = 0; i < 64; ++i) {
@@ -359,7 +364,7 @@ namespace nes_core {
             const auto tile = oam_[i * 4 + 1];
             const auto attribute = oam_[i * 4 + 2];
             const auto x = oam_[i * 4 + 3];
-            if (const auto row = scanline_ - y; 0 <= row && row < spriteHeight) {
+            if (const auto row = scanline - y; 0 <= row && row < spriteHeight) {
                 if (spriteCount_ < 8) {
                     if (i == 0) {
                         sprite0Rendering_ = true;
@@ -370,7 +375,9 @@ namespace nes_core {
                     sprites_[spriteCount_].x = x;
                     ++spriteCount_;
                 } else {
-                    regs_.setSpriteOverflow();
+                    if (scanline_ != 261) {
+                        regs_.setSpriteOverflow();
+                    }
                     break;
                 }
             }
@@ -379,8 +386,12 @@ namespace nes_core {
 
     void PPU::fetchSprites() {
         const auto spriteHeight = regs_.spriteSize();
+        auto scanline = static_cast<std::uint8_t>(scanline_);
+        if (scanline_ == 261) {
+            scanline = 0xFF;
+        }
         for (int i = 0; i < spriteCount_; ++i) {
-            int row = scanline_ - sprites_[i].y;
+            int row = scanline - sprites_[i].y;
             if (sprites_[i].verticalFlip()) {
                 row = spriteHeight - 1 - row;
             }
@@ -488,7 +499,6 @@ namespace nes_core {
         } else if (scanline_ == 261) {
             if (cycle_ == 1) {
                 regs_.ppuStatus &= ~0xE0;
-                sprites_.fill({});
             }
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {
@@ -503,6 +513,8 @@ namespace nes_core {
                 } else if (257 <= cycle_ && cycle_ <= 320) {
                     if (cycle_ == 257) {
                         copyScrollX();
+                        evaluateSprites();
+                        fetchSprites();
                     }
                     if (cycle_ >= 280 && cycle_ <= 304) {
                         copyScrollY();
