@@ -16,26 +16,26 @@ namespace nes_core {
         controller2_ = controller2;
     }
 
-    std::uint8_t Bus::cpuRead(const std::uint16_t addr) const {
+    void Bus::reset() {
+        lastCpuRead_ = 0;
+    }
+
+    std::uint8_t Bus::cpuRead(const std::uint16_t addr) {
+        std::uint8_t value = 0;
         if (addr < CPU_RAM_END) {
-            return cpu_->cpuRead(addr);
+            value = cpu_->cpuRead(addr);
+        } else if (addr < PPU_REG_END) {
+            value = ppu_->registerRead(addr);
+        } else if (addr == 0x4016) {
+            value = controller1_->read();
+        } else if (addr == 0x4017) {
+            value = controller2_->read();
+        } else if (addr < APU_REG_END) {
+            value = apu_->read(addr);
+        } else if (addr >= PRG_RAM_START) {
+            value = cartridge_->cpuRead(addr);
         }
-        if (addr < PPU_REG_END) {
-            return ppu_->registerRead(addr);
-        }
-        if (addr == 0x4016) {
-            return controller1_->read();
-        }
-        if (addr == 0x4017) {
-            return controller2_->read();
-        }
-        if (addr < APU_REG_END) {
-            return apu_->read(addr);
-        }
-        if (addr >= PRG_RAM_START) {
-            return cartridge_->cpuRead(addr);
-        }
-        return 0;
+        return lastCpuRead_ = value;
     }
 
     void Bus::cpuWrite(const std::uint16_t addr, const std::uint8_t value) const {

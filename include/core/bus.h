@@ -15,8 +15,12 @@ namespace nes_core {
     public:
         Bus(CPU* cpu, PPU* ppu, APU* apu, Cartridge* cartridge, Controller* controller1, Controller* controller2);
 
-        std::uint8_t cpuRead(std::uint16_t addr) const;
+        void reset();
+
+        std::uint8_t cpuRead(std::uint16_t addr);
         void cpuWrite(std::uint16_t addr, std::uint8_t value) const;
+        std::uint8_t lastCpuRead() const { return lastCpuRead_; }
+        void setLastCpuRead(const std::uint8_t value) { lastCpuRead_ = value; }
 
         std::uint8_t ppuRead(std::uint16_t addr) const;
         void ppuWrite(std::uint16_t addr, std::uint8_t value) const;
@@ -30,6 +34,8 @@ namespace nes_core {
         Cartridge* cartridge_ = nullptr;
         Controller* controller1_ = nullptr;
         Controller* controller2_ = nullptr;
+
+        std::uint8_t lastCpuRead_ = 0;
     };
 
 }
