@@ -21,17 +21,17 @@ protected:
     static constexpr std::uint8_t MAGIC_1 = 0xB0;
     static constexpr std::uint8_t MAGIC_2 = 0x61;
 
-    bool isMagicValid() const {
+    bool isMagicValid() {
         return emulator.bus().cpuRead(MAGIC_ADDR) == MAGIC_0 &&
                emulator.bus().cpuRead(MAGIC_ADDR + 1) == MAGIC_1 &&
                emulator.bus().cpuRead(MAGIC_ADDR + 2) == MAGIC_2;
     }
 
-    std::uint8_t getStatus() const {
+    std::uint8_t getStatus() {
         return emulator.bus().cpuRead(STATUS_ADDR);
     }
 
-    std::string getOutputText() const {
+    std::string getOutputText() {
         std::string text;
         for (std::uint16_t addr = TEXT_ADDR; addr < 0x6800; ++addr) {
             const auto c = emulator.bus().cpuRead(addr);

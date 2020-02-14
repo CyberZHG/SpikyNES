@@ -11,27 +11,36 @@ namespace nes_core {
     class Bus;
 
     struct PulseRegisters {
-        std::uint8_t r0 = 0, r1 = 0, r2 = 0, r3 = 0;
 
-        void reset() { r0 = r1 = r2 = r3 = 0; }
+        void reset();
+        void write(std::uint16_t addr, std::uint16_t value);
+        std::uint8_t output() const;
 
-        // $4000 / $4004: DDLC VVVV
-        std::uint8_t duty() const { return (r0 & 0b11000000) >> 6; }
-        bool lengthCounterHalted() const { return getBit(r0, 5); }
-        bool constantVolume() const { return getBit(r0, 4); }
-        std::uint8_t volume() const { return r0 & 0b00001111; }
-        std::uint8_t envelope() const { return r0 & 0b00001111; }
+        void envelopeStep();
+        void sweepStep(bool isPulse1);
+        void timerStep();
+        void lengthCounterStep();
 
-        // $4001 / $4005: EPPP NSSS
-        bool sweepEnabled() const { return getBit(r1, 7); }
-        std::uint8_t dividerPeriod() const  { return ((r1 & 0b01110000) >> 4) + 1; }
-        bool negate() const { return getBit(r1, 3); }
-        std::uint8_t shiftCount() const { return r1 & 0b0000111; }
+        std::uint8_t duty, dutyBit;
+        bool lengthCounterHalted;
+        bool constantVolume;
+        std::uint8_t volume;
 
-        // $4002 / $4006: TTTT TTTT
-        // $4003 / $4007: LLLL LTTT
-        std::uint16_t timer() const { return (static_cast<std::uint16_t>(r3 & 0b00000111) << 8) | r2; }
-        std::uint8_t lengthCounterLoad() const { return (r3 & 0b11111000) >> 3; }
+        bool sweepEnabled;
+        std::uint8_t sweepDividerPeriod;
+        bool sweepNegate;
+        std::uint8_t sweepShift;
+        bool sweepReload;
+        std::uint8_t sweepCounter;
+
+        std::uint16_t timerPeriod;
+        std::uint8_t lengthCounterLoad;
+        bool envelopeStart;
+        std::uint8_t envelopeDecayLevel;
+        std::uint8_t envelopeDivider;
+
+        std::uint8_t timer;
+        std::uint8_t lengthCounter;
     };
 
     struct TriangleRegisters {
@@ -87,15 +96,24 @@ namespace nes_core {
     };
 
     struct APURegisters {
+        void reset();
+
+        void write(std::uint16_t addr, std::uint16_t value);
+
         PulseRegisters pulse1{};
         PulseRegisters pulse2{};
         TriangleRegisters triangle{};
         NoiseRegisters noise{};
         DMCRegisters dmc{};
-        std::uint8_t status = 0;
-        std::uint8_t frameCounter = 0;
 
-        void reset();
+        bool pulse1Enabled;
+        bool pulse2Enabled;
+        bool triangleEnabled;
+        bool noiseEnabled;
+        bool dmcEnabled;
+
+        bool sequencerMode;
+        bool irqInhibited;
     };
 
     class APU {
@@ -109,9 +127,24 @@ namespace nes_core {
 
         void step();
 
+        APURegisters& registers() { return regs_; }
+        const APURegisters& registers() const { return regs_; }
+
+        float outputBuffer() const { return outputBuffer_; }
+
+    protected:
+        void quarterFrameStep();
+        void halfFrameStep();
+
+        std::uint8_t pulse1Output() const;
+        std::uint8_t pulse2Output() const;
+        float mixOutputs() const;
+
     private:
         Bus* bus_ = nullptr;
         APURegisters regs_{};
+        std::uint64_t cycle_ = 0;
+        float outputBuffer_ = 0.0;
     };
 
 }

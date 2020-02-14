@@ -110,6 +110,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/ppu/test_ppu_utils.h
             tests/core/ppu/test_ppu_utils.cpp
             tests/core/mapper/test_mapper_000.cpp
+            tests/core/apu/test_pulse.cpp
     )
 
     if(SPIKY_NES_ENABLE_ROM_TESTS)
