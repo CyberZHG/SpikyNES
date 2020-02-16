@@ -452,7 +452,7 @@ namespace nes_core {
             }
             return status;
         }
-        return bus_->lastCpuRead();
+        return bus_->lastBusValue();
     }
 
     void APU::write(const std::uint16_t addr, const std::uint8_t value) {

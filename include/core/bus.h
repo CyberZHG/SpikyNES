@@ -18,9 +18,9 @@ namespace nes_core {
         void reset();
 
         std::uint8_t cpuRead(std::uint16_t addr);
-        void cpuWrite(std::uint16_t addr, std::uint8_t value) const;
-        [[nodiscard]] std::uint8_t lastCpuRead() const { return lastCpuRead_; }
-        void setLastCpuRead(const std::uint8_t value) { lastCpuRead_ = value; }
+        void cpuWrite(std::uint16_t addr, std::uint8_t value);
+        [[nodiscard]] std::uint8_t lastBusValue() const { return lastBusValue_; }
+        void setLastBusValue(const std::uint8_t value) { lastBusValue_ = value; }
 
         [[nodiscard]] std::uint8_t ppuRead(std::uint16_t addr) const;
         void ppuWrite(std::uint16_t addr, std::uint8_t value) const;
@@ -36,7 +36,7 @@ namespace nes_core {
         Controller* controller1_ = nullptr;
         Controller* controller2_ = nullptr;
 
-        std::uint8_t lastCpuRead_ = 0;
+        std::uint8_t lastBusValue_ = 0;
     };
 
 }

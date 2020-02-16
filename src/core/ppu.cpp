@@ -98,12 +98,13 @@ namespace nes_core {
 
     std::uint8_t PPU::registerRead(const std::uint16_t addr) {
         const auto index = addr & 0b00000111;
-        auto value = regs_.r(index);
+        std::uint8_t value = bus_->lastBusValue();
         if (index == 2) {  // PPU_STATUS
             // Reading $2002 at the exact cycle VBlank is set suppresses the flag
             if (scanline_ == 241 && cycle_ == 1) {
                 suppressVBlank_ = true;
             }
+            value = (regs_.ppuStatus & 0xE0) | (bus_->lastBusValue() & 0x1F);
             regs_.clearVBlank();
             regs_.w = 0;
             updateVBlankNMI();

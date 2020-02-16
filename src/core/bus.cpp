@@ -17,11 +17,11 @@ namespace nes_core {
     }
 
     void Bus::reset() {
-        lastCpuRead_ = 0;
+        lastBusValue_ = 0;
     }
 
     std::uint8_t Bus::cpuRead(const std::uint16_t addr) {
-        std::uint8_t value = 0;
+        std::uint8_t value = lastBusValue_;
         if (addr < CPU_RAM_END) {
             value = cpu_->cpuRead(addr);
         } else if (addr < PPU_REG_END) {
@@ -35,10 +35,10 @@ namespace nes_core {
         } else if (addr >= PRG_RAM_START) {
             value = cartridge_->cpuRead(addr);
         }
-        return lastCpuRead_ = value;
+        return lastBusValue_ = value;
     }
 
-    void Bus::cpuWrite(const std::uint16_t addr, const std::uint8_t value) const {
+    void Bus::cpuWrite(const std::uint16_t addr, const std::uint8_t value) {
         if (addr < CPU_RAM_END) {
             cpu_->cpuWrite(addr, value);
         } else if (addr < PPU_REG_END) {
@@ -53,6 +53,7 @@ namespace nes_core {
         } else if (addr >= PRG_RAM_START) {
             cartridge_->cpuWrite(addr, value);
         }
+        lastBusValue_ = value;
     }
 
     std::uint8_t Bus::ppuRead(std::uint16_t addr) const {
