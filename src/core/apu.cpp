@@ -8,6 +8,11 @@ namespace nes_core {
         12,  16, 24, 18, 48, 20, 96, 22, 192, 24, 72, 26, 16, 28, 32, 30,
     };
 
+    constexpr std::uint8_t TRIANGLE_TABLE[32] = {
+        15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,  1,  0,
+         0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+    };
+
     void PulseRegisters::reset() {
         duty = 0;
         dutyBit = 0;
@@ -136,6 +141,75 @@ namespace nes_core {
         }
     }
 
+    void TriangleRegisters::reset() {
+        lengthCounterHalted = false;
+        linearCounterReload = 0;
+        linearCounter = 0;
+        timerPeriod = 0;
+        lengthCounterLoad = 0;
+        linearStart = false;
+        dutyIndex = 0;
+        timer = 0;
+        lengthCounter = 0;
+    }
+
+    void TriangleRegisters::write(const std::uint16_t addr, const std::uint16_t value) {
+        switch (addr) {
+            case 0x4008:
+                // $4008: CRRR RRRR
+                lengthCounterHalted = getBit(value, 7);
+                linearCounterReload = value & 0b01111111;
+                break;
+            case 0x400A:
+                // $400A: LLLL LLLL
+                timerPeriod = (timerPeriod & ~0x00FF) | value;
+                break;
+            case 0x400B:
+                // $400B: llll lHHH
+                timerPeriod = (timerPeriod & ~0x0700) | ((value & 0b00000111) << 8);
+                lengthCounter = LENGTH_COUNTER_TABLE[value >> 3];
+                linearStart = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    std::uint8_t TriangleRegisters::output() const {
+        if (lengthCounter == 0 || linearCounter == 0) {
+            return 0;
+        }
+        return TRIANGLE_TABLE[dutyIndex];
+    }
+
+    void TriangleRegisters::linearCounterStep() {
+        if (linearStart) {
+            linearCounter = linearCounterReload;
+        } else if (linearCounter > 0) {
+            --linearCounter;
+        }
+        if (!lengthCounterHalted) {
+            linearStart = false;
+        }
+    }
+
+    void TriangleRegisters::timerStep() {
+        if (timer == 0) {
+            timer = timerPeriod;
+            if (lengthCounter > 0 && linearCounter > 0) {
+                dutyIndex = (dutyIndex + 1) % 32;
+            }
+        } else {
+            --timer;
+        }
+    }
+
+    void TriangleRegisters::lengthCounterStep() {
+        if (!lengthCounterHalted && lengthCounter > 0) {
+            --lengthCounter;
+        }
+    }
+
     void APURegisters::reset() {
         pulse1.reset();
         pulse2.reset();
@@ -204,9 +278,11 @@ namespace nes_core {
             case 0x4007:
                 regs_.pulse2.write(addr, value);
                 break;
-            case 0x4008: regs_.triangle.r0 = value; break;
-            case 0x400A: regs_.triangle.r2 = value; break;
-            case 0x400B: regs_.triangle.r3 = value; break;
+            case 0x4008:
+            case 0x400A:
+            case 0x400B:
+                regs_.triangle.write(addr, value);
+                break;
             case 0x400C: regs_.noise.r0 = value; break;
             case 0x400E: regs_.noise.r2 = value; break;
             case 0x400F: regs_.noise.r3 = value; break;
@@ -274,7 +350,7 @@ namespace nes_core {
         }
         regs_.pulse1.timerStep();
         regs_.pulse2.timerStep();
-        // triangle: timer
+        regs_.triangle.timerStep();
         // noise: timer
         // dmc: timer
         outputBuffer_ = mixOutputs();
@@ -283,7 +359,7 @@ namespace nes_core {
     void APU::quarterFrameStep() {
         regs_.pulse1.envelopeStep();
         regs_.pulse2.envelopeStep();
-        // triangle: linear counter
+        regs_.triangle.linearCounterStep();
         // noise: envelope
     }
 
@@ -292,7 +368,7 @@ namespace nes_core {
         regs_.pulse1.sweepStep(true);
         regs_.pulse2.lengthCounterStep();
         regs_.pulse2.sweepStep(false);
-        // triangle: length counter
+        regs_.triangle.lengthCounterStep();
         // noise: length counter
     }
 
@@ -310,7 +386,7 @@ namespace nes_core {
         // TODO: triangle, noise, dmc
         float pulseOutput = 0.0;
         if (pulse1 + pulse2 > 0) {
-            pulseOutput = 95.52f / (8128.0f / (pulse1 + pulse2) + 100.0f);
+            pulseOutput = 95.52f / (8128.0f / (static_cast<float>(pulse1) + pulse2) + 100.0f);
         }
         return pulseOutput;
     }

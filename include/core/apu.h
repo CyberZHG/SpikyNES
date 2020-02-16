@@ -11,10 +11,9 @@ namespace nes_core {
     class Bus;
 
     struct PulseRegisters {
-
         void reset();
         void write(std::uint16_t addr, std::uint16_t value);
-        std::uint8_t output() const;
+        [[nodiscard]] std::uint8_t output() const;
 
         void envelopeStep();
         void sweepStep(bool isPulse1);
@@ -44,18 +43,25 @@ namespace nes_core {
     };
 
     struct TriangleRegisters {
-        std::uint8_t r0 = 0, r2 = 0, r3 = 0;
+        void reset();
+        void write(std::uint16_t addr, std::uint16_t value);
+        [[nodiscard]] std::uint8_t output() const;
 
-        void reset() { r0 = r2 = r3 = 0; }
+        void linearCounterStep();
+        void timerStep();
+        void lengthCounterStep();
 
-        // $4008: CRRR RRRR
-        bool controlFlag() const { return getBit(r0, 7); }
-        std::uint8_t counterReload() const { return r0 & 0b01111111; }
+        bool lengthCounterHalted;
+        std::uint8_t linearCounterReload;
+        std::uint8_t linearCounter;
 
-        // $400A: LLLL LLLL
-        // $400B: llll lHHH
-        std::uint16_t timer() const { return (static_cast<std::uint16_t>(r3 & 0b00000111) << 8) | r2; }
-        std::uint8_t lengthCounterLoad() const { return (r3 & 0b11111000) >> 3; }
+        std::uint16_t timerPeriod;
+        std::uint8_t lengthCounterLoad;
+        bool linearStart;
+
+        std::uint8_t dutyIndex;
+        std::uint16_t timer;
+        std::uint8_t lengthCounter;
     };
 
     struct NoiseRegisters {
@@ -81,18 +87,18 @@ namespace nes_core {
         void reset() { r0 = r1 = r2 = r3 = 0; }
 
         // $4010: IL-- RRRR
-        bool irqEnabled() const { return getBit(r0, 7); }
-        bool loopEnabled() const { return getBit(r0, 6); }
-        std::uint8_t rateIndex() const { return r0 & 0b00001111; }
+        [[nodiscard]] bool irqEnabled() const { return getBit(r0, 7); }
+        [[nodiscard]] bool loopEnabled() const { return getBit(r0, 6); }
+        [[nodiscard]] std::uint8_t rateIndex() const { return r0 & 0b00001111; }
 
         // $4011: -DDD DDDD
-        std::uint8_t outputLevel() const { return r0 & 0b01111111; }
+        [[nodiscard]] std::uint8_t outputLevel() const { return r0 & 0b01111111; }
 
         // $4012: AAAA AAAA
-        std::uint16_t sampleAddress() const { return 0xC000 + (r2 << 6); }
+        [[nodiscard]] std::uint16_t sampleAddress() const { return 0xC000 + (r2 << 6); }
 
         // $4013: LLLL LLLL
-        std::uint16_t sampleLength() const { return (r3 << 4) + 1; }
+        [[nodiscard]] std::uint16_t sampleLength() const { return (r3 << 4) + 1; }
     };
 
     struct APURegisters {
@@ -106,14 +112,14 @@ namespace nes_core {
         NoiseRegisters noise{};
         DMCRegisters dmc{};
 
-        bool pulse1Enabled;
-        bool pulse2Enabled;
-        bool triangleEnabled;
-        bool noiseEnabled;
-        bool dmcEnabled;
+        bool pulse1Enabled = false;
+        bool pulse2Enabled = false;
+        bool triangleEnabled = false;
+        bool noiseEnabled = false;
+        bool dmcEnabled = false;
 
-        bool sequencerMode;
-        bool irqInhibited;
+        bool sequencerMode = false;
+        bool irqInhibited = false;
     };
 
     class APU {
@@ -122,23 +128,23 @@ namespace nes_core {
 
         void reset();
 
-        std::uint8_t read(std::uint16_t addr) const;
+        [[nodiscard]] std::uint8_t read(std::uint16_t addr) const;
         void write(std::uint16_t addr, std::uint8_t value);
 
         void step();
 
         APURegisters& registers() { return regs_; }
-        const APURegisters& registers() const { return regs_; }
+        [[nodiscard]] const APURegisters& registers() const { return regs_; }
 
-        float outputBuffer() const { return outputBuffer_; }
+        [[nodiscard]] float outputBuffer() const { return outputBuffer_; }
 
     protected:
         void quarterFrameStep();
         void halfFrameStep();
 
-        std::uint8_t pulse1Output() const;
-        std::uint8_t pulse2Output() const;
-        float mixOutputs() const;
+        [[nodiscard]] std::uint8_t pulse1Output() const;
+        [[nodiscard]] std::uint8_t pulse2Output() const;
+        [[nodiscard]] float mixOutputs() const;
 
     private:
         Bus* bus_ = nullptr;
