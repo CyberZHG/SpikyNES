@@ -79,3 +79,13 @@ download_dir.mkdir(parents=True, exist_ok=True)
 for url in PPU_VBL_NMI_TIMING_FILE_URLS:
     filename = url.split("/")[-1]
     urllib.request.urlretrieve(url, download_dir / filename)
+
+APU_TEST_FILE_URLS = [
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/apu_test/apu_test.nes",
+]
+
+download_dir = CURRENT_DIR / "apu"
+download_dir.mkdir(parents=True, exist_ok=True)
+for url in APU_TEST_FILE_URLS:
+    filename = url.split("/")[-1]
+    urllib.request.urlretrieve(url, download_dir / filename)
