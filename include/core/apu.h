@@ -65,20 +65,28 @@ namespace nes_core {
     };
 
     struct NoiseRegisters {
-        std::uint8_t r0 = 0, r2 = 0, r3 = 0;
+        void reset();
+        void write(std::uint16_t addr, std::uint16_t value);
+        [[nodiscard]] std::uint8_t output() const;
 
-        void reset() { r0 = r2 = r3 = 0; }
+        void envelopeStep();
+        void timerStep();
+        void lengthCounterStep();
 
-        // $400C: --lc vvvv
-        bool lengthCounterHalted() const { return getBit(r0, 5); }
-        bool constantVolume() const { return getBit(r0, 4); }
-        std::uint8_t volume() const { return r0 & 0b00001111; }
-        std::uint8_t envelope() const { return r0 & 0b00001111; }
+        bool lengthCounterHalted;
+        bool constantVolume;
+        std::uint8_t volume;
 
-        // $400E: M--- PPPP
-        bool mode() const { return getBit(r2, 7); }
-        std::uint8_t periodIndex() const { return r2 & 0b00001111; }
-        std::uint8_t lengthCounterLoad() const { return (r3 & 0b11111000) >> 3; }
+        bool mode;
+        std::uint8_t periodIndex;
+        std::uint16_t shiftRegister;
+
+        bool envelopeStart;
+        std::uint8_t envelopeDecayLevel;
+        std::uint8_t envelopeDivider;
+
+        std::uint16_t timer;
+        std::uint8_t lengthCounter;
     };
 
     struct DMCRegisters {

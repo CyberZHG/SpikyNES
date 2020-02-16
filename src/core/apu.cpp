@@ -13,6 +13,10 @@ namespace nes_core {
          0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
     };
 
+    constexpr std::uint16_t NOISE_PERIOD_TABLE[16] = {
+        4, 8, 16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762, 1016, 2034, 4068,
+    };
+
     void PulseRegisters::reset() {
         duty = 0;
         dutyBit = 0;
@@ -210,6 +214,84 @@ namespace nes_core {
         }
     }
 
+    void NoiseRegisters::reset() {
+        lengthCounterHalted = false;
+        constantVolume = false;
+        volume = 0;
+        mode = false;
+        periodIndex = 0;
+        shiftRegister = 1;
+        envelopeStart = false;
+        envelopeDecayLevel = 0;
+        envelopeDivider = 0;
+        timer = 0;
+        lengthCounter = 0;
+    }
+
+    void NoiseRegisters::write(const std::uint16_t addr, const std::uint16_t value) {
+        switch (addr) {
+            case 0x400C:
+                // $400C: --lc vvvv
+                lengthCounterHalted = getBit(value, 5);
+                constantVolume = getBit(value, 4);
+                volume = value & 0b00001111;
+                break;
+            case 0x400E:
+                // $400E: M--- PPPP
+                mode = getBit(value, 7);
+                periodIndex = value & 0b00001111;
+                break;
+            case 0x400F:
+                // $400F: llll l---
+                lengthCounter = LENGTH_COUNTER_TABLE[value >> 3];
+                envelopeStart = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    std::uint8_t NoiseRegisters::output() const {
+        if (lengthCounter == 0 || (shiftRegister & 1)) {
+            return 0;
+        }
+        return constantVolume ? volume : envelopeDecayLevel;
+    }
+
+    void NoiseRegisters::envelopeStep() {
+        if (envelopeStart) {
+            envelopeStart = false;
+            envelopeDecayLevel = 15;
+            envelopeDivider = volume;
+        } else if (envelopeDivider > 0) {
+            --envelopeDivider;
+        } else {
+            envelopeDivider = volume;
+            if (envelopeDecayLevel > 0) {
+                --envelopeDecayLevel;
+            } else if (lengthCounterHalted) {
+                envelopeDecayLevel = 15;
+            }
+        }
+    }
+
+    void NoiseRegisters::timerStep() {
+        if (timer == 0) {
+            timer = NOISE_PERIOD_TABLE[periodIndex];
+            const std::uint16_t otherBit = mode ? ((shiftRegister >> 6) & 1) : ((shiftRegister >> 1) & 1);
+            const std::uint16_t feedback = (shiftRegister & 1) ^ otherBit;
+            shiftRegister = (shiftRegister >> 1) | (feedback << 14);
+        } else {
+            --timer;
+        }
+    }
+
+    void NoiseRegisters::lengthCounterStep() {
+        if (!lengthCounterHalted && lengthCounter > 0) {
+            --lengthCounter;
+        }
+    }
+
     void APURegisters::reset() {
         pulse1.reset();
         pulse2.reset();
@@ -283,9 +365,11 @@ namespace nes_core {
             case 0x400B:
                 regs_.triangle.write(addr, value);
                 break;
-            case 0x400C: regs_.noise.r0 = value; break;
-            case 0x400E: regs_.noise.r2 = value; break;
-            case 0x400F: regs_.noise.r3 = value; break;
+            case 0x400C:
+            case 0x400E:
+            case 0x400F:
+                regs_.noise.write(addr, value);
+                break;
             case 0x4010: regs_.dmc.r0 = value; break;
             case 0x4011: regs_.dmc.r1 = value; break;
             case 0x4012: regs_.dmc.r2 = value; break;
@@ -351,7 +435,7 @@ namespace nes_core {
         regs_.pulse1.timerStep();
         regs_.pulse2.timerStep();
         regs_.triangle.timerStep();
-        // noise: timer
+        regs_.noise.timerStep();
         // dmc: timer
         outputBuffer_ = mixOutputs();
     }
@@ -360,7 +444,7 @@ namespace nes_core {
         regs_.pulse1.envelopeStep();
         regs_.pulse2.envelopeStep();
         regs_.triangle.linearCounterStep();
-        // noise: envelope
+        regs_.noise.envelopeStep();
     }
 
     void APU::halfFrameStep() {
@@ -369,7 +453,7 @@ namespace nes_core {
         regs_.pulse2.lengthCounterStep();
         regs_.pulse2.sweepStep(false);
         regs_.triangle.lengthCounterStep();
-        // noise: length counter
+        regs_.noise.lengthCounterStep();
     }
 
     std::uint8_t APU::pulse1Output() const {
