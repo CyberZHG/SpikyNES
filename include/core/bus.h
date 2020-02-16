@@ -19,13 +19,14 @@ namespace nes_core {
 
         std::uint8_t cpuRead(std::uint16_t addr);
         void cpuWrite(std::uint16_t addr, std::uint8_t value) const;
-        std::uint8_t lastCpuRead() const { return lastCpuRead_; }
+        [[nodiscard]] std::uint8_t lastCpuRead() const { return lastCpuRead_; }
         void setLastCpuRead(const std::uint8_t value) { lastCpuRead_ = value; }
 
-        std::uint8_t ppuRead(std::uint16_t addr) const;
+        [[nodiscard]] std::uint8_t ppuRead(std::uint16_t addr) const;
         void ppuWrite(std::uint16_t addr, std::uint8_t value) const;
 
         void cpuNMI() const;
+        void cpuIRQ() const;
 
     private:
         CPU* cpu_ = nullptr;

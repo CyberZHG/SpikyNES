@@ -38,7 +38,7 @@ namespace nes_core {
         std::uint8_t envelopeDecayLevel;
         std::uint8_t envelopeDivider;
 
-        std::uint8_t timer;
+        std::uint16_t timer;
         std::uint8_t lengthCounter;
     };
 
@@ -90,23 +90,33 @@ namespace nes_core {
     };
 
     struct DMCRegisters {
-        std::uint8_t r0 = 0, r1 = 0, r2 = 0, r3 = 0;
+        void reset();
+        void write(std::uint16_t addr, std::uint16_t value);
+        [[nodiscard]] std::uint8_t output() const;
 
-        void reset() { r0 = r1 = r2 = r3 = 0; }
+        void timerStep();
+        void restart();
 
-        // $4010: IL-- RRRR
-        [[nodiscard]] bool irqEnabled() const { return getBit(r0, 7); }
-        [[nodiscard]] bool loopEnabled() const { return getBit(r0, 6); }
-        [[nodiscard]] std::uint8_t rateIndex() const { return r0 & 0b00001111; }
+        bool irqEnabled;
+        bool loopEnabled;
+        std::uint8_t rateIndex;
 
-        // $4011: -DDD DDDD
-        [[nodiscard]] std::uint8_t outputLevel() const { return r0 & 0b01111111; }
+        std::uint8_t outputLevel;
 
-        // $4012: AAAA AAAA
-        [[nodiscard]] std::uint16_t sampleAddress() const { return 0xC000 + (r2 << 6); }
+        std::uint8_t sampleAddress;
+        std::uint8_t sampleLength;
 
-        // $4013: LLLL LLLL
-        [[nodiscard]] std::uint16_t sampleLength() const { return (r3 << 4) + 1; }
+        std::uint16_t currentAddress;
+        std::uint16_t bytesRemaining;
+        std::uint8_t sampleBuffer;
+        bool sampleBufferEmpty;
+
+        std::uint8_t shiftRegister;
+        std::uint8_t bitsRemaining;
+        bool silence;
+
+        bool irqFlag;
+        std::uint16_t timer;
     };
 
     struct APURegisters {
@@ -128,6 +138,7 @@ namespace nes_core {
 
         bool sequencerMode = false;
         bool irqInhibited = false;
+        bool frameIrqFlag = false;
     };
 
     class APU {
@@ -136,7 +147,7 @@ namespace nes_core {
 
         void reset();
 
-        [[nodiscard]] std::uint8_t read(std::uint16_t addr) const;
+        [[nodiscard]] std::uint8_t read(std::uint16_t addr);
         void write(std::uint16_t addr, std::uint8_t value);
 
         void step();
@@ -152,6 +163,9 @@ namespace nes_core {
 
         [[nodiscard]] std::uint8_t pulse1Output() const;
         [[nodiscard]] std::uint8_t pulse2Output() const;
+        [[nodiscard]] std::uint8_t triangleOutput() const;
+        [[nodiscard]] std::uint8_t noiseOutput() const;
+        [[nodiscard]] std::uint8_t dmcOutput() const;
         [[nodiscard]] float mixOutputs() const;
 
     private:
@@ -159,6 +173,7 @@ namespace nes_core {
         APURegisters regs_{};
         std::uint64_t cycle_ = 0;
         float outputBuffer_ = 0.0;
+        int frameResetCountdown_ = -1;
     };
 
 }

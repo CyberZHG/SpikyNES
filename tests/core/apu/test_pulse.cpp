@@ -393,29 +393,29 @@ TEST_F(PulseTest, Output_VolumeEnvelope) {
 }
 
 TEST_F(PulseTest, Enable_DisablesOutput) {
-    emulator.apu().write(0x4000, 0b00011111);
+    emulator.apu().write(0x4000, 0b11011111);
     emulator.apu().write(0x4002, 0x10);
     emulator.apu().write(0x4003, 0b00000000);
-
-    emulator.apu().write(0x4015, 0b00000000);
-    emulator.apu().step();
-    EXPECT_EQ(emulator.apu().outputBuffer(), 0.0f);
 
     emulator.apu().write(0x4015, 0b00000001);
     emulator.apu().step();
     EXPECT_GT(emulator.apu().outputBuffer(), 0.0f);
-}
-
-TEST_F(PulseTest, Enable_Pulse2) {
-    emulator.apu().write(0x4004, 0b00011111);
-    emulator.apu().write(0x4006, 0x10);
-    emulator.apu().write(0x4007, 0b00000000);
 
     emulator.apu().write(0x4015, 0b00000000);
     emulator.apu().step();
     EXPECT_EQ(emulator.apu().outputBuffer(), 0.0f);
+}
+
+TEST_F(PulseTest, Enable_Pulse2) {
+    emulator.apu().write(0x4004, 0b11011111);
+    emulator.apu().write(0x4006, 0x10);
+    emulator.apu().write(0x4007, 0b00000000);
 
     emulator.apu().write(0x4015, 0b00000010);
     emulator.apu().step();
     EXPECT_GT(emulator.apu().outputBuffer(), 0.0f);
+
+    emulator.apu().write(0x4015, 0b00000000);
+    emulator.apu().step();
+    EXPECT_EQ(emulator.apu().outputBuffer(), 0.0f);
 }
