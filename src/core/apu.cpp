@@ -583,7 +583,7 @@ namespace nes_core {
         }
         regs_.triangle.timerStep();
         if (cycle_ % 2 == 0 && regs_.dmcEnabled && regs_.dmc.sampleBufferEmpty && regs_.dmc.bytesRemaining > 0) {
-            // TODO: stall CPU for 1-4 cycles
+            bus_->cpuStall(4);
             regs_.dmc.sampleBuffer = bus_->cpuRead(regs_.dmc.currentAddress);
             regs_.dmc.sampleBufferEmpty = false;
             regs_.dmc.currentAddress = (regs_.dmc.currentAddress == 0xFFFF) ? 0x8000 : regs_.dmc.currentAddress + 1;

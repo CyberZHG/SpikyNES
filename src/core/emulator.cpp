@@ -25,7 +25,7 @@ namespace nes_core {
     void Emulator::run(const double milliseconds) {
         availableCycles_ += CPU_FREQUENCY_NTSC * milliseconds / 1000.0;
         while (cpu_.cycles() < availableCycles_) {
-            step();
+            (void)step();
         }
     }
 

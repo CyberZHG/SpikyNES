@@ -372,6 +372,7 @@ namespace nes_core {
         regs_.reset();
         regs_.PC = (bus_->cpuRead(CPU_VECTOR_RESET + 1) << 8) | bus_->cpuRead(CPU_VECTOR_RESET);
         cycles_ = 0;
+        stallCycles_ = 0;
         halted_ = false;
         nmiPending_ = false;
         irqPending_ = false;
@@ -399,6 +400,11 @@ namespace nes_core {
     int CPU::step() {
         if (halted_) {
             return 0;
+        }
+        if (stallCycles_ > 0) {
+            --stallCycles_;
+            ++cycles_;
+            return 1;
         }
         if (dmaPending_) {
             if (dmaAlignCycle_) {

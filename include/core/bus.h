@@ -17,7 +17,7 @@ namespace nes_core {
 
         void reset();
 
-        std::uint8_t cpuRead(std::uint16_t addr);
+        [[nodiscard]] std::uint8_t cpuRead(std::uint16_t addr);
         void cpuWrite(std::uint16_t addr, std::uint8_t value);
         [[nodiscard]] std::uint8_t lastBusValue() const { return lastBusValue_; }
         void setLastBusValue(const std::uint8_t value) { lastBusValue_ = value; }
@@ -27,6 +27,7 @@ namespace nes_core {
 
         void cpuNMI() const;
         void cpuIRQ() const;
+        void cpuStall(int cycles) const;
 
     private:
         CPU* cpu_ = nullptr;

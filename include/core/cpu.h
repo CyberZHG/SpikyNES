@@ -37,28 +37,28 @@ namespace nes_core {
         /**
          * @return N (negative) flag.
          */
-        bool N() const { return getBit(P, INDEX_N); }
+        [[nodiscard]] bool N() const { return getBit(P, INDEX_N); }
         /**
          * @return V (overflow) flag.
          */
-        bool V() const { return getBit(P, INDEX_V); }
+        [[nodiscard]] bool V() const { return getBit(P, INDEX_V); }
         /**
          * B is 0 when pushed by interrupts (NMI and IRQ) and 1 when pushed by instructions (BRK and PHP).
          * @return B flag.
          */
-        bool B() const { return getBit(P, INDEX_B); }
+        [[nodiscard]] bool B() const { return getBit(P, INDEX_B); }
         /**
          * @return I (interrupt disable) flag.
          */
-        bool I() const { return getBit(P, INDEX_I); }
+        [[nodiscard]] bool I() const { return getBit(P, INDEX_I); }
         /**
          * @return Z (zero) flag.
          */
-        bool Z() const { return getBit(P, INDEX_Z); }
+        [[nodiscard]] bool Z() const { return getBit(P, INDEX_Z); }
         /**
          * @return C (carry) flag.
          */
-        bool C() const { return getBit(P, INDEX_C); }
+        [[nodiscard]] bool C() const { return getBit(P, INDEX_C); }
     };
 
     struct AddressingResult {
@@ -73,9 +73,9 @@ namespace nes_core {
         void reset();
 
         CPURegisters& registers() { return regs_; }
-        const CPURegisters& registers() const { return regs_; }
+        [[nodiscard]] const CPURegisters& registers() const { return regs_; }
 
-        std::uint8_t cpuRead(std::uint16_t addr) const;
+        [[nodiscard]] std::uint8_t cpuRead(std::uint16_t addr) const;
         void cpuWrite(std::uint16_t addr, std::uint16_t value);
 
         /**
@@ -83,23 +83,26 @@ namespace nes_core {
          * @return Cycles consumed.
          */
         int step();
-        std::int64_t cycles() const { return cycles_; }
+        [[nodiscard]] std::int64_t cycles() const { return cycles_; }
         void addCycles(const std::int64_t cycles) { cycles_ += cycles; }
 
         /** Check if CPU is halted by JAM/KIL instruction. */
-        bool isHalted() const { return halted_; }
+        [[nodiscard]] bool isHalted() const { return halted_; }
 
         /** Trigger a Non-Maskable Interrupt. */
         void nmi() { nmiPending_ = true; }
         /** Check if NMI is pending. */
-        bool nmiPending() const { return nmiPending_; }
+        [[nodiscard]] bool nmiPending() const { return nmiPending_; }
         /** Trigger an Interrupt Request (ignored if I flag is set). */
         void irq() { irqPending_ = true; }
 
         /** Trigger OAM DMA transfer. */
         void triggerDMA(std::uint8_t page);
         /** Check if DMA is in progress. */
-        bool dmaPending() const { return dmaPending_; }
+        [[nodiscard]] bool dmaPending() const { return dmaPending_; }
+
+        /** Stall the CPU for the given number of cycles. */
+        void stall(const int cycles) { stallCycles_ += cycles; }
 
     protected:
         /** Push a byte onto the stack. */
@@ -304,9 +307,9 @@ namespace nes_core {
         void execXAA(std::uint16_t addr);
 
         /** Handle NMI interrupt. */
-        int handleNMI();
+        [[nodiscard]] int handleNMI();
         /** Handle IRQ interrupt. */
-        int handleIRQ();
+        [[nodiscard]] int handleIRQ();
 
     private:
         /**
@@ -317,6 +320,7 @@ namespace nes_core {
         Bus* bus_ = nullptr;
 
         std::int64_t cycles_ = 0;
+        int stallCycles_ = 0;
         bool halted_ = false;
         bool nmiPending_ = false;
         bool irqPending_ = false;

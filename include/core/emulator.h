@@ -19,19 +19,19 @@ namespace nes_core {
         virtual ~Emulator() = default;
 
         CPU& cpu() { return cpu_; }
-        const CPU& cpu() const { return cpu_; }
+        [[nodiscard]] const CPU& cpu() const { return cpu_; }
         PPU& ppu() { return ppu_; }
-        const PPU& ppu() const { return ppu_; }
+        [[nodiscard]] const PPU& ppu() const { return ppu_; }
         APU& apu() { return apu_; }
-        const APU& apu() const { return apu_; }
+        [[nodiscard]] const APU& apu() const { return apu_; }
         Bus& bus() { return bus_; }
-        const Bus& bus() const { return bus_; }
-        Cartridge& cartridge() { return cartridge_; }
-        const Cartridge& cartridge() const { return cartridge_; }
+        [[nodiscard]] const Bus& bus() const { return bus_; }
+       Cartridge& cartridge() { return cartridge_; }
+        [[nodiscard]] const Cartridge& cartridge() const { return cartridge_; }
         Controller& controller1() { return controller1_; }
-        const Controller& controller1() const { return controller1_; }
+        [[nodiscard]] const Controller& controller1() const { return controller1_; }
         Controller& controller2() { return controller2_; }
-        const Controller& controller2() const { return controller2_; }
+        [[nodiscard]] const Controller& controller2() const { return controller2_; }
 
         bool loadROM(const std::string& path);
         void reset();
