@@ -686,21 +686,45 @@ namespace nes_core {
         }
     }
 
-    int CPU::handleNMI() {
-        pushWord(regs_.PC);
-        pushByte((regs_.P | 0b00100000) & ~(1 << CPURegisters::INDEX_B));
-        setBit(regs_.P, CPURegisters::INDEX_I);
-        regs_.PC = (bus_->cpuRead(CPU_VECTOR_NMI + 1) << 8) | bus_->cpuRead(CPU_VECTOR_NMI);
-        nmiPending_ = false;
-        return 7;
+    void CPU::handleNMIStep() {
+        if (opState_.step == 0) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+        } else if (opState_.step == 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+        } else if (opState_.step == 2) {
+            pushByte(regs_.PC >> 8);
+        } else if (opState_.step == 3) {
+            pushByte(regs_.PC & 0xFF);
+        } else if (opState_.step == 4) {
+            pushByte((regs_.P | 0b00100000) & ~(1 << CPURegisters::INDEX_B));
+        } else if (opState_.step == 5) {
+            setBit(regs_.P, CPURegisters::INDEX_I);
+            opState_.readLo = bus_->cpuRead(CPU_VECTOR_NMI);
+        } else if (opState_.step == 6) {
+            opState_.readHi = bus_->cpuRead(CPU_VECTOR_NMI + 1);
+            regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            opState_.finished = true;
+        }
     }
 
-    int CPU::handleIRQ() {
-        pushWord(regs_.PC);
-        pushByte((regs_.P | 0b00100000) & ~(1 << CPURegisters::INDEX_B));
-        setBit(regs_.P, CPURegisters::INDEX_I);
-        regs_.PC = (bus_->cpuRead(CPU_VECTOR_IRQ + 1) << 8) | bus_->cpuRead(CPU_VECTOR_IRQ);
-        irqPending_ = false;
-        return 7;
+    void CPU::handleIRQStep() {
+        if (opState_.step == 0) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+        } else if (opState_.step == 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+        } else if (opState_.step == 2) {
+            pushByte(regs_.PC >> 8);
+        } else if (opState_.step == 3) {
+            pushByte(regs_.PC & 0xFF);
+        } else if (opState_.step == 4) {
+            pushByte((regs_.P | 0b00100000) & ~(1 << CPURegisters::INDEX_B));
+        } else if (opState_.step == 5) {
+            setBit(regs_.P, CPURegisters::INDEX_I);
+            opState_.readLo = bus_->cpuRead(CPU_VECTOR_IRQ);
+        } else if (opState_.step == 6) {
+            opState_.readHi = bus_->cpuRead(CPU_VECTOR_IRQ + 1);
+            regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            opState_.finished = true;
+        }
     }
 }

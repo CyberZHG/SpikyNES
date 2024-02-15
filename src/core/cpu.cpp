@@ -395,7 +395,9 @@ namespace nes_core {
         stallCycles_ = 0;
         halted_ = false;
         nmiPending_ = false;
+        nmiActive_ = false;
         irqPending_ = false;
+        irqActive_ = false;
         dmaPending_ = false;
         dmaIndex_ = 0;
         dmaPage_ = 0;
@@ -445,114 +447,139 @@ namespace nes_core {
             }
             return 2;
         }
-
-        // Handle pending interrupts (NMI has priority)
-        if (nmiPending_) {
-            return handleNMI();
+        if (nmiPending_ && !isHighPrecision_ && !nmiActive_) {
+            nmiPending_ = false;
+            nmiActive_ = true;
+            isHighPrecision_ = true;
         }
-        if (irqPending_ && !regs_.I()) {
-            return handleIRQ();
+        if (irqPending_ && !regs_.I() && !isHighPrecision_ && !nmiActive_ && !irqActive_) {
+            irqPending_ = false;
+            irqActive_ = true;
+            isHighPrecision_ = true;
         }
-
         if (isHighPrecision_) {
-            const auto [op, cycles, mode] = OP_INFO[opState_.code];
-            switch (mode) {
-                case AM_IMP:
-                case AM_ACC:
-                    opState_.addressingFinishedStep = 0;
-                    opState_.isImplied = true;
-                    break;
-                case AM_IMM: addrImmediateStep(); break;
-                case AM_ABS:
-                    // JMP ABS and JSR handle their own addressing inline.
-                    if (op == OpCode::JMP) {
-                        // Execute fires on the same cycle as the last address byte read
-                        // (addressingFinishedStep=1 so execute fires at step 2).
-                        if (opState_.step == 1) {
-                            opState_.readLo = bus_->cpuRead(regs_.PC++);
-                        } else if (opState_.step == 2) {
-                            opState_.readHi = bus_->cpuRead(regs_.PC++);
-                            opState_.addr = (opState_.readHi << 8) | opState_.readLo;
-                            opState_.addressingFinishedStep = 1;
+            if (nmiActive_) {
+                handleNMIStep();
+            } else if (irqActive_) {
+                handleIRQStep();
+            } else {
+                const auto [op, cycles, mode] = OP_INFO[opState_.code];
+                switch (mode) {
+                    case AM_IMP:
+                    case AM_ACC:
+                        opState_.addressingFinishedStep = 0;
+                        opState_.isImplied = true;
+                        break;
+                    case AM_IMM: addrImmediateStep(); break;
+                    case AM_ABS:
+                        if (op == OpCode::JMP) {
+                            if (opState_.step == 1) {
+                                opState_.readLo = bus_->cpuRead(regs_.PC++);
+                            } else if (opState_.step == 2) {
+                                opState_.readHi = bus_->cpuRead(regs_.PC++);
+                                opState_.addr = (opState_.readHi << 8) | opState_.readLo;
+                                opState_.addressingFinishedStep = 1;
+                            }
+                        } else if (op != OpCode::JSR) {
+                            addrAbsoluteStep();
                         }
-                    } else if (op != OpCode::JSR) {
-                        addrAbsoluteStep();
-                    }
-                    break;
-                case AM_ABS_X: addrAbsoluteXStep(); break;
-                case AM_ABS_Y: addrAbsoluteYStep(); break;
-                case AM_ZP: addrZeroPageStep(); break;
-                case AM_ZP_X: addrZeroPageXStep(); break;
-                case AM_ZP_Y: addrZeroPageYStep(); break;
-                case AM_IND_X: addrZeroPageIndirectXStep(); break;
-                case AM_IND_Y: addrZeroPageIndirectYStep(); break;
-                case AM_IND: addrAbsoluteIndirectStep(); break;
-                case AM_REL: addrRelativeStep(); break;
-                default:
-                    throw std::runtime_error("Invalid addressing mode");
-            }
-            switch (op) {
-                case OpCode::NOP: execNOPStep(); break;
-                case OpCode::LDA: execLDAStep(); break;
-                case OpCode::LDX: execLDXStep(); break;
-                case OpCode::LDY: execLDYStep(); break;
-                case OpCode::STA: execSTAStep(); break;
-                case OpCode::STX: execSTXStep(); break;
-                case OpCode::STY: execSTYStep(); break;
-                case OpCode::TAX: execTAXStep(); break;
-                case OpCode::TAY: execTAYStep(); break;
-                case OpCode::TXA: execTXAStep(); break;
-                case OpCode::TYA: execTYAStep(); break;
-                case OpCode::TSX: execTSXStep(); break;
-                case OpCode::TXS: execTXSStep(); break;
-                case OpCode::PHA: execPHAStep(); break;
-                case OpCode::PHP: execPHPStep(); break;
-                case OpCode::PLA: execPLAStep(); break;
-                case OpCode::PLP: execPLPStep(); break;
-                case OpCode::ASL: execASLStep(); break;
-                case OpCode::LSR: execLSRStep(); break;
-                case OpCode::ROL: execROLStep(); break;
-                case OpCode::ROR: execRORStep(); break;
-                case OpCode::AND: execANDStep(); break;
-                case OpCode::ORA: execORAStep(); break;
-                case OpCode::EOR: execEORStep(); break;
-                case OpCode::BIT: execBITStep(); break;
-                case OpCode::ADC: execADCStep(); break;
-                case OpCode::SBC: execSBCStep(); break;
-                case OpCode::CMP: execCMPStep(); break;
-                case OpCode::CPX: execCPXStep(); break;
-                case OpCode::CPY: execCPYStep(); break;
-                case OpCode::INC: execINCStep(); break;
-                case OpCode::INX: execINXStep(); break;
-                case OpCode::INY: execINYStep(); break;
-                case OpCode::DEC: execDECStep(); break;
-                case OpCode::DEX: execDEXStep(); break;
-                case OpCode::DEY: execDEYStep(); break;
-                case OpCode::JMP: execJMPStep(); break;
-                case OpCode::JSR: execJSRStep(); break;
-                case OpCode::RTS: execRTSStep(); break;
-                case OpCode::BRK: execBRKStep(); break;
-                case OpCode::RTI: execRTIStep(); break;
-                case OpCode::BCC: execBCCStep(); break;
-                case OpCode::BCS: execBCSStep(); break;
-                case OpCode::BEQ: execBEQStep(); break;
-                case OpCode::BMI: execBMIStep(); break;
-                case OpCode::BNE: execBNEStep(); break;
-                case OpCode::BPL: execBPLStep(); break;
-                case OpCode::BVC: execBVCStep(); break;
-                case OpCode::BVS: execBVSStep(); break;
-                case OpCode::CLC: execCLCStep(); break;
-                case OpCode::CLD: execCLDStep(); break;
-                case OpCode::CLI: execCLIStep(); break;
-                case OpCode::CLV: execCLVStep(); break;
-                case OpCode::SEC: execSECStep(); break;
-                case OpCode::SED: execSEDStep(); break;
-                case OpCode::SEI: execSEIStep(); break;
-                default:
-                    throw std::runtime_error("Invalid opcode");
+                        break;
+                    case AM_ABS_X: addrAbsoluteXStep(); break;
+                    case AM_ABS_Y: addrAbsoluteYStep(); break;
+                    case AM_ZP: addrZeroPageStep(); break;
+                    case AM_ZP_X: addrZeroPageXStep(); break;
+                    case AM_ZP_Y: addrZeroPageYStep(); break;
+                    case AM_IND_X: addrZeroPageIndirectXStep(); break;
+                    case AM_IND_Y: addrZeroPageIndirectYStep(); break;
+                    case AM_IND: addrAbsoluteIndirectStep(); break;
+                    case AM_REL: addrRelativeStep(); break;
+                    default:
+                        throw std::runtime_error("Invalid addressing mode");
+                }
+                switch (op) {
+                    case OpCode::NOP: execNOPStep(); break;
+                    case OpCode::LDA: execLDAStep(); break;
+                    case OpCode::LDX: execLDXStep(); break;
+                    case OpCode::LDY: execLDYStep(); break;
+                    case OpCode::STA: execSTAStep(); break;
+                    case OpCode::STX: execSTXStep(); break;
+                    case OpCode::STY: execSTYStep(); break;
+                    case OpCode::TAX: execTAXStep(); break;
+                    case OpCode::TAY: execTAYStep(); break;
+                    case OpCode::TXA: execTXAStep(); break;
+                    case OpCode::TYA: execTYAStep(); break;
+                    case OpCode::TSX: execTSXStep(); break;
+                    case OpCode::TXS: execTXSStep(); break;
+                    case OpCode::PHA: execPHAStep(); break;
+                    case OpCode::PHP: execPHPStep(); break;
+                    case OpCode::PLA: execPLAStep(); break;
+                    case OpCode::PLP: execPLPStep(); break;
+                    case OpCode::ASL: execASLStep(); break;
+                    case OpCode::LSR: execLSRStep(); break;
+                    case OpCode::ROL: execROLStep(); break;
+                    case OpCode::ROR: execRORStep(); break;
+                    case OpCode::AND: execANDStep(); break;
+                    case OpCode::ORA: execORAStep(); break;
+                    case OpCode::EOR: execEORStep(); break;
+                    case OpCode::BIT: execBITStep(); break;
+                    case OpCode::ADC: execADCStep(); break;
+                    case OpCode::SBC: execSBCStep(); break;
+                    case OpCode::CMP: execCMPStep(); break;
+                    case OpCode::CPX: execCPXStep(); break;
+                    case OpCode::CPY: execCPYStep(); break;
+                    case OpCode::INC: execINCStep(); break;
+                    case OpCode::INX: execINXStep(); break;
+                    case OpCode::INY: execINYStep(); break;
+                    case OpCode::DEC: execDECStep(); break;
+                    case OpCode::DEX: execDEXStep(); break;
+                    case OpCode::DEY: execDEYStep(); break;
+                    case OpCode::JMP: execJMPStep(); break;
+                    case OpCode::JSR: execJSRStep(); break;
+                    case OpCode::RTS: execRTSStep(); break;
+                    case OpCode::BRK: execBRKStep(); break;
+                    case OpCode::RTI: execRTIStep(); break;
+                    case OpCode::BCC: execBCCStep(); break;
+                    case OpCode::BCS: execBCSStep(); break;
+                    case OpCode::BEQ: execBEQStep(); break;
+                    case OpCode::BMI: execBMIStep(); break;
+                    case OpCode::BNE: execBNEStep(); break;
+                    case OpCode::BPL: execBPLStep(); break;
+                    case OpCode::BVC: execBVCStep(); break;
+                    case OpCode::BVS: execBVSStep(); break;
+                    case OpCode::CLC: execCLCStep(); break;
+                    case OpCode::CLD: execCLDStep(); break;
+                    case OpCode::CLI: execCLIStep(); break;
+                    case OpCode::CLV: execCLVStep(); break;
+                    case OpCode::SEC: execSECStep(); break;
+                    case OpCode::SED: execSEDStep(); break;
+                    case OpCode::SEI: execSEIStep(); break;
+                    case OpCode::LAS: execLASStep(); break;
+                    case OpCode::LAX: execLAXStep(); break;
+                    case OpCode::SAX: execSAXStep(); break;
+                    case OpCode::SHA: execSHAStep(); break;
+                    case OpCode::SHX: execSHXStep(); break;
+                    case OpCode::SHY: execSHYStep(); break;
+                    case OpCode::SHS: execSHSStep(); break;
+                    case OpCode::ANC: execANCStep(); break;
+                    case OpCode::ARR: execARRStep(); break;
+                    case OpCode::ASR: execASRStep(); break;
+                    case OpCode::DCP: execDCPStep(); break;
+                    case OpCode::ISC: execISCStep(); break;
+                    case OpCode::RLA: execRLAStep(); break;
+                    case OpCode::RRA: execRRAStep(); break;
+                    case OpCode::SBX: execSBXStep(); break;
+                    case OpCode::SLO: execSLOStep(); break;
+                    case OpCode::SRE: execSREStep(); break;
+                    case OpCode::XAA: execXAAStep(); break;
+                    case OpCode::JAM: execJAMStep(); break;
+                    default:
+                        throw std::runtime_error("Invalid opcode");
+                }
             }
             if (opState_.finished) {
                 isHighPrecision_ = false;
+                nmiActive_ = false;
+                irqActive_ = false;
                 opState_.reset();
                 ++steps_;
             } else {
@@ -622,6 +649,35 @@ namespace nes_core {
                 case 0x18: case 0xD8: case 0x58: case 0xB8: case 0x38: case 0xF8: case 0x78:
                 // DEC
                 case 0xC6: case 0xD6: case 0xCE:
+                // LAX (IMM, IND_X, ZP, ZP_Y, ABS, ABS_Y, IND_Y)
+                case 0xAB: case 0xA3: case 0xA7: case 0xB7: case 0xAF: case 0xBF: case 0xB3:
+                // LAS
+                case 0xBB:
+                // ANC
+                case 0x0B: case 0x2B:
+                // ARR
+                case 0x6B:
+                // ASR
+                case 0x4B:
+                // SBX
+                case 0xCB:
+                // XAA
+                case 0x8B:
+                // JAM
+                case 0x02: case 0x12: case 0x22: case 0x32: case 0x42: case 0x52:
+                case 0x62: case 0x72: case 0x92: case 0xB2: case 0xD2: case 0xF2:
+                // DCP (ZP, ZP_X, ABS, IND_X)
+                case 0xC7: case 0xD7: case 0xCF: case 0xC3:
+                // ISC (ZP, ZP_X, ABS, IND_X)
+                case 0xE7: case 0xF7: case 0xEF: case 0xE3:
+                // RLA (ZP, ZP_X, ABS, IND_X)
+                case 0x27: case 0x37: case 0x2F: case 0x23:
+                // RRA (ZP, ZP_X, ABS, IND_X)
+                case 0x67: case 0x77: case 0x6F: case 0x63:
+                // SLO (ZP, ZP_X, ABS, IND_X)
+                case 0x07: case 0x17: case 0x0F: case 0x03:
+                // SRE (ZP, ZP_X, ABS, IND_X)
+                case 0x47: case 0x57: case 0x4F: case 0x43:
                     opState_.step = 1;
                     isHighPrecision_ = true;
                     ++cycles_;
@@ -634,6 +690,17 @@ namespace nes_core {
                 case 0x84: case 0x94: case 0x8C:
                 // ASL / LSR / ROL / ROR / INC / DEC ABS_X (RMW always takes extra cycle regardless of page cross)
                 case 0x1E: case 0x5E: case 0x3E: case 0x7E: case 0xFE: case 0xDE:
+                // SAX (all modes)
+                case 0x83: case 0x87: case 0x97: case 0x8F:
+                // SHA, SHX, SHY, SHS
+                case 0x93: case 0x9F: case 0x9E: case 0x9C: case 0x9B:
+                // Unofficial RMW with ABS_X, ABS_Y, IND_Y (always take extra cycle)
+                case 0x1F: case 0x1B: case 0x13: // SLO ABS_X, ABS_Y, IND_Y
+                case 0x3F: case 0x3B: case 0x33: // RLA ABS_X, ABS_Y, IND_Y
+                case 0x5F: case 0x5B: case 0x53: // SRE ABS_X, ABS_Y, IND_Y
+                case 0x7F: case 0x7B: case 0x73: // RRA ABS_X, ABS_Y, IND_Y
+                case 0xDF: case 0xDB: case 0xD3: // DCP ABS_X, ABS_Y, IND_Y
+                case 0xFF: case 0xFB: case 0xF3: // ISC ABS_X, ABS_Y, IND_Y
                     opState_.step = 1;
                     opState_.isStore = true;
                     isHighPrecision_ = true;
@@ -643,68 +710,8 @@ namespace nes_core {
                     break;
             }
         }
-        AddressingResult addr;
-        switch (mode) {
-            case AM_IMP:
-            case AM_ACC: break;
-            case AM_IMM: addr = addrImmediate(); break;
-            case AM_ABS: addr = addrAbsolute(); break;
-            case AM_ABS_X: addr = addrAbsoluteX(); break;
-            case AM_ABS_Y: addr = addrAbsoluteY(); break;
-            case AM_IND: addr = addrAbsoluteIndirect(); break;
-            case AM_ZP: addr = addrZeroPage(); break;
-            case AM_ZP_X: addr = addrZeroPageX(); break;
-            case AM_ZP_Y: addr = addrZeroPageY(); break;
-            case AM_IND_X: addr = addrZeroPageIndirectX(); break;
-            case AM_IND_Y: addr = addrZeroPageIndirectY(); break;
-            case AM_REL: addr = addrRelative(); break;
-            default:
-                throw std::runtime_error("Invalid addressing mode");
-        }
-        int finalCycles = cycles;
-        const bool isStore = op == OpCode::STA || op == OpCode::STX || op == OpCode::STY ||
-                             op == OpCode::SAX || op == OpCode::SHA || op == OpCode::SHX ||
-                             op == OpCode::SHY || op == OpCode::SHS;
-        const bool isRMW = op == OpCode::ASL || op == OpCode::LSR || op == OpCode::ROL ||
-                           op == OpCode::ROR || op == OpCode::INC || op == OpCode::DEC ||
-                           op == OpCode::DCP || op == OpCode::ISC || op == OpCode::RLA ||
-                           op == OpCode::RRA || op == OpCode::SLO || op == OpCode::SRE;
-        if (addr.pageCrossed && mode != AM_REL && !isStore && !isRMW) {
-            ++finalCycles;
-        }
-        bool branchTaken = false;
-        switch (op) {
-            // Unofficial opcodes
-            case OpCode::LAS: execLAS(addr.addr); break;
-            case OpCode::LAX: execLAX(addr.addr); break;
-            case OpCode::SAX: execSAX(addr.addr); break;
-            case OpCode::SHA: execSHA(addr.addr); break;
-            case OpCode::SHX: execSHX(addr.addr); break;
-            case OpCode::SHY: execSHY(addr.addr); break;
-            case OpCode::SHS: execSHS(addr.addr); break;
-            case OpCode::ANC: execANC(addr.addr); break;
-            case OpCode::ARR: execARR(addr.addr); break;
-            case OpCode::ASR: execASR(addr.addr); break;
-            case OpCode::DCP: execDCP(addr.addr); break;
-            case OpCode::ISC: execISC(addr.addr); break;
-            case OpCode::RLA: execRLA(addr.addr); break;
-            case OpCode::RRA: execRRA(addr.addr); break;
-            case OpCode::SBX: execSBX(addr.addr); break;
-            case OpCode::SLO: execSLO(addr.addr); break;
-            case OpCode::SRE: execSRE(addr.addr); break;
-            case OpCode::XAA: execXAA(addr.addr); break;
-            case OpCode::JAM: halted_ = true; break;
-            default:
-                throw std::runtime_error("Invalid opcode");
-        }
-        if (branchTaken) {
-            ++finalCycles;
-            if (addr.pageCrossed) {
-                ++finalCycles;
-            }
-        }
-        cycles_ += finalCycles;
-        ++steps_;
-        return finalCycles;
+        // All opcodes are now handled via high-precision mode.
+        // If execution reaches here, the opcode was not recognized.
+        throw std::runtime_error("Invalid opcode");
     }
 }
