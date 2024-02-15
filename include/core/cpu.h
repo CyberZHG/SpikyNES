@@ -254,7 +254,7 @@ namespace nes_core {
         /** Jump to subroutine. */
         void execJSRStep();
         /** Return from subroutine. */
-        void execRTS();
+        void execRTSStep();
 
         /** Break command. */
         void execBRK();

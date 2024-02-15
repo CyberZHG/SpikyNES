@@ -530,6 +530,7 @@ namespace nes_core {
                 case OpCode::DEY: execDEYStep(); break;
                 case OpCode::JMP: execJMPStep(); break;
                 case OpCode::JSR: execJSRStep(); break;
+                case OpCode::RTS: execRTSStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -596,8 +597,8 @@ namespace nes_core {
                 case 0xE8: case 0xC8:
                 // DEX, DEY
                 case 0xCA: case 0x88:
-                // JMP, JSR
-                case 0x4C: case 0x6C: case 0x20:
+                // JMP, JSR, RTS
+                case 0x4C: case 0x6C: case 0x20: case 0x60:
                 // DEC
                 case 0xC6: case 0xD6: case 0xCE:
                     opState_.step = 1;
@@ -652,7 +653,6 @@ namespace nes_core {
         }
         bool branchTaken = false;
         switch (op) {
-            case OpCode::RTS: execRTS(); break;
             case OpCode::BRK: execBRK(); break;
             case OpCode::RTI: execRTI(); break;
             case OpCode::BCC: branchTaken = execBCC(addr.addr); break;
