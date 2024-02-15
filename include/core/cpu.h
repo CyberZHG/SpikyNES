@@ -257,7 +257,7 @@ namespace nes_core {
         void execRTSStep();
 
         /** Break command. */
-        void execBRK();
+        void execBRKStep();
         /** Return from interrupt. */
         void execRTI();
 
