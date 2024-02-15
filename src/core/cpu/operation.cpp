@@ -253,9 +253,11 @@ namespace nes_core {
         }
     }
 
-    void CPU::execORA(const std::uint16_t addr) {
-        const auto val = bus_->cpuRead(addr);
-        regs_.updateNZ(regs_.A |= val);
+    void CPU::execORAStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.updateNZ(regs_.A |= bus_->cpuRead(opState_.addr));
+            opState_.finished = true;
+        }
     }
 
     void CPU::execEOR(const std::uint16_t addr) {
