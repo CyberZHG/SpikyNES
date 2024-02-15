@@ -494,6 +494,7 @@ namespace nes_core {
                 case OpCode::PHP: execPHPStep(); break;
                 case OpCode::PLA: execPLAStep(); break;
                 case OpCode::PLP: execPLPStep(); break;
+                case OpCode::ASL: execASLStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -528,6 +529,8 @@ namespace nes_core {
                 case 0xAA: case 0xA8: case 0x8A: case 0x98: case 0xBA: case 0x9A:
                 // PHA, PHP, PLA, PLP
                 case 0x48: case 0x08: case 0x68: case 0x28:
+                // ASL
+                case 0x0A: case 0x06: case 0x16: case 0x0E:
                     opState_.step = 1;
                     isHighPrecision_ = true;
                     ++cycles_;
@@ -538,6 +541,8 @@ namespace nes_core {
                 case 0x86: case 0x96: case 0x8E:
                 // STY
                 case 0x84: case 0x94: case 0x8C:
+                // ASL ABS_X (RMW always takes extra cycle regardless of page cross)
+                case 0x1E:
                     opState_.step = 1;
                     opState_.isStore = true;
                     isHighPrecision_ = true;
@@ -578,7 +583,6 @@ namespace nes_core {
         }
         bool branchTaken = false;
         switch (op) {
-            case OpCode::ASL: mode == AM_ACC ? execASL() : execASL(addr.addr); break;
             case OpCode::LSR: mode == AM_ACC ? execLSR() : execLSR(addr.addr); break;
             case OpCode::ROL: mode == AM_ACC ? execROL() : execROL(addr.addr); break;
             case OpCode::ROR: mode == AM_ACC ? execROR() : execROR(addr.addr); break;

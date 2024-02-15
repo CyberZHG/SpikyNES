@@ -206,10 +206,8 @@ namespace nes_core {
         /** Pull processor status from stack. */
         void execPLPStep();
 
-        /** Arithmetic shift left on accumulator. */
-        void execASL();
         /** Arithmetic shift left. */
-        void execASL(std::uint16_t addr);
+        void execASLStep();
         /** Logical shift right on accumulator. */
         void execLSR();
         /** Logical shift right. */
