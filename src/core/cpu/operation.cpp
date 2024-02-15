@@ -21,8 +21,13 @@ namespace nes_core {
         return (high << 8) | low;
     }
 
-    void CPU::execLDA(const std::uint16_t addr) {
-        regs_.updateNZ(regs_.A = bus_->cpuRead(addr));
+    void CPU::execNOPStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            if (!opState_.isImplied) {
+                (void)bus_->cpuRead(opState_.addr);
+            }
+            opState_.finished = true;
+        }
     }
 
     void CPU::execLDAStep() {
@@ -32,19 +37,11 @@ namespace nes_core {
         }
     }
 
-    void CPU::execLDX(const std::uint16_t addr) {
-        regs_.updateNZ(regs_.X = bus_->cpuRead(addr));
-    }
-
     void CPU::execLDXStep() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.X = bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
-    }
-
-    void CPU::execLDY(const std::uint16_t addr) {
-        regs_.updateNZ(regs_.Y = bus_->cpuRead(addr));
     }
 
     void CPU::execLDYStep() {

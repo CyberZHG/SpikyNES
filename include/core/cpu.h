@@ -78,6 +78,7 @@ namespace nes_core {
         bool hasPageCross = false;
         std::uint8_t addressingFinishedStep = 0xFF;
         bool finished = false;
+        bool isImplied = false;
 
         void reset();
     };
@@ -165,14 +166,14 @@ namespace nes_core {
         AddressingResult addrRelative();
         void addrRelativeStep();
 
+        /** No operation. */
+        void execNOPStep();
+
         /** Load accumulator with memory. */
-        void execLDA(std::uint16_t addr);
         void execLDAStep();
         /** Load index register X from memory. */
-        void execLDX(std::uint16_t addr);
         void execLDXStep();
         /** Load index register Y from memory. */
-        void execLDY(std::uint16_t addr);
         void execLDYStep();
 
         /** Store accumulator in memory. */
