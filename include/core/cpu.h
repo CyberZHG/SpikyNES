@@ -134,37 +134,26 @@ namespace nes_core {
         std::uint16_t popWord();
 
         /** The operand is contained in the second byte of the instruction. */
-        AddressingResult addrImmediate();
         void addrImmediateStep();
         /** The second byte as low order bits and the third byte as the high order bits. */
-        AddressingResult addrAbsolute();
         void addrAbsoluteStep();
         /** X-indexed absolute. */
-        AddressingResult addrAbsoluteX();
         void addrAbsoluteXStep();
         /** Y-indexed absolute. */
-        AddressingResult addrAbsoluteY();
         void addrAbsoluteYStep();
         /** Use the address from memory. */
-        AddressingResult addrAbsoluteIndirect();
         void addrAbsoluteIndirectStep();
         /** Fetch from $00 - $FF. */
-        AddressingResult addrZeroPage();
         void addrZeroPageStep();
         /** X-indexed zero page. */
-        AddressingResult addrZeroPageX();
         void addrZeroPageXStep();
         /** Y-indexed zero page. */
-        AddressingResult addrZeroPageY();
         void addrZeroPageYStep();
         /** Use the address from X-indexed zero page. */
-        AddressingResult addrZeroPageIndirectX();
         void addrZeroPageIndirectXStep();
         /** Use the address from zero page then plus Y. */
-        AddressingResult addrZeroPageIndirectY();
         void addrZeroPageIndirectYStep();
         /** Add offset to the program counter. */
-        AddressingResult addrRelative();
         void addrRelativeStep();
 
         /** No operation. */

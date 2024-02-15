@@ -6,21 +6,9 @@ namespace nes_core {
         return (a & 0xFF00) != (b & 0xFF00);
     }
 
-    AddressingResult CPU::addrImmediate() {
-        return {regs_.PC++, false};
-    }
-
     void CPU::addrImmediateStep() {
         opState_.addr = regs_.PC++;
         opState_.addressingFinishedStep = 0;
-    }
-
-    AddressingResult CPU::addrAbsolute() {
-        AddressingResult result;
-        result.addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
-        result.pageCrossed = false;
-        regs_.PC += 2;
-        return result;
     }
 
     void CPU::addrAbsoluteStep() {
@@ -32,15 +20,6 @@ namespace nes_core {
             opState_.addr = (opState_.readHi << 8) | opState_.readLo;
             opState_.addressingFinishedStep = 2;
         }
-    }
-
-    AddressingResult CPU::addrAbsoluteX() {
-        AddressingResult result;
-        const auto addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
-        result.addr = addr + regs_.X;
-        result.pageCrossed = hasPageCross(addr, result.addr);
-        regs_.PC += 2;
-        return result;
     }
 
     void CPU::addrAbsoluteXStep() {
@@ -77,15 +56,6 @@ namespace nes_core {
         }
     }
 
-    AddressingResult CPU::addrAbsoluteY() {
-        AddressingResult result;
-        const auto addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
-        result.addr = addr + regs_.Y;
-        result.pageCrossed = hasPageCross(addr, result.addr);
-        regs_.PC += 2;
-        return result;
-    }
-
     void CPU::addrAbsoluteIndirectStep() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
@@ -101,24 +71,11 @@ namespace nes_core {
         }
     }
 
-    AddressingResult CPU::addrAbsoluteIndirect() {
-        AddressingResult result;
-        const auto addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
-        result.addr = bus_->cpuRead((addr & 0xFF00) | ((addr + 1) & 0x00FF)) << 8 | bus_->cpuRead(addr);
-        result.pageCrossed = false;
-        regs_.PC += 2;
-        return result;
-    }
-
     void CPU::addrZeroPageStep() {
         if (opState_.step == 1) {
             opState_.addr = bus_->cpuRead(regs_.PC++);
             opState_.addressingFinishedStep = 1;
         }
-    }
-
-    AddressingResult CPU::addrZeroPage() {
-        return {bus_->cpuRead(regs_.PC++), false};
     }
 
     void CPU::addrZeroPageXStep() {
@@ -131,14 +88,6 @@ namespace nes_core {
         }
     }
 
-    AddressingResult CPU::addrZeroPageX() {
-        AddressingResult result;
-        result.addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
-        result.addr = (result.addr + regs_.X) & 0xFF;
-        result.pageCrossed = false;
-        return result;
-    }
-
     void CPU::addrZeroPageYStep() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
@@ -147,23 +96,6 @@ namespace nes_core {
             opState_.addr = (opState_.readLo + regs_.Y) & 0xFF;
             opState_.addressingFinishedStep = 2;
         }
-    }
-
-    AddressingResult CPU::addrZeroPageY() {
-        AddressingResult result;
-        result.addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
-        result.addr = (result.addr + regs_.Y) & 0xFF;
-        result.pageCrossed = false;
-        return result;
-    }
-
-    AddressingResult CPU::addrZeroPageIndirectX() {
-        auto addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
-        addr = (addr + regs_.X) & 0xFF;
-        AddressingResult result;
-        result.addr = bus_->cpuRead((addr + 1) & 0xFF) << 8 | bus_->cpuRead(addr);
-        result.pageCrossed = false;
-        return result;
     }
 
     void CPU::addrZeroPageIndirectXStep() {
@@ -179,15 +111,6 @@ namespace nes_core {
             opState_.addr = (opState_.readHi << 8) | opState_.readLo;
             opState_.addressingFinishedStep = 4;
         }
-    }
-
-    AddressingResult CPU::addrZeroPageIndirectY() {
-        auto addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
-        addr = bus_->cpuRead((addr + 1) & 0xFF) << 8 | bus_->cpuRead(addr);
-        AddressingResult result;
-        result.addr = addr + regs_.Y;
-        result.pageCrossed = hasPageCross(addr, result.addr);
-        return result;
     }
 
     void CPU::addrZeroPageIndirectYStep() {
@@ -216,11 +139,5 @@ namespace nes_core {
             opState_.hasPageCross = hasPageCross(regs_.PC, opState_.addr);
             opState_.addressingFinishedStep = 0;
         }
-    }
-
-    AddressingResult CPU::addrRelative() {
-        const auto offset = static_cast<std::int8_t>(bus_->cpuRead(regs_.PC++));
-        const auto addr = static_cast<std::uint16_t>(regs_.PC + offset);
-        return {addr, hasPageCross(regs_.PC, addr)};
     }
 }
