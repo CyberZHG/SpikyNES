@@ -114,8 +114,13 @@ namespace nes_core {
         }
     }
 
-    void CPU::execPHA() {
-        pushByte(regs_.A);
+    void CPU::execPHAStep() {
+        if (opState_.step == 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+        } else if (opState_.step == 2) {
+            pushByte(regs_.A);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execPHP() {
