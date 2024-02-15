@@ -268,7 +268,7 @@ namespace nes_core {
         /** Branch on result zero. */
         void execBEQStep();
         /** Branch on result minus. */
-        bool execBMI(std::uint16_t addr);
+        void execBMIStep();
         /** Branch on result not zero. */
         bool execBNE(std::uint16_t addr);
         /** Branch on result plus. */
