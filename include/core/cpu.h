@@ -204,7 +204,7 @@ namespace nes_core {
         /** Pull accumulator from stack. */
         void execPLAStep();
         /** Pull processor status from stack. */
-        void execPLP();
+        void execPLPStep();
 
         /** Arithmetic shift left on accumulator. */
         void execASL();

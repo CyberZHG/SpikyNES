@@ -493,6 +493,7 @@ namespace nes_core {
                 case OpCode::PHA: execPHAStep(); break;
                 case OpCode::PHP: execPHPStep(); break;
                 case OpCode::PLA: execPLAStep(); break;
+                case OpCode::PLP: execPLPStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -525,8 +526,8 @@ namespace nes_core {
                 case 0xA0: case 0xAC: case 0xBC: case 0xA4: case 0xB4:
                 // Transfer
                 case 0xAA: case 0xA8: case 0x8A: case 0x98: case 0xBA: case 0x9A:
-                // PHA, PHP, PLA
-                case 0x48: case 0x08: case 0x68:
+                // PHA, PHP, PLA, PLP
+                case 0x48: case 0x08: case 0x68: case 0x28:
                     opState_.step = 1;
                     isHighPrecision_ = true;
                     ++cycles_;
@@ -577,7 +578,6 @@ namespace nes_core {
         }
         bool branchTaken = false;
         switch (op) {
-            case OpCode::PLP: execPLP(); break;
             case OpCode::ASL: mode == AM_ACC ? execASL() : execASL(addr.addr); break;
             case OpCode::LSR: mode == AM_ACC ? execLSR() : execLSR(addr.addr); break;
             case OpCode::ROL: mode == AM_ACC ? execROL() : execROL(addr.addr); break;
