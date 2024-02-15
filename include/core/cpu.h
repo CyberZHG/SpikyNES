@@ -211,10 +211,8 @@ namespace nes_core {
         /** Logical shift right. */
         void execLSRStep();
 
-        /** Rotate left on accumulator. */
-        void execROL();
         /** Rotate left. */
-        void execROL(std::uint16_t addr);
+        void execROLStep();
         /** Rotate right on accumulator. */
         void execROR();
         /** Rotate right. */
