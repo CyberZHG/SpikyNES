@@ -274,7 +274,7 @@ namespace nes_core {
         /** Branch on result plus. */
         void execBPLStep();
         /** Branch on overflow clear. */
-        bool execBVC(std::uint16_t addr);
+        void execBVCStep();
         /** Branch on overflow set. */
         bool execBVS(std::uint16_t addr);
 
