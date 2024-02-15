@@ -510,12 +510,24 @@ namespace nes_core {
         }
     }
 
-    bool CPU::execBEQ(const std::uint16_t addr) {
-        if (regs_.Z()) {
-            regs_.PC = addr;
-            return true;
+    void CPU::execBEQStep() {
+        if (opState_.step == 1) {
+            if (!regs_.Z()) {
+                opState_.finished = true;
+            }
+        } else if (opState_.step == 2) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+            if (opState_.hasPageCross) {
+                opState_.baseAddr = (regs_.PC & 0xFF00) | (opState_.addr & 0x00FF);
+            }
+            regs_.PC = opState_.addr;
+            if (!opState_.hasPageCross) {
+                opState_.finished = true;
+            }
+        } else if (opState_.step == 3) {
+            opState_.readDummy = bus_->cpuRead(opState_.baseAddr);
+            opState_.finished = true;
         }
-        return false;
     }
 
     bool CPU::execBMI(const std::uint16_t addr) {
