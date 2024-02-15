@@ -276,7 +276,7 @@ namespace nes_core {
         /** Branch on overflow clear. */
         void execBVCStep();
         /** Branch on overflow set. */
-        bool execBVS(std::uint16_t addr);
+        void execBVSStep();
 
         /** Clear carry flag. */
         void execCLC();

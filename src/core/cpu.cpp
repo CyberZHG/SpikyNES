@@ -540,6 +540,7 @@ namespace nes_core {
                 case OpCode::BNE: execBNEStep(); break;
                 case OpCode::BPL: execBPLStep(); break;
                 case OpCode::BVC: execBVCStep(); break;
+                case OpCode::BVS: execBVSStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -608,8 +609,8 @@ namespace nes_core {
                 case 0xCA: case 0x88:
                 // JMP, JSR, RTS, BRK, RTI
                 case 0x4C: case 0x6C: case 0x20: case 0x60: case 0x00: case 0x40:
-                // BCC, BCS, BEQ, BMI, BNE, BPL, BVC
-                case 0x90: case 0xB0: case 0xF0: case 0x30: case 0xD0: case 0x10: case 0x50:
+                // BCC, BCS, BEQ, BMI, BNE, BPL, BVC, BVS
+                case 0x90: case 0xB0: case 0xF0: case 0x30: case 0xD0: case 0x10: case 0x50: case 0x70:
                 // DEC
                 case 0xC6: case 0xD6: case 0xCE:
                     opState_.step = 1;
@@ -664,7 +665,6 @@ namespace nes_core {
         }
         bool branchTaken = false;
         switch (op) {
-            case OpCode::BVS: branchTaken = execBVS(addr.addr); break;
             case OpCode::CLC: execCLC(); break;
             case OpCode::CLD: execCLD(); break;
             case OpCode::CLI: execCLI(); break;
