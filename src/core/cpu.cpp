@@ -466,13 +466,15 @@ namespace nes_core {
                 case AM_ZP_Y: addrZeroPageYStep(); break;
                 case AM_IND_X: addrZeroPageIndirectXStep(); break;
                 case AM_IND_Y: addrZeroPageIndirectYStep(); break;
-                case AM_IND:   addrAbsoluteIndirectStep(); break;
-                case AM_REL:   addrRelativeStep(); break;
+                case AM_IND: addrAbsoluteIndirectStep(); break;
+                case AM_REL: addrRelativeStep(); break;
                 default:
                     throw std::runtime_error("Invalid addressing mode");
             }
             switch (op) {
                 case OpCode::LDA: execLDAStep(); break;
+                case OpCode::LDX: execLDXStep(); break;
+                case OpCode::LDY: execLDYStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -490,7 +492,12 @@ namespace nes_core {
         const auto [op, cycles, mode] = OP_INFO[opState_.code];
         if (opState_.step == 0) {
             switch (opState_.code) {
+                // LDA
                 case 0xA9: case 0xAD: case 0xBD: case 0xB9: case 0xA5: case 0xB5: case 0xA1: case 0xB1:
+                // LDX
+                case 0xA2: case 0xAE: case 0xBE: case 0xA6: case 0xB6:
+                // LDY
+                case 0xA0: case 0xAC: case 0xBC: case 0xA4: case 0xB4:
                     opState_.step = 1;
                     isHighPrecision_ = true;
                     ++cycles_;

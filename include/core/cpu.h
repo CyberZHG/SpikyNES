@@ -170,8 +170,10 @@ namespace nes_core {
         void execLDAStep();
         /** Load index register X from memory. */
         void execLDX(std::uint16_t addr);
+        void execLDXStep();
         /** Load index register Y from memory. */
         void execLDY(std::uint16_t addr);
+        void execLDYStep();
 
         /** Store accumulator in memory. */
         void execSTA(std::uint16_t addr) const;
