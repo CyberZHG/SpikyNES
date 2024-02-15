@@ -375,8 +375,12 @@ namespace nes_core {
         }
     }
 
-    void CPU::execDEX() {
-        regs_.updateNZ(--regs_.X);
+    void CPU::execDEXStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+            regs_.updateNZ(--regs_.X);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execDEY() {

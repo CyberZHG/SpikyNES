@@ -245,7 +245,7 @@ namespace nes_core {
         /** Decrement memory by one. */
         void execDECStep();
         /** Decrement index register X by one. */
-        void execDEX();
+        void execDEXStep();
         /** Decrement index register Y by one. */
         void execDEY();
 
