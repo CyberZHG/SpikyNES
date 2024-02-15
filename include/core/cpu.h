@@ -259,7 +259,7 @@ namespace nes_core {
         /** Break command. */
         void execBRKStep();
         /** Return from interrupt. */
-        void execRTI();
+        void execRTIStep();
 
         /** Branch on carry clear. */
         bool execBCC(std::uint16_t addr);

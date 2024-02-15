@@ -451,9 +451,23 @@ namespace nes_core {
         }
     }
 
-    void CPU::execRTI() {
-        regs_.P = (popByte() | 0b00100000) & ~(1 << CPURegisters::INDEX_B);
-        regs_.PC = popWord();
+    void CPU::execRTIStep() {
+        if (opState_.step == 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+        } else if (opState_.step == 2) {
+            opState_.readDummy = bus_->cpuRead(CPU_STACK_OFFSET + regs_.SP);
+            ++regs_.SP;
+        } else if (opState_.step == 3) {
+            regs_.P = (bus_->cpuRead(CPU_STACK_OFFSET + regs_.SP) | 0b00100000) & ~(1 << CPURegisters::INDEX_B);
+            ++regs_.SP;
+        } else if (opState_.step == 4) {
+            opState_.readLo = bus_->cpuRead(CPU_STACK_OFFSET + regs_.SP);
+            ++regs_.SP;
+        } else if (opState_.step == 5) {
+            opState_.readHi = bus_->cpuRead(CPU_STACK_OFFSET + regs_.SP);
+            regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            opState_.finished = true;
+        }
     }
 
     bool CPU::execBCC(const std::uint16_t addr) {
