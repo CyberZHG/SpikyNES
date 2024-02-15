@@ -241,7 +241,7 @@ namespace nes_core {
         /** Increment index register X by one. */
         void execINXStep();
         /** Increment index register Y by one. */
-        void execINY();
+        void execINYStep();
         /** Decrement memory by one. */
         void execDEC(std::uint16_t addr);
         /** Decrement index register X by one. */

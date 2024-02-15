@@ -353,8 +353,12 @@ namespace nes_core {
         }
     }
 
-    void CPU::execINY() {
-        regs_.updateNZ(++regs_.Y);
+    void CPU::execINYStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+            regs_.updateNZ(++regs_.Y);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execDEC(const std::uint16_t addr) {
