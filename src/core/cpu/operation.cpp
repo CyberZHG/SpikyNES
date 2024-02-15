@@ -289,13 +289,16 @@ namespace nes_core {
         }
     }
 
-    void CPU::execSBC(const std::uint16_t addr) {
-        const auto m = bus_->cpuRead(addr);
-        const auto val = static_cast<int>(regs_.A) - static_cast<int>(m) - (1 - regs_.C());
-        const auto result = static_cast<std::uint8_t>(val);
-        updateBit(regs_.P, CPURegisters::INDEX_C, val >= 0);
-        updateBit(regs_.P, CPURegisters::INDEX_V, ((regs_.A ^ result) & (regs_.A ^ m) & 0x80) != 0);
-        regs_.updateNZ(regs_.A = result);
+    void CPU::execSBCStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            const auto m = bus_->cpuRead(opState_.addr);
+            const auto val = static_cast<int>(regs_.A) - static_cast<int>(m) - (1 - regs_.C());
+            const auto result = static_cast<std::uint8_t>(val);
+            updateBit(regs_.P, CPURegisters::INDEX_C, val >= 0);
+            updateBit(regs_.P, CPURegisters::INDEX_V, ((regs_.A ^ result) & (regs_.A ^ m) & 0x80) != 0);
+            regs_.updateNZ(regs_.A = result);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execCMP(const std::uint16_t addr) {

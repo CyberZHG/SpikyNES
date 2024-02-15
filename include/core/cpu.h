@@ -228,7 +228,7 @@ namespace nes_core {
         /** Add memory to accumulator with carry. */
         void execADCStep();
         /** Subtract memory from accumulator with borrow. */
-        void execSBC(std::uint16_t addr);
+        void execSBCStep();
         /** Compare memory and accumulator. */
         void execCMP(std::uint16_t addr);
         /** Compare index register X to memory. */
