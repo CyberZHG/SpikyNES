@@ -678,8 +678,12 @@ namespace nes_core {
         }
     }
 
-    void CPU::execSEI() {
-        setBit(regs_.P, CPURegisters::INDEX_I);
+    void CPU::execSEIStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+            setBit(regs_.P, CPURegisters::INDEX_I);
+            opState_.finished = true;
+        }
     }
 
     int CPU::handleNMI() {

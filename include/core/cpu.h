@@ -291,7 +291,7 @@ namespace nes_core {
         /** Set decimal mode. */
         void execSEDStep();
         /** set interrupt disable. */
-        void execSEI();
+        void execSEIStep();
 
         // Unofficial opcodes
         /** "AND" memory with stack pointer. */
