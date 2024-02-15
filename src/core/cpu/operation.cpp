@@ -321,11 +321,14 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCPY(const std::uint16_t addr) {
-        const auto m = bus_->cpuRead(addr);
-        const int val = static_cast<int>(regs_.Y) - static_cast<int>(m);
-        updateBit(regs_.P, CPURegisters::INDEX_C, m <= regs_.Y);
-        regs_.updateNZ(val);
+    void CPU::execCPYStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            const auto m = bus_->cpuRead(opState_.addr);
+            const int val = static_cast<int>(regs_.Y) - static_cast<int>(m);
+            updateBit(regs_.P, CPURegisters::INDEX_C, m <= regs_.Y);
+            regs_.updateNZ(val);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execINC(const std::uint16_t addr) {

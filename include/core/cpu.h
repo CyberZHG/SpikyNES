@@ -234,7 +234,7 @@ namespace nes_core {
         /** Compare index register X to memory. */
         void execCPXStep();
         /** Compare index register Y to memory. */
-        void execCPY(std::uint16_t addr);
+        void execCPYStep();
 
         /** Increment memory by one. */
         void execINC(std::uint16_t addr);
