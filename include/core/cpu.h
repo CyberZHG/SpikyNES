@@ -156,8 +156,10 @@ namespace nes_core {
         void addrZeroPageYStep();
         /** Use the address from X-indexed zero page. */
         AddressingResult addrZeroPageIndirectX();
+        void addrZeroPageIndirectXStep();
         /** Use the address from zero page then plus Y. */
         AddressingResult addrZeroPageIndirectY();
+        void addrZeroPageIndirectYStep();
         /** Add offset to the program counter. */
         AddressingResult addrRelative();
 

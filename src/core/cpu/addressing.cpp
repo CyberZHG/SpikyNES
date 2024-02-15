@@ -151,6 +151,21 @@ namespace nes_core {
         return result;
     }
 
+    void CPU::addrZeroPageIndirectXStep() {
+        if (opState_.step == 1) {
+            opState_.readLo = bus_->cpuRead(regs_.PC++);
+        } else if (opState_.step == 2) {
+            opState_.readDummy = bus_->cpuRead(opState_.readLo);
+            opState_.baseAddr = (opState_.readLo + regs_.X) & 0xFF;
+        } else if (opState_.step == 3) {
+            opState_.readLo = bus_->cpuRead(opState_.baseAddr);
+        } else if (opState_.step == 4) {
+            opState_.readHi = bus_->cpuRead((opState_.baseAddr + 1) & 0xFF);
+            opState_.addr = (opState_.readHi << 8) | opState_.readLo;
+            opState_.addressingFinishedStep = 4;
+        }
+    }
+
     AddressingResult CPU::addrZeroPageIndirectY() {
         auto addr = static_cast<std::uint16_t>(bus_->cpuRead(regs_.PC++));
         addr = bus_->cpuRead((addr + 1) & 0xFF) << 8 | bus_->cpuRead(addr);
@@ -158,6 +173,25 @@ namespace nes_core {
         result.addr = addr + regs_.Y;
         result.pageCrossed = hasPageCross(addr, result.addr);
         return result;
+    }
+
+    void CPU::addrZeroPageIndirectYStep() {
+        if (opState_.step == 1) {
+            opState_.baseAddr = bus_->cpuRead(regs_.PC++);
+        } else if (opState_.step == 2) {
+            opState_.readLo = bus_->cpuRead(opState_.baseAddr);
+        } else if (opState_.step == 3) {
+            opState_.readHi = bus_->cpuRead((opState_.baseAddr + 1) & 0xFF);
+            opState_.baseAddr = (opState_.readHi << 8) | opState_.readLo;
+            opState_.addr = opState_.baseAddr + regs_.Y;
+            opState_.hasPageCross = hasPageCross(opState_.baseAddr, opState_.addr);
+            if (!opState_.hasPageCross) {
+                opState_.addressingFinishedStep = 3;
+            }
+        } else if (opState_.step == 4 && opState_.hasPageCross) {
+            opState_.readDummy = bus_->cpuRead((opState_.readHi << 8) | static_cast<std::uint8_t>(opState_.readLo + regs_.Y));
+            opState_.addressingFinishedStep = 4;
+        }
     }
 
     AddressingResult CPU::addrRelative() {
