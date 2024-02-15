@@ -247,7 +247,7 @@ namespace nes_core {
         /** Decrement index register X by one. */
         void execDEXStep();
         /** Decrement index register Y by one. */
-        void execDEY();
+        void execDEYStep();
 
         /** Jump indirect. */
         void execJMP(std::uint16_t addr);
