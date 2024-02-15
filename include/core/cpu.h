@@ -250,7 +250,7 @@ namespace nes_core {
         void execDEYStep();
 
         /** Jump indirect. */
-        void execJMP(std::uint16_t addr);
+        void execJMPStep();
         /** Jump to subroutine. */
         void execJSR(std::uint16_t addr);
         /** Return from subroutine. */

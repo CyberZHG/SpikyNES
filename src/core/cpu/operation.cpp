@@ -391,8 +391,11 @@ namespace nes_core {
         }
     }
 
-    void CPU::execJMP(const std::uint16_t addr) {
-        regs_.PC = addr;
+    void CPU::execJMPStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.PC = opState_.addr;
+            opState_.finished = true;
+        }
     }
 
     void CPU::execJSR(const std::uint16_t addr) {
