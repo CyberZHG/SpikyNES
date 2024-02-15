@@ -239,7 +239,7 @@ namespace nes_core {
         /** Increment memory by one. */
         void execINCStep();
         /** Increment index register X by one. */
-        void execINX();
+        void execINXStep();
         /** Increment index register Y by one. */
         void execINY();
         /** Decrement memory by one. */
