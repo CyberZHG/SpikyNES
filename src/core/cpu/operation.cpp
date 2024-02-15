@@ -331,10 +331,18 @@ namespace nes_core {
         }
     }
 
-    void CPU::execINC(const std::uint16_t addr) {
-        const auto val = bus_->cpuRead(addr) + 1;
-        bus_->cpuWrite(addr, val);
-        regs_.updateNZ(val);
+    void CPU::execINCStep() {
+        const auto n = opState_.addressingFinishedStep;
+        if (opState_.step == n + 1) {
+            opState_.readDummy = bus_->cpuRead(opState_.addr);
+        } else if (opState_.step == n + 2) {
+            bus_->cpuWrite(opState_.addr, opState_.readDummy);
+            ++opState_.readDummy;
+        } else if (opState_.step == n + 3) {
+            regs_.updateNZ(opState_.readDummy);
+            bus_->cpuWrite(opState_.addr, opState_.readDummy);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execINX() {

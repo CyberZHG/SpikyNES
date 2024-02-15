@@ -237,7 +237,7 @@ namespace nes_core {
         void execCPYStep();
 
         /** Increment memory by one. */
-        void execINC(std::uint16_t addr);
+        void execINCStep();
         /** Increment index register X by one. */
         void execINX();
         /** Increment index register Y by one. */
