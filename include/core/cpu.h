@@ -72,8 +72,12 @@ namespace nes_core {
         std::uint8_t step = 0;
         std::uint8_t readLo = 0;
         std::uint8_t readHi = 0;
+        std::uint8_t readDummy = 0;
+        std::uint16_t baseAddr = 0;
         std::uint16_t addr = 0;
-        std::uint8_t addressingFinishedStep = 0;
+        bool hasPageCross = false;
+        std::uint8_t addressingFinishedStep = 0xFF;
+        bool finished = false;
 
         void reset();
     };
@@ -135,8 +139,10 @@ namespace nes_core {
         void addrAbsoluteStep();
         /** X-indexed absolute. */
         AddressingResult addrAbsoluteX();
+        void addrAbsoluteXStep();
         /** Y-indexed absolute. */
         AddressingResult addrAbsoluteY();
+        void addrAbsoluteYStep();
         /** Use the address from memory. */
         AddressingResult addrAbsoluteIndirect();
         /** Fetch from $00 - $FF. */

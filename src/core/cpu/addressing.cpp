@@ -12,6 +12,7 @@ namespace nes_core {
 
     void CPU::addrImmediateStep() {
         opState_.addr = regs_.PC++;
+        opState_.addressingFinishedStep = 0;
     }
 
     AddressingResult CPU::addrAbsolute() {
@@ -40,6 +41,40 @@ namespace nes_core {
         result.pageCrossed = hasPageCross(addr, result.addr);
         regs_.PC += 2;
         return result;
+    }
+
+    void CPU::addrAbsoluteXStep() {
+        if (opState_.step == 1) {
+            opState_.readLo = bus_->cpuRead(regs_.PC++);
+        } else if (opState_.step == 2) {
+            opState_.readHi = bus_->cpuRead(regs_.PC++);
+            opState_.baseAddr = (opState_.readHi << 8) | opState_.readLo;
+            opState_.addr = opState_.baseAddr + regs_.X;
+            opState_.hasPageCross = hasPageCross(opState_.baseAddr, opState_.addr);
+            if (!opState_.hasPageCross) {
+                opState_.addressingFinishedStep = 2;
+            }
+        } else if (opState_.step == 3 && opState_.hasPageCross) {
+            opState_.readDummy = bus_->cpuRead(opState_.baseAddr);
+            opState_.addressingFinishedStep = 3;
+        }
+    }
+
+    void CPU::addrAbsoluteYStep() {
+        if (opState_.step == 1) {
+            opState_.readLo = bus_->cpuRead(regs_.PC++);
+        } else if (opState_.step == 2) {
+            opState_.readHi = bus_->cpuRead(regs_.PC++);
+            opState_.baseAddr = (opState_.readHi << 8) | opState_.readLo;
+            opState_.addr = opState_.baseAddr + regs_.Y;
+            opState_.hasPageCross = hasPageCross(opState_.baseAddr, opState_.addr);
+            if (!opState_.hasPageCross) {
+                opState_.addressingFinishedStep = 2;
+            }
+        } else if (opState_.step == 3 && opState_.hasPageCross) {
+            opState_.readDummy = bus_->cpuRead(opState_.baseAddr);
+            opState_.addressingFinishedStep = 3;
+        }
     }
 
     AddressingResult CPU::addrAbsoluteY() {

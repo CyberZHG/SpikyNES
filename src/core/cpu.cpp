@@ -369,8 +369,12 @@ namespace nes_core {
         step = 0;
         readLo = 0;
         readHi = 0;
+        readDummy = 0;
+        baseAddr = 0;
         addr = 0;
-        addressingFinishedStep = 0;
+        hasPageCross = false;
+        addressingFinishedStep = 0xFF;
+        finished = false;
     }
 
     CPU::CPU(Bus *bus) {
@@ -455,6 +459,8 @@ namespace nes_core {
                 case AM_ACC: break;
                 case AM_IMM: addrImmediateStep(); break;
                 case AM_ABS: addrAbsoluteStep(); break;
+                case AM_ABS_X: addrAbsoluteXStep(); break;
+                case AM_ABS_Y: addrAbsoluteYStep(); break;
                 default:
                     throw std::runtime_error("Invalid addressing mode");
             }
@@ -463,10 +469,12 @@ namespace nes_core {
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
-            if (++opState_.step == cycles) {
+            if (opState_.finished) {
                 isHighPrecision_ = false;
-                opState_.code = 0;
+                opState_.reset();
                 ++steps_;
+            } else {
+                ++opState_.step;
             }
             ++cycles_;
             return 1;
@@ -475,8 +483,7 @@ namespace nes_core {
         const auto [op, cycles, mode] = OP_INFO[opState_.code];
         if (opState_.step == 0) {
             switch (opState_.code) {
-                case 0xA9:
-                case 0xAD:
+                case 0xA9: case 0xAD: case 0xBD: case 0xB9:
                     opState_.step = 1;
                     isHighPrecision_ = true;
                     ++cycles_;

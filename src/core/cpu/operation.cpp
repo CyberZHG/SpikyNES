@@ -28,6 +28,7 @@ namespace nes_core {
     void CPU::execLDAStep() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A = bus_->cpuRead(opState_.addr));
+            opState_.finished = true;
         }
     }
 
