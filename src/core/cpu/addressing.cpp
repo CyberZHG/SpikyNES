@@ -95,8 +95,25 @@ namespace nes_core {
         return result;
     }
 
+    void CPU::addrZeroPageStep() {
+        if (opState_.step == 1) {
+            opState_.addr = bus_->cpuRead(regs_.PC++);
+            opState_.addressingFinishedStep = 1;
+        }
+    }
+
     AddressingResult CPU::addrZeroPage() {
         return {bus_->cpuRead(regs_.PC++), false};
+    }
+
+    void CPU::addrZeroPageXStep() {
+        if (opState_.step == 1) {
+            opState_.readLo = bus_->cpuRead(regs_.PC++);
+        } else if (opState_.step == 2) {
+            opState_.readDummy = bus_->cpuRead(opState_.readLo);
+            opState_.addr = (opState_.readLo + regs_.X) & 0xFF;
+            opState_.addressingFinishedStep = 2;
+        }
     }
 
     AddressingResult CPU::addrZeroPageX() {
@@ -105,6 +122,16 @@ namespace nes_core {
         result.addr = (result.addr + regs_.X) & 0xFF;
         result.pageCrossed = false;
         return result;
+    }
+
+    void CPU::addrZeroPageYStep() {
+        if (opState_.step == 1) {
+            opState_.readLo = bus_->cpuRead(regs_.PC++);
+        } else if (opState_.step == 2) {
+            opState_.readDummy = bus_->cpuRead(opState_.readLo);
+            opState_.addr = (opState_.readLo + regs_.Y) & 0xFF;
+            opState_.addressingFinishedStep = 2;
+        }
     }
 
     AddressingResult CPU::addrZeroPageY() {

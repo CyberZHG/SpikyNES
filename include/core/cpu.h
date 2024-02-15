@@ -147,10 +147,13 @@ namespace nes_core {
         AddressingResult addrAbsoluteIndirect();
         /** Fetch from $00 - $FF. */
         AddressingResult addrZeroPage();
+        void addrZeroPageStep();
         /** X-indexed zero page. */
         AddressingResult addrZeroPageX();
+        void addrZeroPageXStep();
         /** Y-indexed zero page. */
         AddressingResult addrZeroPageY();
+        void addrZeroPageYStep();
         /** Use the address from X-indexed zero page. */
         AddressingResult addrZeroPageIndirectX();
         /** Use the address from zero page then plus Y. */

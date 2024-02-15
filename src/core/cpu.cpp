@@ -461,6 +461,9 @@ namespace nes_core {
                 case AM_ABS: addrAbsoluteStep(); break;
                 case AM_ABS_X: addrAbsoluteXStep(); break;
                 case AM_ABS_Y: addrAbsoluteYStep(); break;
+                case AM_ZP: addrZeroPageStep(); break;
+                case AM_ZP_X: addrZeroPageXStep(); break;
+                case AM_ZP_Y: addrZeroPageYStep(); break;
                 default:
                     throw std::runtime_error("Invalid addressing mode");
             }
@@ -483,7 +486,7 @@ namespace nes_core {
         const auto [op, cycles, mode] = OP_INFO[opState_.code];
         if (opState_.step == 0) {
             switch (opState_.code) {
-                case 0xA9: case 0xAD: case 0xBD: case 0xB9:
+                case 0xA9: case 0xAD: case 0xBD: case 0xB9: case 0xA5: case 0xB5:
                     opState_.step = 1;
                     isHighPrecision_ = true;
                     ++cycles_;
