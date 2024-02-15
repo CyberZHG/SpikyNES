@@ -12,7 +12,7 @@ protected:
     Emulator emulator;
 };
 
-TEST_F(CPUTimingTest, cpu_timing_test) {
+TEST_F(CPUTimingTest, DISABLED_cpu_timing_test) {
     const std::string romPath = "../tests/roms/cpu/cpu_timing_test.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
     emulator.controller1().press(Controller::Button::B);

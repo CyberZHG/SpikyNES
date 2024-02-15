@@ -77,6 +77,7 @@ namespace nes_core {
         OpCode op = OpCode::INVALID;
         int cycles = 0;
         AddressingMode mode = AM_NONE;
+        bool isStore = false;
     };
 
     static constexpr OpInfo OP_INFO[256] {
@@ -99,7 +100,7 @@ namespace nes_core {
         /* 0x10 */ {OpCode::BPL, 2, AM_REL},
         /* 0x11 */ {OpCode::ORA, 5, AM_IND_Y},
         /* 0x12 */ {OpCode::JAM, 0, AM_IMP},
-        /* 0x13 */ {OpCode::SLO, 8, AM_IND_Y},
+        /* 0x13 */ {OpCode::SLO, 8, AM_IND_Y, true},
         /* 0x14 */ {OpCode::NOP, 4, AM_ZP_X},
         /* 0x15 */ {OpCode::ORA, 4, AM_ZP_X},
         /* 0x16 */ {OpCode::ASL, 6, AM_ZP_X},
@@ -107,11 +108,11 @@ namespace nes_core {
         /* 0x18 */ {OpCode::CLC, 2, AM_IMP},
         /* 0x19 */ {OpCode::ORA, 4, AM_ABS_Y},
         /* 0x1A */ {OpCode::NOP, 2, AM_IMP},
-        /* 0x1B */ {OpCode::SLO, 7, AM_ABS_Y},
+        /* 0x1B */ {OpCode::SLO, 7, AM_ABS_Y, true},
         /* 0x1C */ {OpCode::NOP, 4, AM_ABS_X},
         /* 0x1D */ {OpCode::ORA, 4, AM_ABS_X},
-        /* 0x1E */ {OpCode::ASL, 7, AM_ABS_X},
-        /* 0x1F */ {OpCode::SLO, 7, AM_ABS_X},
+        /* 0x1E */ {OpCode::ASL, 7, AM_ABS_X, true},
+        /* 0x1F */ {OpCode::SLO, 7, AM_ABS_X, true},
         /* 0x20 */ {OpCode::JSR, 6, AM_ABS},
         /* 0x21 */ {OpCode::AND, 6, AM_IND_X},
         /* 0x22 */ {OpCode::JAM, 0, AM_IMP},
@@ -131,7 +132,7 @@ namespace nes_core {
         /* 0x30 */ {OpCode::BMI, 2, AM_REL},
         /* 0x31 */ {OpCode::AND, 5, AM_IND_Y},
         /* 0x32 */ {OpCode::JAM, 0, AM_IMP},
-        /* 0x33 */ {OpCode::RLA, 8, AM_IND_Y},
+        /* 0x33 */ {OpCode::RLA, 8, AM_IND_Y, true},
         /* 0x34 */ {OpCode::NOP, 4, AM_ZP_X},
         /* 0x35 */ {OpCode::AND, 4, AM_ZP_X},
         /* 0x36 */ {OpCode::ROL, 6, AM_ZP_X},
@@ -139,11 +140,11 @@ namespace nes_core {
         /* 0x38 */ {OpCode::SEC, 2, AM_IMP},
         /* 0x39 */ {OpCode::AND, 4, AM_ABS_Y},
         /* 0x3A */ {OpCode::NOP, 2, AM_IMP},
-        /* 0x3B */ {OpCode::RLA, 7, AM_ABS_Y},
+        /* 0x3B */ {OpCode::RLA, 7, AM_ABS_Y, true},
         /* 0x3C */ {OpCode::NOP, 4, AM_ABS_X},
         /* 0x3D */ {OpCode::AND, 4, AM_ABS_X},
-        /* 0x3E */ {OpCode::ROL, 7, AM_ABS_X},
-        /* 0x3F */ {OpCode::RLA, 7, AM_ABS_X},
+        /* 0x3E */ {OpCode::ROL, 7, AM_ABS_X, true},
+        /* 0x3F */ {OpCode::RLA, 7, AM_ABS_X, true},
         /* 0x40 */ {OpCode::RTI, 6, AM_IMP},
         /* 0x41 */ {OpCode::EOR, 6, AM_IND_X},
         /* 0x42 */ {OpCode::JAM, 0, AM_IMP},
@@ -163,7 +164,7 @@ namespace nes_core {
         /* 0x50 */ {OpCode::BVC, 2, AM_REL},
         /* 0x51 */ {OpCode::EOR, 5, AM_IND_Y},
         /* 0x52 */ {OpCode::JAM, 0, AM_IMP},
-        /* 0x53 */ {OpCode::SRE, 8, AM_IND_Y},
+        /* 0x53 */ {OpCode::SRE, 8, AM_IND_Y, true},
         /* 0x54 */ {OpCode::NOP, 4, AM_ZP_X},
         /* 0x55 */ {OpCode::EOR, 4, AM_ZP_X},
         /* 0x56 */ {OpCode::LSR, 6, AM_ZP_X},
@@ -171,11 +172,11 @@ namespace nes_core {
         /* 0x58 */ {OpCode::CLI, 2, AM_IMP},
         /* 0x59 */ {OpCode::EOR, 4, AM_ABS_Y},
         /* 0x5A */ {OpCode::NOP, 2, AM_IMP},
-        /* 0x5B */ {OpCode::SRE, 7, AM_ABS_Y},
+        /* 0x5B */ {OpCode::SRE, 7, AM_ABS_Y, true},
         /* 0x5C */ {OpCode::NOP, 4, AM_ABS_X},
         /* 0x5D */ {OpCode::EOR, 4, AM_ABS_X},
-        /* 0x5E */ {OpCode::LSR, 7, AM_ABS_X},
-        /* 0x5F */ {OpCode::SRE, 7, AM_ABS_X},
+        /* 0x5E */ {OpCode::LSR, 7, AM_ABS_X, true},
+        /* 0x5F */ {OpCode::SRE, 7, AM_ABS_X, true},
         /* 0x60 */ {OpCode::RTS, 6, AM_IMP},
         /* 0x61 */ {OpCode::ADC, 6, AM_IND_X},
         /* 0x62 */ {OpCode::JAM, 0, AM_IMP},
@@ -195,7 +196,7 @@ namespace nes_core {
         /* 0x70 */ {OpCode::BVS, 2, AM_REL},
         /* 0x71 */ {OpCode::ADC, 5, AM_IND_Y},
         /* 0x72 */ {OpCode::JAM, 0, AM_IMP},
-        /* 0x73 */ {OpCode::RRA, 8, AM_IND_Y},
+        /* 0x73 */ {OpCode::RRA, 8, AM_IND_Y, true},
         /* 0x74 */ {OpCode::NOP, 4, AM_ZP_X},
         /* 0x75 */ {OpCode::ADC, 4, AM_ZP_X},
         /* 0x76 */ {OpCode::ROR, 6, AM_ZP_X},
@@ -203,43 +204,43 @@ namespace nes_core {
         /* 0x78 */ {OpCode::SEI, 2, AM_IMP},
         /* 0x79 */ {OpCode::ADC, 4, AM_ABS_Y},
         /* 0x7A */ {OpCode::NOP, 2, AM_IMP},
-        /* 0x7B */ {OpCode::RRA, 7, AM_ABS_Y},
+        /* 0x7B */ {OpCode::RRA, 7, AM_ABS_Y, true},
         /* 0x7C */ {OpCode::NOP, 4, AM_ABS_X},
         /* 0x7D */ {OpCode::ADC, 4, AM_ABS_X},
-        /* 0x7E */ {OpCode::ROR, 7, AM_ABS_X},
-        /* 0x7F */ {OpCode::RRA, 7, AM_ABS_X},
+        /* 0x7E */ {OpCode::ROR, 7, AM_ABS_X, true},
+        /* 0x7F */ {OpCode::RRA, 7, AM_ABS_X, true},
         /* 0x80 */ {OpCode::NOP, 2, AM_IMM},
-        /* 0x81 */ {OpCode::STA, 6, AM_IND_X},
+        /* 0x81 */ {OpCode::STA, 6, AM_IND_X, true},
         /* 0x82 */ {OpCode::NOP, 2, AM_IMM},
-        /* 0x83 */ {OpCode::SAX, 6, AM_IND_X},
-        /* 0x84 */ {OpCode::STY, 3, AM_ZP},
-        /* 0x85 */ {OpCode::STA, 3, AM_ZP},
-        /* 0x86 */ {OpCode::STX, 3, AM_ZP},
-        /* 0x87 */ {OpCode::SAX, 3, AM_ZP},
+        /* 0x83 */ {OpCode::SAX, 6, AM_IND_X, true},
+        /* 0x84 */ {OpCode::STY, 3, AM_ZP, true},
+        /* 0x85 */ {OpCode::STA, 3, AM_ZP, true},
+        /* 0x86 */ {OpCode::STX, 3, AM_ZP, true},
+        /* 0x87 */ {OpCode::SAX, 3, AM_ZP, true},
         /* 0x88 */ {OpCode::DEY, 2, AM_IMP},
         /* 0x89 */ {OpCode::NOP, 2, AM_IMM},
         /* 0x8A */ {OpCode::TXA, 2, AM_IMP},
         /* 0x8B */ {OpCode::XAA, 2, AM_IMM},
-        /* 0x8C */ {OpCode::STY, 4, AM_ABS},
-        /* 0x8D */ {OpCode::STA, 4, AM_ABS},
-        /* 0x8E */ {OpCode::STX, 4, AM_ABS},
-        /* 0x8F */ {OpCode::SAX, 4, AM_ABS},
+        /* 0x8C */ {OpCode::STY, 4, AM_ABS, true},
+        /* 0x8D */ {OpCode::STA, 4, AM_ABS, true},
+        /* 0x8E */ {OpCode::STX, 4, AM_ABS, true},
+        /* 0x8F */ {OpCode::SAX, 4, AM_ABS, true},
         /* 0x90 */ {OpCode::BCC, 2, AM_REL},
-        /* 0x91 */ {OpCode::STA, 6, AM_IND_Y},
+        /* 0x91 */ {OpCode::STA, 6, AM_IND_Y, true},
         /* 0x92 */ {OpCode::JAM, 0, AM_IMP},
-        /* 0x93 */ {OpCode::SHA, 6, AM_IND_Y},
-        /* 0x94 */ {OpCode::STY, 4, AM_ZP_X},
-        /* 0x95 */ {OpCode::STA, 4, AM_ZP_X},
-        /* 0x96 */ {OpCode::STX, 4, AM_ZP_Y},
-        /* 0x97 */ {OpCode::SAX, 4, AM_ZP_Y},
+        /* 0x93 */ {OpCode::SHA, 6, AM_IND_Y, true},
+        /* 0x94 */ {OpCode::STY, 4, AM_ZP_X, true},
+        /* 0x95 */ {OpCode::STA, 4, AM_ZP_X, true},
+        /* 0x96 */ {OpCode::STX, 4, AM_ZP_Y, true},
+        /* 0x97 */ {OpCode::SAX, 4, AM_ZP_Y, true},
         /* 0x98 */ {OpCode::TYA, 2, AM_IMP},
-        /* 0x99 */ {OpCode::STA, 5, AM_ABS_Y},
+        /* 0x99 */ {OpCode::STA, 5, AM_ABS_Y, true},
         /* 0x9A */ {OpCode::TXS, 2, AM_IMP},
-        /* 0x9B */ {OpCode::SHS, 5, AM_ABS_Y},
-        /* 0x9C */ {OpCode::SHY, 5, AM_ABS_X},
-        /* 0x9D */ {OpCode::STA, 5, AM_ABS_X},
-        /* 0x9E */ {OpCode::SHX, 5, AM_ABS_Y},
-        /* 0x9F */ {OpCode::SHA, 5, AM_ABS_Y},
+        /* 0x9B */ {OpCode::SHS, 5, AM_ABS_Y, true},
+        /* 0x9C */ {OpCode::SHY, 5, AM_ABS_X, true},
+        /* 0x9D */ {OpCode::STA, 5, AM_ABS_X, true},
+        /* 0x9E */ {OpCode::SHX, 5, AM_ABS_Y, true},
+        /* 0x9F */ {OpCode::SHA, 5, AM_ABS_Y, true},
         /* 0xA0 */ {OpCode::LDY, 2, AM_IMM},
         /* 0xA1 */ {OpCode::LDA, 6, AM_IND_X},
         /* 0xA2 */ {OpCode::LDX, 2, AM_IMM},
@@ -291,7 +292,7 @@ namespace nes_core {
         /* 0xD0 */ {OpCode::BNE, 2, AM_REL},
         /* 0xD1 */ {OpCode::CMP, 5, AM_IND_Y},
         /* 0xD2 */ {OpCode::JAM, 0, AM_IMP},
-        /* 0xD3 */ {OpCode::DCP, 8, AM_IND_Y},
+        /* 0xD3 */ {OpCode::DCP, 8, AM_IND_Y, true},
         /* 0xD4 */ {OpCode::NOP, 4, AM_ZP_X},
         /* 0xD5 */ {OpCode::CMP, 4, AM_ZP_X},
         /* 0xD6 */ {OpCode::DEC, 6, AM_ZP_X},
@@ -299,11 +300,11 @@ namespace nes_core {
         /* 0xD8 */ {OpCode::CLD, 2, AM_IMP},
         /* 0xD9 */ {OpCode::CMP, 4, AM_ABS_Y},
         /* 0xDA */ {OpCode::NOP, 2, AM_IMP},
-        /* 0xDB */ {OpCode::DCP, 7, AM_ABS_Y},
+        /* 0xDB */ {OpCode::DCP, 7, AM_ABS_Y, true},
         /* 0xDC */ {OpCode::NOP, 4, AM_ABS_X},
         /* 0xDD */ {OpCode::CMP, 4, AM_ABS_X},
-        /* 0xDE */ {OpCode::DEC, 7, AM_ABS_X},
-        /* 0xDF */ {OpCode::DCP, 7, AM_ABS_X},
+        /* 0xDE */ {OpCode::DEC, 7, AM_ABS_X, true},
+        /* 0xDF */ {OpCode::DCP, 7, AM_ABS_X, true},
         /* 0xE0 */ {OpCode::CPX, 2, AM_IMM},
         /* 0xE1 */ {OpCode::SBC, 6, AM_IND_X},
         /* 0xE2 */ {OpCode::NOP, 2, AM_IMM},
@@ -323,7 +324,7 @@ namespace nes_core {
         /* 0xF0 */ {OpCode::BEQ, 2, AM_REL},
         /* 0xF1 */ {OpCode::SBC, 5, AM_IND_Y},
         /* 0xF2 */ {OpCode::JAM, 0, AM_IMP},
-        /* 0xF3 */ {OpCode::ISC, 8, AM_IND_Y},
+        /* 0xF3 */ {OpCode::ISC, 8, AM_IND_Y, true},
         /* 0xF4 */ {OpCode::NOP, 4, AM_ZP_X},
         /* 0xF5 */ {OpCode::SBC, 4, AM_ZP_X},
         /* 0xF6 */ {OpCode::INC, 6, AM_ZP_X},
@@ -331,11 +332,11 @@ namespace nes_core {
         /* 0xF8 */ {OpCode::SED, 2, AM_IMP},
         /* 0xF9 */ {OpCode::SBC, 4, AM_ABS_Y},
         /* 0xFA */ {OpCode::NOP, 2, AM_IMP},
-        /* 0xFB */ {OpCode::ISC, 7, AM_ABS_Y},
+        /* 0xFB */ {OpCode::ISC, 7, AM_ABS_Y, true},
         /* 0xFC */ {OpCode::NOP, 4, AM_ABS_X},
         /* 0xFD */ {OpCode::SBC, 4, AM_ABS_X},
-        /* 0xFE */ {OpCode::INC, 7, AM_ABS_X},
-        /* 0xFF */ {OpCode::ISC, 7, AM_ABS_X},
+        /* 0xFE */ {OpCode::INC, 7, AM_ABS_X, true},
+        /* 0xFF */ {OpCode::ISC, 7, AM_ABS_X, true},
     };
 
     void CPURegisters::reset() {
@@ -463,8 +464,8 @@ namespace nes_core {
             } else if (irqActive_) {
                 handleIRQStep();
             } else {
-                const auto [op, cycles, mode] = OP_INFO[opState_.code];
-                switch (mode) {
+                const auto& info = OP_INFO[opState_.code];
+                switch (info.mode) {
                     case AM_IMP:
                     case AM_ACC:
                         opState_.addressingFinishedStep = 0;
@@ -472,7 +473,7 @@ namespace nes_core {
                         break;
                     case AM_IMM: addrImmediateStep(); break;
                     case AM_ABS:
-                        if (op == OpCode::JMP) {
+                        if (info.op == OpCode::JMP) {
                             if (opState_.step == 1) {
                                 opState_.readLo = bus_->cpuRead(regs_.PC++);
                             } else if (opState_.step == 2) {
@@ -480,7 +481,7 @@ namespace nes_core {
                                 opState_.addr = (opState_.readHi << 8) | opState_.readLo;
                                 opState_.addressingFinishedStep = 1;
                             }
-                        } else if (op != OpCode::JSR) {
+                        } else if (info.op != OpCode::JSR) {
                             addrAbsoluteStep();
                         }
                         break;
@@ -496,7 +497,7 @@ namespace nes_core {
                     default:
                         throw std::runtime_error("Invalid addressing mode");
                 }
-                switch (op) {
+                switch (info.op) {
                     case OpCode::NOP: execNOPStep(); break;
                     case OpCode::LDA: execLDAStep(); break;
                     case OpCode::LDX: execLDXStep(); break;
@@ -589,129 +590,11 @@ namespace nes_core {
             return 1;
         }
         opState_.code = bus_->cpuRead(regs_.PC++);
-        const auto [op, cycles, mode] = OP_INFO[opState_.code];
-        if (opState_.step == 0) {
-            switch (opState_.code) {
-                // NOP (official + unofficial)
-                case 0xEA:
-                case 0x1A: case 0x3A: case 0x5A: case 0x7A: case 0xDA: case 0xFA:
-                case 0x80: case 0x82: case 0x89: case 0xC2: case 0xE2: case 0x04:
-                case 0x44: case 0x64: case 0x14: case 0x34: case 0x54: case 0x74:
-                case 0xD4: case 0xF4: case 0x0C: case 0x1C: case 0x3C: case 0x5C:
-                case 0x7C: case 0xDC: case 0xFC:
-                // LDA
-                case 0xA9: case 0xAD: case 0xBD: case 0xB9: case 0xA5: case 0xB5: case 0xA1: case 0xB1:
-                // LDX
-                case 0xA2: case 0xAE: case 0xBE: case 0xA6: case 0xB6:
-                // LDY
-                case 0xA0: case 0xAC: case 0xBC: case 0xA4: case 0xB4:
-                // Transfer
-                case 0xAA: case 0xA8: case 0x8A: case 0x98: case 0xBA: case 0x9A:
-                // PHA, PHP, PLA, PLP
-                case 0x48: case 0x08: case 0x68: case 0x28:
-                // ASL
-                case 0x0A: case 0x06: case 0x16: case 0x0E:
-                // LSR
-                case 0x4A: case 0x46: case 0x56: case 0x4E:
-                // ROL
-                case 0x2A: case 0x26: case 0x36: case 0x2E:
-                // ROR
-                case 0x6A: case 0x66: case 0x76: case 0x6E:
-                // AND
-                case 0x29: case 0x2D: case 0x3D: case 0x39: case 0x25: case 0x35: case 0x21: case 0x31:
-                // ORA
-                case 0x09: case 0x0D: case 0x1D: case 0x19: case 0x05: case 0x15: case 0x01: case 0x11:
-                // EOR
-                case 0x49: case 0x4D: case 0x5D: case 0x59: case 0x45: case 0x55: case 0x41: case 0x51:
-                // BIT
-                case 0x24: case 0x2C:
-                // ADC
-                case 0x69: case 0x6D: case 0x7D: case 0x79: case 0x65: case 0x75: case 0x61: case 0x71:
-                // SBC
-                case 0xE9: case 0xED: case 0xFD: case 0xF9: case 0xE5: case 0xF5: case 0xE1: case 0xF1:
-                // CMP
-                case 0xC9: case 0xCD: case 0xDD: case 0xD9: case 0xC5: case 0xD5: case 0xC1: case 0xD1:
-                // CPX
-                case 0xE0: case 0xEC: case 0xE4:
-                // CPY
-                case 0xC0: case 0xCC: case 0xC4:
-                // INC
-                case 0xE6: case 0xF6: case 0xEE:
-                // INX, INY
-                case 0xE8: case 0xC8:
-                // DEX, DEY
-                case 0xCA: case 0x88:
-                // JMP, JSR, RTS, BRK, RTI
-                case 0x4C: case 0x6C: case 0x20: case 0x60: case 0x00: case 0x40:
-                // BCC, BCS, BEQ, BMI, BNE, BPL, BVC, BVS
-                case 0x90: case 0xB0: case 0xF0: case 0x30: case 0xD0: case 0x10: case 0x50: case 0x70:
-                // CLC, CLD, CLI, CLV, SEC, SED, SEI
-                case 0x18: case 0xD8: case 0x58: case 0xB8: case 0x38: case 0xF8: case 0x78:
-                // DEC
-                case 0xC6: case 0xD6: case 0xCE:
-                // LAX (IMM, IND_X, ZP, ZP_Y, ABS, ABS_Y, IND_Y)
-                case 0xAB: case 0xA3: case 0xA7: case 0xB7: case 0xAF: case 0xBF: case 0xB3:
-                // LAS
-                case 0xBB:
-                // ANC
-                case 0x0B: case 0x2B:
-                // ARR
-                case 0x6B:
-                // ASR
-                case 0x4B:
-                // SBX
-                case 0xCB:
-                // XAA
-                case 0x8B:
-                // JAM
-                case 0x02: case 0x12: case 0x22: case 0x32: case 0x42: case 0x52:
-                case 0x62: case 0x72: case 0x92: case 0xB2: case 0xD2: case 0xF2:
-                // DCP (ZP, ZP_X, ABS, IND_X)
-                case 0xC7: case 0xD7: case 0xCF: case 0xC3:
-                // ISC (ZP, ZP_X, ABS, IND_X)
-                case 0xE7: case 0xF7: case 0xEF: case 0xE3:
-                // RLA (ZP, ZP_X, ABS, IND_X)
-                case 0x27: case 0x37: case 0x2F: case 0x23:
-                // RRA (ZP, ZP_X, ABS, IND_X)
-                case 0x67: case 0x77: case 0x6F: case 0x63:
-                // SLO (ZP, ZP_X, ABS, IND_X)
-                case 0x07: case 0x17: case 0x0F: case 0x03:
-                // SRE (ZP, ZP_X, ABS, IND_X)
-                case 0x47: case 0x57: case 0x4F: case 0x43:
-                    opState_.step = 1;
-                    isHighPrecision_ = true;
-                    ++cycles_;
-                    return 1;
-                // STA
-                case 0x85: case 0x95: case 0x8D: case 0x9D: case 0x99: case 0x81: case 0x91:
-                // STX
-                case 0x86: case 0x96: case 0x8E:
-                // STY
-                case 0x84: case 0x94: case 0x8C:
-                // ASL / LSR / ROL / ROR / INC / DEC ABS_X (RMW always takes extra cycle regardless of page cross)
-                case 0x1E: case 0x5E: case 0x3E: case 0x7E: case 0xFE: case 0xDE:
-                // SAX (all modes)
-                case 0x83: case 0x87: case 0x97: case 0x8F:
-                // SHA, SHX, SHY, SHS
-                case 0x93: case 0x9F: case 0x9E: case 0x9C: case 0x9B:
-                // Unofficial RMW with ABS_X, ABS_Y, IND_Y (always take extra cycle)
-                case 0x1F: case 0x1B: case 0x13: // SLO ABS_X, ABS_Y, IND_Y
-                case 0x3F: case 0x3B: case 0x33: // RLA ABS_X, ABS_Y, IND_Y
-                case 0x5F: case 0x5B: case 0x53: // SRE ABS_X, ABS_Y, IND_Y
-                case 0x7F: case 0x7B: case 0x73: // RRA ABS_X, ABS_Y, IND_Y
-                case 0xDF: case 0xDB: case 0xD3: // DCP ABS_X, ABS_Y, IND_Y
-                case 0xFF: case 0xFB: case 0xF3: // ISC ABS_X, ABS_Y, IND_Y
-                    opState_.step = 1;
-                    opState_.isStore = true;
-                    isHighPrecision_ = true;
-                    ++cycles_;
-                    return 1;
-                default:
-                    break;
-            }
-        }
-        // All opcodes are now handled via high-precision mode.
-        // If execution reaches here, the opcode was not recognized.
-        throw std::runtime_error("Invalid opcode");
+        const auto& info = OP_INFO[opState_.code];
+        opState_.step = 1;
+        opState_.isStore = info.isStore;
+        isHighPrecision_ = true;
+        ++cycles_;
+        return 1;
     }
 }
