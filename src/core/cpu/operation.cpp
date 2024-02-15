@@ -72,28 +72,46 @@ namespace nes_core {
         }
     }
 
-    void CPU::execTAX() {
-        regs_.updateNZ(regs_.X = regs_.A);
+    void CPU::execTAXStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.updateNZ(regs_.X = regs_.A);
+            opState_.finished = true;
+        }
     }
 
-    void CPU::execTAY() {
-        regs_.updateNZ(regs_.Y = regs_.A);
+    void CPU::execTAYStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.updateNZ(regs_.Y = regs_.A);
+            opState_.finished = true;
+        }
     }
 
-    void CPU::execTXA() {
-        regs_.updateNZ(regs_.A = regs_.X);
+    void CPU::execTXAStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.updateNZ(regs_.A = regs_.X);
+            opState_.finished = true;
+        }
     }
 
-    void CPU::execTYA() {
-        regs_.updateNZ(regs_.A = regs_.Y);
+    void CPU::execTYAStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.updateNZ(regs_.A = regs_.Y);
+            opState_.finished = true;
+        }
     }
 
-    void CPU::execTSX() {
-        regs_.updateNZ(regs_.X = regs_.SP);
+    void CPU::execTSXStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.updateNZ(regs_.X = regs_.SP);
+            opState_.finished = true;
+        }
     }
 
-    void CPU::execTXS() {
-        regs_.SP = regs_.X;
+    void CPU::execTXSStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.SP = regs_.X;
+            opState_.finished = true;
+        }
     }
 
     void CPU::execPHA() {

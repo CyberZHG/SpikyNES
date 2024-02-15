@@ -185,17 +185,17 @@ namespace nes_core {
         void execSTYStep();
 
         /** Transfer accumulator to index X. */
-        void execTAX();
+        void execTAXStep();
         /** Transfer accumulator to index Y. */
-        void execTAY();
+        void execTAYStep();
         /** Transfer index X to accumulator. */
-        void execTXA();
+        void execTXAStep();
         /** Transfer index Y to accumulator. */
-        void execTYA();
+        void execTYAStep();
         /** Transfer stack pointer to index X. */
-        void execTSX();
+        void execTSXStep();
         /** Transfer index X to stack pointer. */
-        void execTXS();
+        void execTXSStep();
 
         /** Push accumulator on stack. */
         void execPHA();

@@ -484,6 +484,12 @@ namespace nes_core {
                 case OpCode::STA: execSTAStep(); break;
                 case OpCode::STX: execSTXStep(); break;
                 case OpCode::STY: execSTYStep(); break;
+                case OpCode::TAX: execTAXStep(); break;
+                case OpCode::TAY: execTAYStep(); break;
+                case OpCode::TXA: execTXAStep(); break;
+                case OpCode::TYA: execTYAStep(); break;
+                case OpCode::TSX: execTSXStep(); break;
+                case OpCode::TXS: execTXSStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -518,6 +524,8 @@ namespace nes_core {
                     isHighPrecision_ = true;
                     ++cycles_;
                     return 1;
+                // Transfers
+                case 0xAA: case 0xA8: case 0x8A: case 0x98: case 0xBA: case 0x9A:
                 // STA
                 case 0x85: case 0x95: case 0x8D: case 0x9D: case 0x99: case 0x81: case 0x91:
                 // STX
@@ -564,13 +572,6 @@ namespace nes_core {
         }
         bool branchTaken = false;
         switch (op) {
-            case OpCode::NOP: break;
-            case OpCode::TAX: execTAX(); break;
-            case OpCode::TAY: execTAY(); break;
-            case OpCode::TXA: execTXA(); break;
-            case OpCode::TYA: execTYA(); break;
-            case OpCode::TSX: execTSX(); break;
-            case OpCode::TXS: execTXS(); break;
             case OpCode::PHA: execPHA(); break;
             case OpCode::PHP: execPHP(); break;
             case OpCode::PLA: execPLA(); break;
