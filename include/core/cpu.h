@@ -252,7 +252,7 @@ namespace nes_core {
         /** Jump indirect. */
         void execJMPStep();
         /** Jump to subroutine. */
-        void execJSR(std::uint16_t addr);
+        void execJSRStep();
         /** Return from subroutine. */
         void execRTS();
 

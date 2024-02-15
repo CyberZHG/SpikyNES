@@ -398,9 +398,20 @@ namespace nes_core {
         }
     }
 
-    void CPU::execJSR(const std::uint16_t addr) {
-        pushWord(regs_.PC - 1);
-        regs_.PC = addr;
+    void CPU::execJSRStep() {
+        if (opState_.step == 1) {
+            opState_.readLo = bus_->cpuRead(regs_.PC++);
+        } else if (opState_.step == 2) {
+            opState_.readDummy = bus_->cpuRead(CPU_STACK_OFFSET + regs_.SP);
+        } else if (opState_.step == 3) {
+            pushByte(regs_.PC >> 8);
+        } else if (opState_.step == 4) {
+            pushByte(regs_.PC & 0xFF);
+        } else if (opState_.step == 5) {
+            opState_.readHi = bus_->cpuRead(regs_.PC);
+            regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            opState_.finished = true;
+        }
     }
 
     void CPU::execRTS() {

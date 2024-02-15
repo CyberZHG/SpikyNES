@@ -464,7 +464,10 @@ namespace nes_core {
                     break;
                 case AM_IMM: addrImmediateStep(); break;
                 case AM_ABS:
+                    // JMP ABS and JSR handle their own addressing inline.
                     if (op == OpCode::JMP) {
+                        // Execute fires on the same cycle as the last address byte read
+                        // (addressingFinishedStep=1 so execute fires at step 2).
                         if (opState_.step == 1) {
                             opState_.readLo = bus_->cpuRead(regs_.PC++);
                         } else if (opState_.step == 2) {
@@ -472,7 +475,7 @@ namespace nes_core {
                             opState_.addr = (opState_.readHi << 8) | opState_.readLo;
                             opState_.addressingFinishedStep = 1;
                         }
-                    } else {
+                    } else if (op != OpCode::JSR) {
                         addrAbsoluteStep();
                     }
                     break;
@@ -526,6 +529,7 @@ namespace nes_core {
                 case OpCode::DEX: execDEXStep(); break;
                 case OpCode::DEY: execDEYStep(); break;
                 case OpCode::JMP: execJMPStep(); break;
+                case OpCode::JSR: execJSRStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -592,8 +596,8 @@ namespace nes_core {
                 case 0xE8: case 0xC8:
                 // DEX, DEY
                 case 0xCA: case 0x88:
-                // JMP
-                case 0x4C: case 0x6C:
+                // JMP, JSR
+                case 0x4C: case 0x6C: case 0x20:
                 // DEC
                 case 0xC6: case 0xD6: case 0xCE:
                     opState_.step = 1;
@@ -648,7 +652,6 @@ namespace nes_core {
         }
         bool branchTaken = false;
         switch (op) {
-            case OpCode::JSR: execJSR(addr.addr); break;
             case OpCode::RTS: execRTS(); break;
             case OpCode::BRK: execBRK(); break;
             case OpCode::RTI: execRTI(); break;
