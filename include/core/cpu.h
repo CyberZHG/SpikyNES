@@ -217,7 +217,7 @@ namespace nes_core {
         void execRORStep();
 
         /** "AND" memory with accumulator. */
-        void execAND(std::uint16_t addr);
+        void execANDStep();
         /** "OR" memory with accumulator. */
         void execORA(std::uint16_t addr);
         /** "XOR" memory with accumulator. */
