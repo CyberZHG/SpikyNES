@@ -232,7 +232,7 @@ namespace nes_core {
         /** Compare memory and accumulator. */
         void execCMPStep();
         /** Compare index register X to memory. */
-        void execCPX(std::uint16_t addr);
+        void execCPXStep();
         /** Compare index register Y to memory. */
         void execCPY(std::uint16_t addr);
 
