@@ -289,7 +289,7 @@ namespace nes_core {
         /** Set carry flag. */
         void execSECStep();
         /** Set decimal mode. */
-        void execSED();
+        void execSEDStep();
         /** set interrupt disable. */
         void execSEI();
 
