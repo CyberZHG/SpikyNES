@@ -376,6 +376,7 @@ namespace nes_core {
         addressingFinishedStep = 0xFF;
         finished = false;
         isImplied = false;
+        isStore = false;
     }
 
     CPU::CPU(Bus *bus) {
@@ -480,6 +481,9 @@ namespace nes_core {
                 case OpCode::LDA: execLDAStep(); break;
                 case OpCode::LDX: execLDXStep(); break;
                 case OpCode::LDY: execLDYStep(); break;
+                case OpCode::STA: execSTAStep(); break;
+                case OpCode::STX: execSTXStep(); break;
+                case OpCode::STY: execSTYStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -511,6 +515,17 @@ namespace nes_core {
                 // LDY
                 case 0xA0: case 0xAC: case 0xBC: case 0xA4: case 0xB4:
                     opState_.step = 1;
+                    isHighPrecision_ = true;
+                    ++cycles_;
+                    return 1;
+                // STA
+                case 0x85: case 0x95: case 0x8D: case 0x9D: case 0x99: case 0x81: case 0x91:
+                // STX
+                case 0x86: case 0x96: case 0x8E:
+                // STY
+                case 0x84: case 0x94: case 0x8C:
+                    opState_.step = 1;
+                    opState_.isStore = true;
                     isHighPrecision_ = true;
                     ++cycles_;
                     return 1;
@@ -550,9 +565,6 @@ namespace nes_core {
         bool branchTaken = false;
         switch (op) {
             case OpCode::NOP: break;
-            case OpCode::STA: execSTA(addr.addr); break;
-            case OpCode::STX: execSTX(addr.addr); break;
-            case OpCode::STY: execSTY(addr.addr); break;
             case OpCode::TAX: execTAX(); break;
             case OpCode::TAY: execTAY(); break;
             case OpCode::TXA: execTXA(); break;

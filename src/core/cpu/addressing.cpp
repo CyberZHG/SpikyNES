@@ -51,10 +51,10 @@ namespace nes_core {
             opState_.baseAddr = (opState_.readHi << 8) | opState_.readLo;
             opState_.addr = opState_.baseAddr + regs_.X;
             opState_.hasPageCross = hasPageCross(opState_.baseAddr, opState_.addr);
-            if (!opState_.hasPageCross) {
+            if (!opState_.hasPageCross && !opState_.isStore) {
                 opState_.addressingFinishedStep = 2;
             }
-        } else if (opState_.step == 3 && opState_.hasPageCross) {
+        } else if (opState_.step == 3 && (opState_.hasPageCross || opState_.isStore)) {
             opState_.readDummy = bus_->cpuRead(opState_.baseAddr);
             opState_.addressingFinishedStep = 3;
         }
@@ -68,10 +68,10 @@ namespace nes_core {
             opState_.baseAddr = (opState_.readHi << 8) | opState_.readLo;
             opState_.addr = opState_.baseAddr + regs_.Y;
             opState_.hasPageCross = hasPageCross(opState_.baseAddr, opState_.addr);
-            if (!opState_.hasPageCross) {
+            if (!opState_.hasPageCross && !opState_.isStore) {
                 opState_.addressingFinishedStep = 2;
             }
-        } else if (opState_.step == 3 && opState_.hasPageCross) {
+        } else if (opState_.step == 3 && (opState_.hasPageCross || opState_.isStore)) {
             opState_.readDummy = bus_->cpuRead(opState_.baseAddr);
             opState_.addressingFinishedStep = 3;
         }
@@ -200,10 +200,10 @@ namespace nes_core {
             opState_.baseAddr = (opState_.readHi << 8) | opState_.readLo;
             opState_.addr = opState_.baseAddr + regs_.Y;
             opState_.hasPageCross = hasPageCross(opState_.baseAddr, opState_.addr);
-            if (!opState_.hasPageCross) {
+            if (!opState_.hasPageCross && !opState_.isStore) {
                 opState_.addressingFinishedStep = 3;
             }
-        } else if (opState_.step == 4 && opState_.hasPageCross) {
+        } else if (opState_.step == 4 && (opState_.hasPageCross || opState_.isStore)) {
             opState_.readDummy = bus_->cpuRead((opState_.readHi << 8) | static_cast<std::uint8_t>(opState_.readLo + regs_.Y));
             opState_.addressingFinishedStep = 4;
         }

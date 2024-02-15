@@ -51,16 +51,25 @@ namespace nes_core {
         }
     }
 
-    void CPU::execSTA(const std::uint16_t addr) const {
-        bus_->cpuWrite(addr, regs_.A);
+    void CPU::execSTAStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            bus_->cpuWrite(opState_.addr, regs_.A);
+            opState_.finished = true;
+        }
     }
 
-    void CPU::execSTX(const std::uint16_t addr) const {
-        bus_->cpuWrite(addr, regs_.X);
+    void CPU::execSTXStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            bus_->cpuWrite(opState_.addr, regs_.X);
+            opState_.finished = true;
+        }
     }
 
-    void CPU::execSTY(const std::uint16_t addr) const {
-        bus_->cpuWrite(addr, regs_.Y);
+    void CPU::execSTYStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            bus_->cpuWrite(opState_.addr, regs_.Y);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execTAX() {

@@ -79,6 +79,7 @@ namespace nes_core {
         std::uint8_t addressingFinishedStep = 0xFF;
         bool finished = false;
         bool isImplied = false;
+        bool isStore = false;
 
         void reset();
     };
@@ -177,11 +178,11 @@ namespace nes_core {
         void execLDYStep();
 
         /** Store accumulator in memory. */
-        void execSTA(std::uint16_t addr) const;
+        void execSTAStep();
         /** Store index register X in memory. */
-        void execSTX(std::uint16_t addr) const;
+        void execSTXStep();
         /** Store index register Y in memory. */
-        void execSTY(std::uint16_t addr) const;
+        void execSTYStep();
 
         /** Transfer accumulator to index X. */
         void execTAX();
