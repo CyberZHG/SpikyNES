@@ -123,8 +123,13 @@ namespace nes_core {
         }
     }
 
-    void CPU::execPHP() {
-        pushByte(regs_.P | 0b00110000);
+    void CPU::execPHPStep() {
+        if (opState_.step == 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+        } else if (opState_.step == 2) {
+            pushByte(regs_.P | 0b00110000);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execPLA() {
