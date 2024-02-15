@@ -202,7 +202,7 @@ namespace nes_core {
         /** Push processor status on stack. */
         void execPHPStep();
         /** Pull accumulator from stack. */
-        void execPLA();
+        void execPLAStep();
         /** Pull processor status from stack. */
         void execPLP();
 

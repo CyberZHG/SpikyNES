@@ -132,8 +132,16 @@ namespace nes_core {
         }
     }
 
-    void CPU::execPLA() {
-        regs_.updateNZ(regs_.A = popByte());
+    void CPU::execPLAStep() {
+        if (opState_.step == 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+        } else if (opState_.step == 2) {
+            opState_.readDummy = bus_->cpuRead(CPU_STACK_OFFSET + regs_.SP);
+            ++regs_.SP;
+        } else if (opState_.step == 3) {
+            regs_.updateNZ(regs_.A = bus_->cpuRead(CPU_STACK_OFFSET + regs_.SP));
+            opState_.finished = true;
+        }
     }
 
     void CPU::execPLP() {
