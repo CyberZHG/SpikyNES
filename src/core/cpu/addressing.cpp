@@ -6,12 +6,12 @@ namespace nes_core {
         return (a & 0xFF00) != (b & 0xFF00);
     }
 
-    void CPU::addrImmediateStep() {
+    void CPU::addrImmediate() {
         opState_.addr = regs_.PC++;
         opState_.addressingFinishedStep = 0;
     }
 
-    void CPU::addrAbsoluteStep() {
+    void CPU::addrAbsolute() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
         }
@@ -22,7 +22,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::addrAbsoluteXStep() {
+    void CPU::addrAbsoluteX() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -39,7 +39,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::addrAbsoluteYStep() {
+    void CPU::addrAbsoluteY() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -56,7 +56,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::addrAbsoluteIndirectStep() {
+    void CPU::addrAbsoluteIndirect() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -71,14 +71,14 @@ namespace nes_core {
         }
     }
 
-    void CPU::addrZeroPageStep() {
+    void CPU::addrZeroPage() {
         if (opState_.step == 1) {
             opState_.addr = bus_->cpuRead(regs_.PC++);
             opState_.addressingFinishedStep = 1;
         }
     }
 
-    void CPU::addrZeroPageXStep() {
+    void CPU::addrZeroPageX() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -88,7 +88,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::addrZeroPageYStep() {
+    void CPU::addrZeroPageY() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -98,7 +98,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::addrZeroPageIndirectXStep() {
+    void CPU::addrZeroPageIndirectX() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -113,7 +113,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::addrZeroPageIndirectYStep() {
+    void CPU::addrZeroPageIndirectY() {
         if (opState_.step == 1) {
             opState_.baseAddr = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -132,7 +132,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::addrRelativeStep() {
+    void CPU::addrRelative() {
         if (opState_.step == 1) {
             const auto offset = static_cast<std::int8_t>(bus_->cpuRead(regs_.PC++));
             opState_.addr = regs_.PC + offset;

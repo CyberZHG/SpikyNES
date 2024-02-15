@@ -134,198 +134,198 @@ namespace nes_core {
         std::uint16_t popWord();
 
         /** The operand is contained in the second byte of the instruction. */
-        void addrImmediateStep();
+        void addrImmediate();
         /** The second byte as low order bits and the third byte as the high order bits. */
-        void addrAbsoluteStep();
+        void addrAbsolute();
         /** X-indexed absolute. */
-        void addrAbsoluteXStep();
+        void addrAbsoluteX();
         /** Y-indexed absolute. */
-        void addrAbsoluteYStep();
+        void addrAbsoluteY();
         /** Use the address from memory. */
-        void addrAbsoluteIndirectStep();
+        void addrAbsoluteIndirect();
         /** Fetch from $00 - $FF. */
-        void addrZeroPageStep();
+        void addrZeroPage();
         /** X-indexed zero page. */
-        void addrZeroPageXStep();
+        void addrZeroPageX();
         /** Y-indexed zero page. */
-        void addrZeroPageYStep();
+        void addrZeroPageY();
         /** Use the address from X-indexed zero page. */
-        void addrZeroPageIndirectXStep();
+        void addrZeroPageIndirectX();
         /** Use the address from zero page then plus Y. */
-        void addrZeroPageIndirectYStep();
+        void addrZeroPageIndirectY();
         /** Add offset to the program counter. */
-        void addrRelativeStep();
+        void addrRelative();
 
         /** No operation. */
-        void execNOPStep();
+        void execNOP();
 
         /** Load accumulator with memory. */
-        void execLDAStep();
+        void execLDA();
         /** Load index register X from memory. */
-        void execLDXStep();
+        void execLDX();
         /** Load index register Y from memory. */
-        void execLDYStep();
+        void execLDY();
 
         /** Store accumulator in memory. */
-        void execSTAStep();
+        void execSTA();
         /** Store index register X in memory. */
-        void execSTXStep();
+        void execSTX();
         /** Store index register Y in memory. */
-        void execSTYStep();
+        void execSTY();
 
         /** Transfer accumulator to index X. */
-        void execTAXStep();
+        void execTAX();
         /** Transfer accumulator to index Y. */
-        void execTAYStep();
+        void execTAY();
         /** Transfer index X to accumulator. */
-        void execTXAStep();
+        void execTXA();
         /** Transfer index Y to accumulator. */
-        void execTYAStep();
+        void execTYA();
         /** Transfer stack pointer to index X. */
-        void execTSXStep();
+        void execTSX();
         /** Transfer index X to stack pointer. */
-        void execTXSStep();
+        void execTXS();
 
         /** Push accumulator on stack. */
-        void execPHAStep();
+        void execPHA();
         /** Push processor status on stack. */
-        void execPHPStep();
+        void execPHP();
         /** Pull accumulator from stack. */
-        void execPLAStep();
+        void execPLA();
         /** Pull processor status from stack. */
-        void execPLPStep();
+        void execPLP();
 
         /** Arithmetic shift left. */
-        void execASLStep();
+        void execASL();
         /** Logical shift right. */
-        void execLSRStep();
+        void execLSR();
 
         /** Rotate left. */
-        void execROLStep();
+        void execROL();
         /** Rotate right. */
-        void execRORStep();
+        void execROR();
 
         /** "AND" memory with accumulator. */
-        void execANDStep();
+        void execAND();
         /** "OR" memory with accumulator. */
-        void execORAStep();
+        void execORA();
         /** "XOR" memory with accumulator. */
-        void execEORStep();
+        void execEOR();
         /** Test bits in memory with accumulator. */
-        void execBITStep();
+        void execBIT();
 
         /** Add memory to accumulator with carry. */
-        void execADCStep();
+        void execADC();
         /** Subtract memory from accumulator with borrow. */
-        void execSBCStep();
+        void execSBC();
         /** Compare memory and accumulator. */
-        void execCMPStep();
+        void execCMP();
         /** Compare index register X to memory. */
-        void execCPXStep();
+        void execCPX();
         /** Compare index register Y to memory. */
-        void execCPYStep();
+        void execCPY();
 
         /** Increment memory by one. */
-        void execINCStep();
+        void execINC();
         /** Increment index register X by one. */
-        void execINXStep();
+        void execINX();
         /** Increment index register Y by one. */
-        void execINYStep();
+        void execINY();
         /** Decrement memory by one. */
-        void execDECStep();
+        void execDEC();
         /** Decrement index register X by one. */
-        void execDEXStep();
+        void execDEX();
         /** Decrement index register Y by one. */
-        void execDEYStep();
+        void execDEY();
 
         /** Jump indirect. */
-        void execJMPStep();
+        void execJMP();
         /** Jump to subroutine. */
-        void execJSRStep();
+        void execJSR();
         /** Return from subroutine. */
-        void execRTSStep();
+        void execRTS();
 
         /** Break command. */
-        void execBRKStep();
+        void execBRK();
         /** Return from interrupt. */
-        void execRTIStep();
+        void execRTI();
 
         /** Branch on carry clear. */
-        void execBCCStep();
+        void execBCC();
         /** Branch on carry set. */
-        void execBCSStep();
+        void execBCS();
         /** Branch on result zero. */
-        void execBEQStep();
+        void execBEQ();
         /** Branch on result minus. */
-        void execBMIStep();
+        void execBMI();
         /** Branch on result not zero. */
-        void execBNEStep();
+        void execBNE();
         /** Branch on result plus. */
-        void execBPLStep();
+        void execBPL();
         /** Branch on overflow clear. */
-        void execBVCStep();
+        void execBVC();
         /** Branch on overflow set. */
-        void execBVSStep();
+        void execBVS();
 
         /** Clear carry flag. */
-        void execCLCStep();
+        void execCLC();
         /** Clear decimal mode. */
-        void execCLDStep();
+        void execCLD();
         /** Clear interrupt disable. */
-        void execCLIStep();
+        void execCLI();
         /** Clear overflow flag. */
-        void execCLVStep();
+        void execCLV();
         /** Set carry flag. */
-        void execSECStep();
+        void execSEC();
         /** Set decimal mode. */
-        void execSEDStep();
+        void execSED();
         /** set interrupt disable. */
-        void execSEIStep();
+        void execSEI();
 
         // Unofficial opcodes
         /** "AND" memory with stack pointer. */
-        void execLASStep();
+        void execLAS();
         /** Load accumulator and index register X from memory. */
-        void execLAXStep();
+        void execLAX();
         /** Store accumulator "AND" index register X in memory. */
-        void execSAXStep();
+        void execSAX();
         /** Store accumulator "AND" index register X "AND" value. */
-        void execSHAStep();
+        void execSHA();
         /** Store index register X "AND" value. */
-        void execSHXStep();
+        void execSHX();
         /** Store index register Y "AND" value. */
-        void execSHYStep();
+        void execSHY();
         /** Transfer accumulator "AND" index register X to stack pointer then store stack pointer "AND" hi-byte in memory. */
-        void execSHSStep();
+        void execSHS();
         /** "AND" memory with accumulator then move negative flag to carry flag. */
-        void execANCStep();
+        void execANC();
         /** "AND" accumulator then rotate right. */
-        void execARRStep();
+        void execARR();
         /** "AND" then logical shift right. */
-        void execASRStep();
+        void execASR();
         /** Decrement memory by one then compare with accumulator */
-        void execDCPStep();
+        void execDCP();
         /** Increment memory by one then SBC then subtract memory from accumulator with borrow. */
-        void execISCStep();
+        void execISC();
         /** Rotate left then "AND" with accumulator. */
-        void execRLAStep();
+        void execRLA();
         /** Rotate right and add memory to accumulator. */
-        void execRRAStep();
+        void execRRA();
         /** Subtract memory from accumulator "AND" index register X. */
-        void execSBXStep();
+        void execSBX();
         /** Arithmetic shift left then "OR" memory with accumulator. */
-        void execSLOStep();
+        void execSLO();
         /** Logical shift right then "XOR" memory with accumulator. */
-        void execSREStep();
+        void execSRE();
         /** Non-deterministic operation of accumulator, index register X, memory and bus contents. */
-        void execXAAStep();
+        void execXAA();
         /** Halt the CPU (JAM/KIL). */
-        void execJAMStep();
+        void execJAM();
 
         /** Handle NMI interrupt. */
-        void handleNMIStep();
+        void handleNMI();
         /** Handle IRQ interrupt. */
-        void handleIRQStep();
+        void handleIRQ();
 
     private:
         /**

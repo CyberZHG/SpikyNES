@@ -21,7 +21,7 @@ namespace nes_core {
         return (high << 8) | low;
     }
 
-    void CPU::execNOPStep() {
+    void CPU::execNOP() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             if (!opState_.isImplied) {
                 (void)bus_->cpuRead(opState_.addr);
@@ -30,91 +30,91 @@ namespace nes_core {
         }
     }
 
-    void CPU::execLDAStep() {
+    void CPU::execLDA() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A = bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
     }
 
-    void CPU::execLDXStep() {
+    void CPU::execLDX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.X = bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
     }
 
-    void CPU::execLDYStep() {
+    void CPU::execLDY() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.Y = bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
     }
 
-    void CPU::execSTAStep() {
+    void CPU::execSTA() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             bus_->cpuWrite(opState_.addr, regs_.A);
             opState_.finished = true;
         }
     }
 
-    void CPU::execSTXStep() {
+    void CPU::execSTX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             bus_->cpuWrite(opState_.addr, regs_.X);
             opState_.finished = true;
         }
     }
 
-    void CPU::execSTYStep() {
+    void CPU::execSTY() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             bus_->cpuWrite(opState_.addr, regs_.Y);
             opState_.finished = true;
         }
     }
 
-    void CPU::execTAXStep() {
+    void CPU::execTAX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.X = regs_.A);
             opState_.finished = true;
         }
     }
 
-    void CPU::execTAYStep() {
+    void CPU::execTAY() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.Y = regs_.A);
             opState_.finished = true;
         }
     }
 
-    void CPU::execTXAStep() {
+    void CPU::execTXA() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A = regs_.X);
             opState_.finished = true;
         }
     }
 
-    void CPU::execTYAStep() {
+    void CPU::execTYA() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A = regs_.Y);
             opState_.finished = true;
         }
     }
 
-    void CPU::execTSXStep() {
+    void CPU::execTSX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.X = regs_.SP);
             opState_.finished = true;
         }
     }
 
-    void CPU::execTXSStep() {
+    void CPU::execTXS() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.SP = regs_.X;
             opState_.finished = true;
         }
     }
 
-    void CPU::execPHAStep() {
+    void CPU::execPHA() {
         if (opState_.step == 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
         } else if (opState_.step == 2) {
@@ -123,7 +123,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execPHPStep() {
+    void CPU::execPHP() {
         if (opState_.step == 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
         } else if (opState_.step == 2) {
@@ -132,7 +132,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execPLAStep() {
+    void CPU::execPLA() {
         if (opState_.step == 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
         } else if (opState_.step == 2) {
@@ -144,7 +144,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execPLPStep() {
+    void CPU::execPLP() {
         if (opState_.step == 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
         } else if (opState_.step == 2) {
@@ -156,7 +156,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execASLStep() {
+    void CPU::execASL() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             if (opState_.isImplied) {
@@ -178,7 +178,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execLSRStep() {
+    void CPU::execLSR() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             if (opState_.isImplied) {
@@ -200,7 +200,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execROLStep() {
+    void CPU::execROL() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             const auto c = regs_.C();
@@ -223,7 +223,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execRORStep() {
+    void CPU::execROR() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             const auto c = regs_.C();
@@ -246,28 +246,28 @@ namespace nes_core {
         }
     }
 
-    void CPU::execANDStep() {
+    void CPU::execAND() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A &= bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
     }
 
-    void CPU::execORAStep() {
+    void CPU::execORA() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A |= bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
     }
 
-    void CPU::execEORStep() {
+    void CPU::execEOR() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A ^= bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
     }
 
-    void CPU::execBITStep() {
+    void CPU::execBIT() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             const auto val = bus_->cpuRead(opState_.addr);
             regs_.updateZ(val & regs_.A);
@@ -277,7 +277,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execADCStep() {
+    void CPU::execADC() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             const auto m = bus_->cpuRead(opState_.addr);
             const auto val = static_cast<int>(regs_.A) + static_cast<int>(m) + regs_.C();
@@ -289,7 +289,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execSBCStep() {
+    void CPU::execSBC() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             const auto m = bus_->cpuRead(opState_.addr);
             const auto val = static_cast<int>(regs_.A) - static_cast<int>(m) - (1 - regs_.C());
@@ -301,7 +301,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCMPStep() {
+    void CPU::execCMP() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             const auto m = bus_->cpuRead(opState_.addr);
             const int val = static_cast<int>(regs_.A) - static_cast<int>(m);
@@ -311,7 +311,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCPXStep() {
+    void CPU::execCPX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             const auto m = bus_->cpuRead(opState_.addr);
             const int val = static_cast<int>(regs_.X) - static_cast<int>(m);
@@ -321,7 +321,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCPYStep() {
+    void CPU::execCPY() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             const auto m = bus_->cpuRead(opState_.addr);
             const int val = static_cast<int>(regs_.Y) - static_cast<int>(m);
@@ -331,7 +331,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execINCStep() {
+    void CPU::execINC() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             opState_.readDummy = bus_->cpuRead(opState_.addr);
@@ -345,7 +345,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execINXStep() {
+    void CPU::execINX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             regs_.updateNZ(++regs_.X);
@@ -353,7 +353,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execINYStep() {
+    void CPU::execINY() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             regs_.updateNZ(++regs_.Y);
@@ -361,7 +361,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execDECStep() {
+    void CPU::execDEC() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             opState_.readDummy = bus_->cpuRead(opState_.addr);
@@ -375,7 +375,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execDEXStep() {
+    void CPU::execDEX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             regs_.updateNZ(--regs_.X);
@@ -383,7 +383,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execDEYStep() {
+    void CPU::execDEY() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             regs_.updateNZ(--regs_.Y);
@@ -391,14 +391,14 @@ namespace nes_core {
         }
     }
 
-    void CPU::execJMPStep() {
+    void CPU::execJMP() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.PC = opState_.addr;
             opState_.finished = true;
         }
     }
 
-    void CPU::execJSRStep() {
+    void CPU::execJSR() {
         if (opState_.step == 1) {
             opState_.readLo = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -414,7 +414,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execRTSStep() {
+    void CPU::execRTS() {
         if (opState_.step == 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
         } else if (opState_.step == 2) {
@@ -432,7 +432,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBRKStep() {
+    void CPU::execBRK() {
         if (opState_.step == 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC++);
         } else if (opState_.step == 2) {
@@ -451,7 +451,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execRTIStep() {
+    void CPU::execRTI() {
         if (opState_.step == 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
         } else if (opState_.step == 2) {
@@ -470,7 +470,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBCCStep() {
+    void CPU::execBCC() {
         if (opState_.step == 1) {
             if (regs_.C()) {
                 opState_.finished = true;
@@ -490,7 +490,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBCSStep() {
+    void CPU::execBCS() {
         if (opState_.step == 1) {
             if (!regs_.C()) {
                 opState_.finished = true;
@@ -510,7 +510,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBEQStep() {
+    void CPU::execBEQ() {
         if (opState_.step == 1) {
             if (!regs_.Z()) {
                 opState_.finished = true;
@@ -530,7 +530,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBMIStep() {
+    void CPU::execBMI() {
         if (opState_.step == 1) {
             if (!regs_.N()) {
                 opState_.finished = true;
@@ -550,7 +550,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBNEStep() {
+    void CPU::execBNE() {
         if (opState_.step == 1) {
             if (regs_.Z()) {
                 opState_.finished = true;
@@ -570,7 +570,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBPLStep() {
+    void CPU::execBPL() {
         if (opState_.step == 1) {
             if (regs_.N()) {
                 opState_.finished = true;
@@ -590,7 +590,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBVCStep() {
+    void CPU::execBVC() {
         if (opState_.step == 1) {
             if (regs_.V()) {
                 opState_.finished = true;
@@ -610,7 +610,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBVSStep() {
+    void CPU::execBVS() {
         if (opState_.step == 1) {
             if (!regs_.V()) {
                 opState_.finished = true;
@@ -630,7 +630,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCLCStep() {
+    void CPU::execCLC() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             clearBit(regs_.P, CPURegisters::INDEX_C);
@@ -638,7 +638,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCLDStep() {
+    void CPU::execCLD() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             clearBit(regs_.P, CPURegisters::INDEX_D);
@@ -646,7 +646,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCLIStep() {
+    void CPU::execCLI() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             clearBit(regs_.P, CPURegisters::INDEX_I);
@@ -654,7 +654,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCLVStep() {
+    void CPU::execCLV() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             clearBit(regs_.P, CPURegisters::INDEX_V);
@@ -662,7 +662,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execSECStep() {
+    void CPU::execSEC() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             setBit(regs_.P, CPURegisters::INDEX_C);
@@ -670,7 +670,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execSEDStep() {
+    void CPU::execSED() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             setBit(regs_.P, CPURegisters::INDEX_D);
@@ -678,7 +678,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execSEIStep() {
+    void CPU::execSEI() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             setBit(regs_.P, CPURegisters::INDEX_I);
@@ -686,7 +686,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::handleNMIStep() {
+    void CPU::handleNMI() {
         if (opState_.step == 0) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
         } else if (opState_.step == 1) {
@@ -707,7 +707,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::handleIRQStep() {
+    void CPU::handleIRQ() {
         if (opState_.step == 0) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
         } else if (opState_.step == 1) {

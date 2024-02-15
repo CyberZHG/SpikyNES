@@ -2,49 +2,49 @@
 #include "core/cpu.h"
 
 namespace nes_core {
-    void CPU::execLAXStep() {
+    void CPU::execLAX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A = regs_.X = bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
     }
 
-    void CPU::execLASStep() {
+    void CPU::execLAS() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A = regs_.X = regs_.SP = regs_.SP & bus_->cpuRead(opState_.addr));
             opState_.finished = true;
         }
     }
 
-    void CPU::execSAXStep() {
+    void CPU::execSAX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             bus_->cpuWrite(opState_.addr, regs_.A & regs_.X);
             opState_.finished = true;
         }
     }
 
-    void CPU::execSHAStep() {
+    void CPU::execSHA() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             bus_->cpuWrite(opState_.addr, regs_.A & regs_.X & static_cast<std::uint8_t>((opState_.addr >> 8) + 1));
             opState_.finished = true;
         }
     }
 
-    void CPU::execSHXStep() {
+    void CPU::execSHX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             bus_->cpuWrite(opState_.addr, regs_.X & static_cast<std::uint8_t>((opState_.addr >> 8) + 1));
             opState_.finished = true;
         }
     }
 
-    void CPU::execSHYStep() {
+    void CPU::execSHY() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             bus_->cpuWrite(opState_.addr, regs_.Y & static_cast<std::uint8_t>((opState_.addr >> 8) + 1));
             opState_.finished = true;
         }
     }
 
-    void CPU::execSHSStep() {
+    void CPU::execSHS() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.SP = regs_.A & regs_.X;
             bus_->cpuWrite(opState_.addr, regs_.SP & static_cast<std::uint8_t>((opState_.addr >> 8) + 1));
@@ -52,7 +52,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execANCStep() {
+    void CPU::execANC() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A &= bus_->cpuRead(opState_.addr));
             updateBit(regs_.P, CPURegisters::INDEX_C, regs_.N());
@@ -60,7 +60,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execARRStep() {
+    void CPU::execARR() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.A &= bus_->cpuRead(opState_.addr);
             regs_.A = (regs_.A >> 1) | (regs_.C() << 7);
@@ -71,7 +71,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execASRStep() {
+    void CPU::execASR() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.A &= bus_->cpuRead(opState_.addr);
             updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 0));
@@ -80,7 +80,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execSBXStep() {
+    void CPU::execSBX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             const auto val = regs_.A & regs_.X;
             const auto m = bus_->cpuRead(opState_.addr);
@@ -90,7 +90,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execXAAStep() {
+    void CPU::execXAA() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.updateNZ(regs_.A = (regs_.A | 0xEE) & regs_.X & bus_->cpuRead(opState_.addr));
             opState_.finished = true;
@@ -98,7 +98,7 @@ namespace nes_core {
     }
 
     // RMW: dec mem, then CMP
-    void CPU::execDCPStep() {
+    void CPU::execDCP() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             opState_.readDummy = bus_->cpuRead(opState_.addr);
@@ -115,7 +115,7 @@ namespace nes_core {
     }
 
     // RMW: inc mem, then SBC
-    void CPU::execISCStep() {
+    void CPU::execISC() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             opState_.readDummy = bus_->cpuRead(opState_.addr);
@@ -135,7 +135,7 @@ namespace nes_core {
     }
 
     // RMW: ROL mem, then AND A
-    void CPU::execRLAStep() {
+    void CPU::execRLA() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             opState_.readDummy = bus_->cpuRead(opState_.addr);
@@ -152,7 +152,7 @@ namespace nes_core {
     }
 
     // RMW: ROR mem, then ADC A
-    void CPU::execRRAStep() {
+    void CPU::execRRA() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             opState_.readDummy = bus_->cpuRead(opState_.addr);
@@ -173,7 +173,7 @@ namespace nes_core {
     }
 
     // RMW: ASL mem, then ORA A
-    void CPU::execSLOStep() {
+    void CPU::execSLO() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             opState_.readDummy = bus_->cpuRead(opState_.addr);
@@ -189,7 +189,7 @@ namespace nes_core {
     }
 
     // RMW: LSR mem, then EOR A
-    void CPU::execSREStep() {
+    void CPU::execSRE() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
             opState_.readDummy = bus_->cpuRead(opState_.addr);
@@ -204,7 +204,7 @@ namespace nes_core {
         }
     }
 
-    void CPU::execJAMStep() {
+    void CPU::execJAM() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             opState_.readDummy = bus_->cpuRead(regs_.PC);
             halted_ = true;
