@@ -630,8 +630,12 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCLC() {
-        clearBit(regs_.P, CPURegisters::INDEX_C);
+    void CPU::execCLCStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+            clearBit(regs_.P, CPURegisters::INDEX_C);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execCLD() {

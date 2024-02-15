@@ -279,7 +279,7 @@ namespace nes_core {
         void execBVSStep();
 
         /** Clear carry flag. */
-        void execCLC();
+        void execCLCStep();
         /** Clear decimal mode. */
         void execCLD();
         /** Clear interrupt disable. */
