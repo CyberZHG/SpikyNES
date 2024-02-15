@@ -213,10 +213,8 @@ namespace nes_core {
 
         /** Rotate left. */
         void execROLStep();
-        /** Rotate right on accumulator. */
-        void execROR();
         /** Rotate right. */
-        void execROR(std::uint16_t addr);
+        void execRORStep();
 
         /** "AND" memory with accumulator. */
         void execAND(std::uint16_t addr);

@@ -223,18 +223,27 @@ namespace nes_core {
         }
     }
 
-    void CPU::execROR() {
-        const auto c = regs_.C();
-        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 0));
-        regs_.updateNZ(regs_.A = (regs_.A >> 1) | (c << 7));
-    }
-
-    void CPU::execROR(const std::uint16_t addr) {
-        const auto c = regs_.C();
-        auto val = bus_->cpuRead(addr);
-        updateBit(regs_.P, CPURegisters::INDEX_C, getBit(val, 0));
-        regs_.updateNZ(val = (val >> 1) | (c << 7));
-        bus_->cpuWrite(addr, val);
+    void CPU::execRORStep() {
+        const auto n = opState_.addressingFinishedStep;
+        if (opState_.step == n + 1) {
+            const auto c = regs_.C();
+            if (opState_.isImplied) {
+                opState_.readDummy = bus_->cpuRead(regs_.PC);
+                updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 0));
+                regs_.updateNZ(regs_.A = static_cast<std::uint8_t>((regs_.A >> 1) | (c << 7)));
+                opState_.finished = true;
+            } else {
+                opState_.readDummy = bus_->cpuRead(opState_.addr);
+                updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 0));
+                opState_.readLo = static_cast<std::uint8_t>((opState_.readDummy >> 1) | (c << 7));
+            }
+        } else if (opState_.step == n + 2) {
+            bus_->cpuWrite(opState_.addr, opState_.readDummy);
+        } else if (opState_.step == n + 3) {
+            regs_.updateNZ(opState_.readLo);
+            bus_->cpuWrite(opState_.addr, opState_.readLo);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execAND(const std::uint16_t addr) {
