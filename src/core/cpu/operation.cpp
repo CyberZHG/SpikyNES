@@ -470,12 +470,24 @@ namespace nes_core {
         }
     }
 
-    bool CPU::execBCC(const std::uint16_t addr) {
-        if (!regs_.C()) {
-            regs_.PC = addr;
-            return true;
+    void CPU::execBCCStep() {
+        if (opState_.step == 1) {
+            if (regs_.C()) {
+                opState_.finished = true;
+            }
+        } else if (opState_.step == 2) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
+            if (opState_.hasPageCross) {
+                opState_.baseAddr = (regs_.PC & 0xFF00) | (opState_.addr & 0x00FF);
+            }
+            regs_.PC = opState_.addr;
+            if (!opState_.hasPageCross) {
+                opState_.finished = true;
+            }
+        } else if (opState_.step == 3) {
+            opState_.readDummy = bus_->cpuRead(opState_.baseAddr);
+            opState_.finished = true;
         }
-        return false;
     }
 
     bool CPU::execBCS(const std::uint16_t addr) {

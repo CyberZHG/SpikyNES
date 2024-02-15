@@ -24,7 +24,11 @@ TEST_F(CPUTestBase, BCC_Taken_PageCross) {
     emulator.cpu().cpuWrite(0x02F0, 0x90);
     emulator.cpu().cpuWrite(0x02F1, 0x20);
     emulator.cpu().registers().PC = 0x02F0;
-    const auto cycles = emulator.cpu().step();
+    int cycles = 0;
+    const auto stepsStart = emulator.cpu().steps();
+    while (emulator.cpu().steps() == stepsStart) {
+        cycles += emulator.cpu().step();
+    }
     EXPECT_EQ(cycles, 4);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x0312);
 }
@@ -35,7 +39,11 @@ TEST_F(CPUTestBase, BCC_NotTaken_PageCross_NoPenalty) {
     emulator.cpu().cpuWrite(0x02F0, 0x90);
     emulator.cpu().cpuWrite(0x02F1, 0x20);
     emulator.cpu().registers().PC = 0x02F0;
-    const auto cycles = emulator.cpu().step();
+    int cycles = 0;
+    const auto stepsStart = emulator.cpu().steps();
+    while (emulator.cpu().steps() == stepsStart) {
+        cycles += emulator.cpu().step();
+    }
     EXPECT_EQ(cycles, 2);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x02F2);
 }
