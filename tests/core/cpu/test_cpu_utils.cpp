@@ -12,7 +12,7 @@ int CPUTestBase::runProgram(const std::vector<std::uint8_t>& program, const int 
         emulator.cpu().cpuWrite(CPU_PROGRAM_BEGIN + i, program[i]);
     }
     int cycles = 0;
-    for (int i = 0; i < steps; ++i) {
+    while (emulator.cpu().steps() < steps) {
         cycles += emulator.cpu().step();
     }
     return cycles;

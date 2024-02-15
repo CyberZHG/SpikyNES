@@ -364,6 +364,15 @@ namespace nes_core {
         updateZ(val);
     }
 
+    void OperationExecutionState::reset() {
+        code = 0;
+        step = 0;
+        readLo = 0;
+        readHi = 0;
+        addr = 0;
+        addressingFinishedStep = 0;
+    }
+
     CPU::CPU(Bus *bus) {
         bus_ = bus;
     }
@@ -371,7 +380,12 @@ namespace nes_core {
     void CPU::reset() {
         regs_.reset();
         regs_.PC = (bus_->cpuRead(CPU_VECTOR_RESET + 1) << 8) | bus_->cpuRead(CPU_VECTOR_RESET);
+
+        isHighPrecision_ = false;
+        opState_.reset();
+
         cycles_ = 0;
+        steps_ = 0;
         stallCycles_ = 0;
         halted_ = false;
         nmiPending_ = false;
@@ -434,8 +448,43 @@ namespace nes_core {
             return handleIRQ();
         }
 
-        const auto opCode = bus_->cpuRead(regs_.PC++);
-        const auto [op, cycles, mode] = OP_INFO[opCode];
+        if (isHighPrecision_) {
+            const auto [op, cycles, mode] = OP_INFO[opState_.code];
+            switch (mode) {
+                case AM_IMP:
+                case AM_ACC: break;
+                case AM_IMM: addrImmediateStep(); break;
+                case AM_ABS: addrAbsoluteStep(); break;
+                default:
+                    throw std::runtime_error("Invalid addressing mode");
+            }
+            switch (op) {
+                case OpCode::LDA: execLDAStep(); break;
+                default:
+                    throw std::runtime_error("Invalid opcode");
+            }
+            if (++opState_.step == cycles) {
+                isHighPrecision_ = false;
+                opState_.code = 0;
+                ++steps_;
+            }
+            ++cycles_;
+            return 1;
+        }
+        opState_.code = bus_->cpuRead(regs_.PC++);
+        const auto [op, cycles, mode] = OP_INFO[opState_.code];
+        if (opState_.step == 0) {
+            switch (opState_.code) {
+                case 0xA9:
+                case 0xAD:
+                    opState_.step = 1;
+                    isHighPrecision_ = true;
+                    ++cycles_;
+                    return 1;
+                default:
+                    break;
+            }
+        }
         AddressingResult addr;
         switch (mode) {
             case AM_IMP:
@@ -553,6 +602,7 @@ namespace nes_core {
             }
         }
         cycles_ += finalCycles;
+        ++steps_;
         return finalCycles;
     }
 }

@@ -10,12 +10,27 @@ namespace nes_core {
         return {regs_.PC++, false};
     }
 
+    void CPU::addrImmediateStep() {
+        opState_.addr = regs_.PC++;
+    }
+
     AddressingResult CPU::addrAbsolute() {
         AddressingResult result;
         result.addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
         result.pageCrossed = false;
         regs_.PC += 2;
         return result;
+    }
+
+    void CPU::addrAbsoluteStep() {
+        if (opState_.step == 1) {
+            opState_.readLo = bus_->cpuRead(regs_.PC++);
+        }
+        if (opState_.step == 2) {
+            opState_.readHi = bus_->cpuRead(regs_.PC++);
+            opState_.addr = (opState_.readHi << 8) | opState_.readLo;
+            opState_.addressingFinishedStep = 2;
+        }
     }
 
     AddressingResult CPU::addrAbsoluteX() {

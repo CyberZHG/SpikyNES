@@ -25,6 +25,12 @@ namespace nes_core {
         regs_.updateNZ(regs_.A = bus_->cpuRead(addr));
     }
 
+    void CPU::execLDAStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            regs_.updateNZ(regs_.A = bus_->cpuRead(opState_.addr));
+        }
+    }
+
     void CPU::execLDX(const std::uint16_t addr) {
         regs_.updateNZ(regs_.X = bus_->cpuRead(addr));
     }

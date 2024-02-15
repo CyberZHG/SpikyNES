@@ -2,6 +2,7 @@
 #define SPIKYNES_CPU_H
 
 #include <array>
+#include <optional>
 
 #include "core/constants.h"
 #include "core/utils.h"
@@ -66,6 +67,17 @@ namespace nes_core {
         bool pageCrossed = false;
     };
 
+    struct OperationExecutionState {
+        std::uint8_t code = 0;
+        std::uint8_t step = 0;
+        std::uint8_t readLo = 0;
+        std::uint8_t readHi = 0;
+        std::uint16_t addr = 0;
+        std::uint8_t addressingFinishedStep = 0;
+
+        void reset();
+    };
+
     class CPU {
     public:
         explicit CPU(Bus* bus);
@@ -85,6 +97,7 @@ namespace nes_core {
         int step();
         [[nodiscard]] std::int64_t cycles() const { return cycles_; }
         void addCycles(const std::int64_t cycles) { cycles_ += cycles; }
+        [[nodiscard]] std::int64_t steps() const { return steps_; }
 
         /** Check if CPU is halted by JAM/KIL instruction. */
         [[nodiscard]] bool isHalted() const { return halted_; }
@@ -116,8 +129,10 @@ namespace nes_core {
 
         /** The operand is contained in the second byte of the instruction. */
         AddressingResult addrImmediate();
+        void addrImmediateStep();
         /** The second byte as low order bits and the third byte as the high order bits. */
         AddressingResult addrAbsolute();
+        void addrAbsoluteStep();
         /** X-indexed absolute. */
         AddressingResult addrAbsoluteX();
         /** Y-indexed absolute. */
@@ -139,6 +154,7 @@ namespace nes_core {
 
         /** Load accumulator with memory. */
         void execLDA(std::uint16_t addr);
+        void execLDAStep();
         /** Load index register X from memory. */
         void execLDX(std::uint16_t addr);
         /** Load index register Y from memory. */
@@ -319,7 +335,11 @@ namespace nes_core {
         CPURegisters regs_;
         Bus* bus_ = nullptr;
 
+        bool isHighPrecision_ = false;
+        OperationExecutionState opState_;
+
         std::int64_t cycles_ = 0;
+        std::int64_t steps_ = 0;
         int stallCycles_ = 0;
         bool halted_ = false;
         bool nmiPending_ = false;
