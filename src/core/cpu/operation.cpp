@@ -301,11 +301,14 @@ namespace nes_core {
         }
     }
 
-    void CPU::execCMP(const std::uint16_t addr) {
-        const auto m = bus_->cpuRead(addr);
-        const int val = static_cast<int>(regs_.A) - static_cast<int>(m);
-        updateBit(regs_.P, CPURegisters::INDEX_C, m <= regs_.A);
-        regs_.updateNZ(val);
+    void CPU::execCMPStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            const auto m = bus_->cpuRead(opState_.addr);
+            const int val = static_cast<int>(regs_.A) - static_cast<int>(m);
+            updateBit(regs_.P, CPURegisters::INDEX_C, m <= regs_.A);
+            regs_.updateNZ(val);
+            opState_.finished = true;
+        }
     }
 
     void CPU::execCPX(const std::uint16_t addr) {

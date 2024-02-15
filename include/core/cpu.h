@@ -230,7 +230,7 @@ namespace nes_core {
         /** Subtract memory from accumulator with borrow. */
         void execSBCStep();
         /** Compare memory and accumulator. */
-        void execCMP(std::uint16_t addr);
+        void execCMPStep();
         /** Compare index register X to memory. */
         void execCPX(std::uint16_t addr);
         /** Compare index register Y to memory. */
