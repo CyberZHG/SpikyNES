@@ -545,6 +545,7 @@ namespace nes_core {
                 case OpCode::CLD: execCLDStep(); break;
                 case OpCode::CLI: execCLIStep(); break;
                 case OpCode::CLV: execCLVStep(); break;
+                case OpCode::SEC: execSECStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -615,8 +616,8 @@ namespace nes_core {
                 case 0x4C: case 0x6C: case 0x20: case 0x60: case 0x00: case 0x40:
                 // BCC, BCS, BEQ, BMI, BNE, BPL, BVC, BVS
                 case 0x90: case 0xB0: case 0xF0: case 0x30: case 0xD0: case 0x10: case 0x50: case 0x70:
-                // CLC, CLD, CLI, CLV
-                case 0x18: case 0xD8: case 0x58: case 0xB8:
+                // CLC, CLD, CLI, CLV, SEC
+                case 0x18: case 0xD8: case 0x58: case 0xB8: case 0x38:
                 // DEC
                 case 0xC6: case 0xD6: case 0xCE:
                     opState_.step = 1;
@@ -671,7 +672,6 @@ namespace nes_core {
         }
         bool branchTaken = false;
         switch (op) {
-            case OpCode::SEC: execSEC(); break;
             case OpCode::SED: execSED(); break;
             case OpCode::SEI: execSEI(); break;
             // Unofficial opcodes
