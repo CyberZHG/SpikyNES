@@ -264,7 +264,7 @@ namespace nes_core {
         /** Branch on carry clear. */
         void execBCCStep();
         /** Branch on carry set. */
-        bool execBCS(std::uint16_t addr);
+        void execBCSStep();
         /** Branch on result zero. */
         bool execBEQ(std::uint16_t addr);
         /** Branch on result minus. */
