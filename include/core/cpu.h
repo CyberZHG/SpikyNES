@@ -145,6 +145,7 @@ namespace nes_core {
         void addrAbsoluteYStep();
         /** Use the address from memory. */
         AddressingResult addrAbsoluteIndirect();
+        void addrAbsoluteIndirectStep();
         /** Fetch from $00 - $FF. */
         AddressingResult addrZeroPage();
         void addrZeroPageStep();
@@ -162,6 +163,7 @@ namespace nes_core {
         void addrZeroPageIndirectYStep();
         /** Add offset to the program counter. */
         AddressingResult addrRelative();
+        void addrRelativeStep();
 
         /** Load accumulator with memory. */
         void execLDA(std::uint16_t addr);

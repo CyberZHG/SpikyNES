@@ -86,6 +86,21 @@ namespace nes_core {
         return result;
     }
 
+    void CPU::addrAbsoluteIndirectStep() {
+        if (opState_.step == 1) {
+            opState_.readLo = bus_->cpuRead(regs_.PC++);
+        } else if (opState_.step == 2) {
+            opState_.readHi = bus_->cpuRead(regs_.PC++);
+            opState_.baseAddr = (opState_.readHi << 8) | opState_.readLo;
+        } else if (opState_.step == 3) {
+            opState_.readLo = bus_->cpuRead(opState_.baseAddr);
+        } else if (opState_.step == 4) {
+            opState_.readHi = bus_->cpuRead((opState_.baseAddr & 0xFF00) | ((opState_.baseAddr + 1) & 0xFF));
+            opState_.addr = (opState_.readHi << 8) | opState_.readLo;
+            opState_.addressingFinishedStep = 3;
+        }
+    }
+
     AddressingResult CPU::addrAbsoluteIndirect() {
         AddressingResult result;
         const auto addr = bus_->cpuRead(regs_.PC + 1) << 8 | bus_->cpuRead(regs_.PC);
@@ -191,6 +206,15 @@ namespace nes_core {
         } else if (opState_.step == 4 && opState_.hasPageCross) {
             opState_.readDummy = bus_->cpuRead((opState_.readHi << 8) | static_cast<std::uint8_t>(opState_.readLo + regs_.Y));
             opState_.addressingFinishedStep = 4;
+        }
+    }
+
+    void CPU::addrRelativeStep() {
+        if (opState_.step == 1) {
+            const auto offset = static_cast<std::int8_t>(bus_->cpuRead(regs_.PC++));
+            opState_.addr = regs_.PC + offset;
+            opState_.hasPageCross = hasPageCross(regs_.PC, opState_.addr);
+            opState_.addressingFinishedStep = 0;
         }
     }
 

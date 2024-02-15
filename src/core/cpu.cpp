@@ -466,6 +466,8 @@ namespace nes_core {
                 case AM_ZP_Y: addrZeroPageYStep(); break;
                 case AM_IND_X: addrZeroPageIndirectXStep(); break;
                 case AM_IND_Y: addrZeroPageIndirectYStep(); break;
+                case AM_IND:   addrAbsoluteIndirectStep(); break;
+                case AM_REL:   addrRelativeStep(); break;
                 default:
                     throw std::runtime_error("Invalid addressing mode");
             }
