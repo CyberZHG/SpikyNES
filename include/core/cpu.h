@@ -226,7 +226,7 @@ namespace nes_core {
         void execBITStep();
 
         /** Add memory to accumulator with carry. */
-        void execADC(std::uint16_t addr);
+        void execADCStep();
         /** Subtract memory from accumulator with borrow. */
         void execSBC(std::uint16_t addr);
         /** Compare memory and accumulator. */
