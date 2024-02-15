@@ -272,7 +272,7 @@ namespace nes_core {
         /** Branch on result not zero. */
         void execBNEStep();
         /** Branch on result plus. */
-        bool execBPL(std::uint16_t addr);
+        void execBPLStep();
         /** Branch on overflow clear. */
         bool execBVC(std::uint16_t addr);
         /** Branch on overflow set. */
