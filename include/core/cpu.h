@@ -281,7 +281,7 @@ namespace nes_core {
         /** Clear carry flag. */
         void execCLCStep();
         /** Clear decimal mode. */
-        void execCLD();
+        void execCLDStep();
         /** Clear interrupt disable. */
         void execCLI();
         /** Clear overflow flag. */
