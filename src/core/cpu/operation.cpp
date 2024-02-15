@@ -267,11 +267,14 @@ namespace nes_core {
         }
     }
 
-    void CPU::execBIT(const std::uint16_t addr) {
-        const auto val = bus_->cpuRead(addr);
-        regs_.updateZ(val & regs_.A);
-        updateBit(regs_.P, CPURegisters::INDEX_N, static_cast<std::uint8_t>(val & (1 << 7)));
-        updateBit(regs_.P, CPURegisters::INDEX_V, static_cast<std::uint8_t>(val & (1 << 6)));
+    void CPU::execBITStep() {
+        if (opState_.step == opState_.addressingFinishedStep + 1) {
+            const auto val = bus_->cpuRead(opState_.addr);
+            regs_.updateZ(val & regs_.A);
+            updateBit(regs_.P, CPURegisters::INDEX_N, static_cast<std::uint8_t>(val & (1 << 7)));
+            updateBit(regs_.P, CPURegisters::INDEX_V, static_cast<std::uint8_t>(val & (1 << 6)));
+            opState_.finished = true;
+        }
     }
 
     void CPU::execADC(const std::uint16_t addr) {

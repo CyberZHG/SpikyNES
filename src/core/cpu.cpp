@@ -501,6 +501,7 @@ namespace nes_core {
                 case OpCode::AND: execANDStep(); break;
                 case OpCode::ORA: execORAStep(); break;
                 case OpCode::EOR: execEORStep(); break;
+                case OpCode::BIT: execBITStep(); break;
                 default:
                     throw std::runtime_error("Invalid opcode");
             }
@@ -549,6 +550,8 @@ namespace nes_core {
                 case 0x09: case 0x0D: case 0x1D: case 0x19: case 0x05: case 0x15: case 0x01: case 0x11:
                 // EOR
                 case 0x49: case 0x4D: case 0x5D: case 0x59: case 0x45: case 0x55: case 0x41: case 0x51:
+                // BIT
+                case 0x24: case 0x2C:
                     opState_.step = 1;
                     isHighPrecision_ = true;
                     ++cycles_;
@@ -601,7 +604,6 @@ namespace nes_core {
         }
         bool branchTaken = false;
         switch (op) {
-            case OpCode::BIT: execBIT(addr.addr); break;
             case OpCode::ADC: execADC(addr.addr); break;
             case OpCode::SBC: execSBC(addr.addr); break;
             case OpCode::CMP: execCMP(addr.addr); break;

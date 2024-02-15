@@ -223,7 +223,7 @@ namespace nes_core {
         /** "XOR" memory with accumulator. */
         void execEORStep();
         /** Test bits in memory with accumulator. */
-        void execBIT(std::uint16_t addr);
+        void execBITStep();
 
         /** Add memory to accumulator with carry. */
         void execADC(std::uint16_t addr);
