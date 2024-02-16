@@ -3,7 +3,7 @@
 
 namespace nes_core {
     void CPU::pushByte(const std::uint8_t value) {
-        cpuWrite(CPU_STACK_OFFSET + regs_.SP--, value);
+        bus_->cpuWrite(CPU_STACK_OFFSET + regs_.SP--, value);
     }
 
     void CPU::pushWord(const std::uint16_t value) {
@@ -166,10 +166,10 @@ namespace nes_core {
                 opState_.finished = true;
             } else {
                 opState_.readDummy = bus_->cpuRead(opState_.addr);
-                updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 7));
             }
         } else if (opState_.step == n + 2) {
             bus_->cpuWrite(opState_.addr, opState_.readDummy);
+            updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 7));
             opState_.readDummy = static_cast<std::uint8_t>(opState_.readDummy << 1);
         } else if (opState_.step == n + 3) {
             regs_.updateNZ(opState_.readDummy);
@@ -188,10 +188,10 @@ namespace nes_core {
                 opState_.finished = true;
             } else {
                 opState_.readDummy = bus_->cpuRead(opState_.addr);
-                updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 0));
             }
         } else if (opState_.step == n + 2) {
             bus_->cpuWrite(opState_.addr, opState_.readDummy);
+            updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 0));
             opState_.readDummy >>= 1;
         } else if (opState_.step == n + 3) {
             regs_.updateNZ(opState_.readDummy);
@@ -203,19 +203,20 @@ namespace nes_core {
     void CPU::execROL() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
-            const auto c = regs_.C();
             if (opState_.isImplied) {
                 opState_.readDummy = bus_->cpuRead(regs_.PC);
+                const auto c = regs_.C();
                 updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 7));
                 regs_.updateNZ(regs_.A = static_cast<std::uint8_t>((regs_.A << 1) | c));
                 opState_.finished = true;
             } else {
                 opState_.readDummy = bus_->cpuRead(opState_.addr);
-                updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 7));
-                opState_.readLo = static_cast<std::uint8_t>((opState_.readDummy << 1) | c);
             }
         } else if (opState_.step == n + 2) {
             bus_->cpuWrite(opState_.addr, opState_.readDummy);
+            const auto c = regs_.C();
+            updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 7));
+            opState_.readLo = static_cast<std::uint8_t>((opState_.readDummy << 1) | c);
         } else if (opState_.step == n + 3) {
             regs_.updateNZ(opState_.readLo);
             bus_->cpuWrite(opState_.addr, opState_.readLo);
@@ -226,19 +227,20 @@ namespace nes_core {
     void CPU::execROR() {
         const auto n = opState_.addressingFinishedStep;
         if (opState_.step == n + 1) {
-            const auto c = regs_.C();
             if (opState_.isImplied) {
                 opState_.readDummy = bus_->cpuRead(regs_.PC);
+                const auto c = regs_.C();
                 updateBit(regs_.P, CPURegisters::INDEX_C, getBit(regs_.A, 0));
                 regs_.updateNZ(regs_.A = static_cast<std::uint8_t>((regs_.A >> 1) | (c << 7)));
                 opState_.finished = true;
             } else {
                 opState_.readDummy = bus_->cpuRead(opState_.addr);
-                updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 0));
-                opState_.readLo = static_cast<std::uint8_t>((opState_.readDummy >> 1) | (c << 7));
             }
         } else if (opState_.step == n + 2) {
             bus_->cpuWrite(opState_.addr, opState_.readDummy);
+            const auto c = regs_.C();
+            updateBit(regs_.P, CPURegisters::INDEX_C, getBit(opState_.readDummy, 0));
+            opState_.readLo = static_cast<std::uint8_t>((opState_.readDummy >> 1) | (c << 7));
         } else if (opState_.step == n + 3) {
             regs_.updateNZ(opState_.readLo);
             bus_->cpuWrite(opState_.addr, opState_.readLo);
@@ -427,6 +429,7 @@ namespace nes_core {
             opState_.readHi = bus_->cpuRead(CPU_STACK_OFFSET + regs_.SP);
             regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
         } else if (opState_.step == 5) {
+            opState_.readDummy = bus_->cpuRead(regs_.PC);
             ++regs_.PC;
             opState_.finished = true;
         }
@@ -442,11 +445,11 @@ namespace nes_core {
         } else if (opState_.step == 4) {
             pushByte(regs_.P | 0b00110000);
         } else if (opState_.step == 5) {
-            setBit(regs_.P, CPURegisters::INDEX_I);
             opState_.readLo = bus_->cpuRead(CPU_VECTOR_IRQ);
         } else if (opState_.step == 6) {
             opState_.readHi = bus_->cpuRead(CPU_VECTOR_IRQ + 1);
             regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            setBit(regs_.P, CPURegisters::INDEX_I);
             opState_.finished = true;
         }
     }
@@ -698,11 +701,11 @@ namespace nes_core {
         } else if (opState_.step == 4) {
             pushByte((regs_.P | 0b00100000) & ~(1 << CPURegisters::INDEX_B));
         } else if (opState_.step == 5) {
-            setBit(regs_.P, CPURegisters::INDEX_I);
             opState_.readLo = bus_->cpuRead(CPU_VECTOR_NMI);
         } else if (opState_.step == 6) {
             opState_.readHi = bus_->cpuRead(CPU_VECTOR_NMI + 1);
             regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            setBit(regs_.P, CPURegisters::INDEX_I);
             nmiActive_ = false;
             opState_.finished = true;
         }
@@ -720,11 +723,11 @@ namespace nes_core {
         } else if (opState_.step == 4) {
             pushByte((regs_.P | 0b00100000) & ~(1 << CPURegisters::INDEX_B));
         } else if (opState_.step == 5) {
-            setBit(regs_.P, CPURegisters::INDEX_I);
             opState_.readLo = bus_->cpuRead(CPU_VECTOR_IRQ);
         } else if (opState_.step == 6) {
             opState_.readHi = bus_->cpuRead(CPU_VECTOR_IRQ + 1);
             regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            setBit(regs_.P, CPURegisters::INDEX_I);
             irqActive_ = false;
             opState_.finished = true;
         }

@@ -99,7 +99,7 @@ TEST_F(NestestTest, RunNestest) {
     emulator.cpu().registers().PC = 0xC000;
     auto expectedStates = loadNestestLog(logPath);
     ASSERT_FALSE(expectedStates.empty()) << "Failed to load nestest.log";
-    int totalCycles = 7, lastStep = 0;
+    std::uint64_t totalCycles = 7;
     for (size_t i = 0; i < expectedStates.size(); ++i) {
         const auto& expected = expectedStates[i];
         const auto actual = getCurrentState();
@@ -129,10 +129,7 @@ TEST_F(NestestTest, RunNestest) {
             << "Cycles mismatch at instruction " << i << " (PC=" << std::hex << actual.PC << ")\n"
             << "Expected cycles: " << std::dec << expected.cycles << "\n"
             << "  Actual cycles: " << std::dec << totalCycles;
-        while (emulator.cpu().steps() == lastStep) {
-            totalCycles += emulator.cpu().step();
-        }
-        lastStep = emulator.cpu().steps();
+        totalCycles += emulator.execOp();
     }
     const auto mem02 = emulator.cpu().cpuRead(0x02);
     const auto mem03 = emulator.cpu().cpuRead(0x03);

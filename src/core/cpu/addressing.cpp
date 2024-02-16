@@ -7,8 +7,10 @@ namespace nes_core {
     }
 
     void CPU::addrImmediate() {
-        opState_.addr = regs_.PC++;
-        opState_.addressingFinishedStep = 0;
+        if (opState_.step == 1) {
+            opState_.addr = regs_.PC++;
+            opState_.addressingFinishedStep = 0;
+        }
     }
 
     void CPU::addrAbsolute() {
@@ -34,7 +36,8 @@ namespace nes_core {
                 opState_.addressingFinishedStep = 2;
             }
         } else if (opState_.step == 3 && (opState_.hasPageCross || opState_.isStore)) {
-            opState_.readDummy = bus_->cpuRead(opState_.baseAddr);
+            const auto dummyAddr = static_cast<std::uint16_t>((opState_.readHi << 8) | static_cast<std::uint8_t>(opState_.readLo + regs_.X));
+            opState_.readDummy = bus_->cpuRead(dummyAddr);
             opState_.addressingFinishedStep = 3;
         }
     }
@@ -51,7 +54,8 @@ namespace nes_core {
                 opState_.addressingFinishedStep = 2;
             }
         } else if (opState_.step == 3 && (opState_.hasPageCross || opState_.isStore)) {
-            opState_.readDummy = bus_->cpuRead(opState_.baseAddr);
+            const auto dummyAddr = static_cast<std::uint16_t>((opState_.readHi << 8) | static_cast<std::uint8_t>(opState_.readLo + regs_.Y));
+            opState_.readDummy = bus_->cpuRead(dummyAddr);
             opState_.addressingFinishedStep = 3;
         }
     }
