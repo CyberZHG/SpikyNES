@@ -366,6 +366,7 @@ namespace nes_core {
     }
 
     void OperationExecutionState::reset() {
+        executingOp_ = false;
         code = 0;
         step = 0;
         readLo = 0;
@@ -387,10 +388,7 @@ namespace nes_core {
     void CPU::reset() {
         regs_.reset();
         regs_.PC = (bus_->cpuRead(CPU_VECTOR_RESET + 1) << 8) | bus_->cpuRead(CPU_VECTOR_RESET);
-
-        isHighPrecision_ = false;
         opState_.reset();
-
         cycles_ = 0;
         steps_ = 0;
         stallCycles_ = 0;
@@ -436,7 +434,7 @@ namespace nes_core {
                     cycles_ += 2;
                     return 2;
                 }
-                cycles_ += 1;
+                ++cycles_;
                 return 1;
             }
             const auto addr = (static_cast<std::uint16_t>(dmaPage_) << 8) | dmaIndex_;
@@ -448,152 +446,150 @@ namespace nes_core {
             }
             return 2;
         }
-        if (nmiPending_ && !isHighPrecision_ && !nmiActive_) {
-            nmiPending_ = false;
-            nmiActive_ = true;
-            isHighPrecision_ = true;
-        }
-        if (irqPending_ && !regs_.I() && !isHighPrecision_ && !nmiActive_ && !irqActive_) {
-            irqPending_ = false;
-            irqActive_ = true;
-            isHighPrecision_ = true;
-        }
-        if (isHighPrecision_) {
-            if (nmiActive_) {
-                handleNMI();
-            } else if (irqActive_) {
-                handleIRQ();
+        if (!opState_.executingOp_) {
+            if (nmiPending_ && !nmiActive_) {
+                nmiPending_ = false;
+                nmiActive_ = true;
+                opState_.executingOp_ = true;
+            } else if (irqPending_ && !regs_.I() && !nmiActive_ && !irqActive_) {
+                irqPending_ = false;
+                irqActive_ = true;
+                opState_.executingOp_ = true;
             } else {
+                opState_.code = bus_->cpuRead(regs_.PC++);
                 const auto& info = OP_INFO[opState_.code];
-                switch (info.mode) {
-                    case AM_IMP:
-                    case AM_ACC:
-                        opState_.addressingFinishedStep = 0;
-                        opState_.isImplied = true;
-                        break;
-                    case AM_IMM: addrImmediate(); break;
-                    case AM_ABS:
-                        if (info.op == OpCode::JMP) {
-                            if (opState_.step == 1) {
-                                opState_.readLo = bus_->cpuRead(regs_.PC++);
-                            } else if (opState_.step == 2) {
-                                opState_.readHi = bus_->cpuRead(regs_.PC++);
-                                opState_.addr = (opState_.readHi << 8) | opState_.readLo;
-                                opState_.addressingFinishedStep = 1;
-                            }
-                        } else if (info.op != OpCode::JSR) {
-                            addrAbsolute();
-                        }
-                        break;
-                    case AM_ABS_X: addrAbsoluteX(); break;
-                    case AM_ABS_Y: addrAbsoluteY(); break;
-                    case AM_ZP: addrZeroPage(); break;
-                    case AM_ZP_X: addrZeroPageX(); break;
-                    case AM_ZP_Y: addrZeroPageY(); break;
-                    case AM_IND_X: addrZeroPageIndirectX(); break;
-                    case AM_IND_Y: addrZeroPageIndirectY(); break;
-                    case AM_IND: addrAbsoluteIndirect(); break;
-                    case AM_REL: addrRelative(); break;
-                    default:
-                        throw std::runtime_error("Invalid addressing mode");
-                }
-                switch (info.op) {
-                    case OpCode::NOP: execNOP(); break;
-                    case OpCode::LDA: execLDA(); break;
-                    case OpCode::LDX: execLDX(); break;
-                    case OpCode::LDY: execLDY(); break;
-                    case OpCode::STA: execSTA(); break;
-                    case OpCode::STX: execSTX(); break;
-                    case OpCode::STY: execSTY(); break;
-                    case OpCode::TAX: execTAX(); break;
-                    case OpCode::TAY: execTAY(); break;
-                    case OpCode::TXA: execTXA(); break;
-                    case OpCode::TYA: execTYA(); break;
-                    case OpCode::TSX: execTSX(); break;
-                    case OpCode::TXS: execTXS(); break;
-                    case OpCode::PHA: execPHA(); break;
-                    case OpCode::PHP: execPHP(); break;
-                    case OpCode::PLA: execPLA(); break;
-                    case OpCode::PLP: execPLP(); break;
-                    case OpCode::ASL: execASL(); break;
-                    case OpCode::LSR: execLSR(); break;
-                    case OpCode::ROL: execROL(); break;
-                    case OpCode::ROR: execROR(); break;
-                    case OpCode::AND: execAND(); break;
-                    case OpCode::ORA: execORA(); break;
-                    case OpCode::EOR: execEOR(); break;
-                    case OpCode::BIT: execBIT(); break;
-                    case OpCode::ADC: execADC(); break;
-                    case OpCode::SBC: execSBC(); break;
-                    case OpCode::CMP: execCMP(); break;
-                    case OpCode::CPX: execCPX(); break;
-                    case OpCode::CPY: execCPY(); break;
-                    case OpCode::INC: execINC(); break;
-                    case OpCode::INX: execINX(); break;
-                    case OpCode::INY: execINY(); break;
-                    case OpCode::DEC: execDEC(); break;
-                    case OpCode::DEX: execDEX(); break;
-                    case OpCode::DEY: execDEY(); break;
-                    case OpCode::JMP: execJMP(); break;
-                    case OpCode::JSR: execJSR(); break;
-                    case OpCode::RTS: execRTS(); break;
-                    case OpCode::BRK: execBRK(); break;
-                    case OpCode::RTI: execRTI(); break;
-                    case OpCode::BCC: execBCC(); break;
-                    case OpCode::BCS: execBCS(); break;
-                    case OpCode::BEQ: execBEQ(); break;
-                    case OpCode::BMI: execBMI(); break;
-                    case OpCode::BNE: execBNE(); break;
-                    case OpCode::BPL: execBPL(); break;
-                    case OpCode::BVC: execBVC(); break;
-                    case OpCode::BVS: execBVS(); break;
-                    case OpCode::CLC: execCLC(); break;
-                    case OpCode::CLD: execCLD(); break;
-                    case OpCode::CLI: execCLI(); break;
-                    case OpCode::CLV: execCLV(); break;
-                    case OpCode::SEC: execSEC(); break;
-                    case OpCode::SED: execSED(); break;
-                    case OpCode::SEI: execSEI(); break;
-                    case OpCode::LAS: execLAS(); break;
-                    case OpCode::LAX: execLAX(); break;
-                    case OpCode::SAX: execSAX(); break;
-                    case OpCode::SHA: execSHA(); break;
-                    case OpCode::SHX: execSHX(); break;
-                    case OpCode::SHY: execSHY(); break;
-                    case OpCode::SHS: execSHS(); break;
-                    case OpCode::ANC: execANC(); break;
-                    case OpCode::ARR: execARR(); break;
-                    case OpCode::ASR: execASR(); break;
-                    case OpCode::DCP: execDCP(); break;
-                    case OpCode::ISC: execISC(); break;
-                    case OpCode::RLA: execRLA(); break;
-                    case OpCode::RRA: execRRA(); break;
-                    case OpCode::SBX: execSBX(); break;
-                    case OpCode::SLO: execSLO(); break;
-                    case OpCode::SRE: execSRE(); break;
-                    case OpCode::XAA: execXAA(); break;
-                    case OpCode::JAM: execJAM(); break;
-                    default:
-                        throw std::runtime_error("Invalid opcode");
-                }
+                opState_.step = 1;
+                opState_.isStore = info.isStore;
+                opState_.executingOp_ = true;
+                ++cycles_;
+                return 1;
             }
-            if (opState_.finished) {
-                isHighPrecision_ = false;
-                nmiActive_ = false;
-                irqActive_ = false;
-                opState_.reset();
-                ++steps_;
-            } else {
-                ++opState_.step;
-            }
-            ++cycles_;
-            return 1;
         }
-        opState_.code = bus_->cpuRead(regs_.PC++);
-        const auto& info = OP_INFO[opState_.code];
-        opState_.step = 1;
-        opState_.isStore = info.isStore;
-        isHighPrecision_ = true;
+        if (nmiActive_) {
+            handleNMI();
+        } else if (irqActive_) {
+            handleIRQ();
+        } else {
+            const auto& info = OP_INFO[opState_.code];
+            switch (info.mode) {
+                case AM_IMP:
+                case AM_ACC:
+                    opState_.addressingFinishedStep = 0;
+                    opState_.isImplied = true;
+                    break;
+                case AM_IMM: addrImmediate(); break;
+                case AM_ABS:
+                    if (info.op == OpCode::JMP) {
+                        if (opState_.step == 1) {
+                            opState_.readLo = bus_->cpuRead(regs_.PC++);
+                        } else if (opState_.step == 2) {
+                            opState_.readHi = bus_->cpuRead(regs_.PC++);
+                            opState_.addr = (opState_.readHi << 8) | opState_.readLo;
+                            opState_.addressingFinishedStep = 1;
+                        }
+                    } else if (info.op != OpCode::JSR) {
+                        addrAbsolute();
+                    }
+                    break;
+                case AM_ABS_X: addrAbsoluteX(); break;
+                case AM_ABS_Y: addrAbsoluteY(); break;
+                case AM_ZP: addrZeroPage(); break;
+                case AM_ZP_X: addrZeroPageX(); break;
+                case AM_ZP_Y: addrZeroPageY(); break;
+                case AM_IND_X: addrZeroPageIndirectX(); break;
+                case AM_IND_Y: addrZeroPageIndirectY(); break;
+                case AM_IND: addrAbsoluteIndirect(); break;
+                case AM_REL: addrRelative(); break;
+                default:
+                    throw std::runtime_error("Invalid addressing mode");
+            }
+            switch (info.op) {
+                case OpCode::NOP: execNOP(); break;
+                case OpCode::LDA: execLDA(); break;
+                case OpCode::LDX: execLDX(); break;
+                case OpCode::LDY: execLDY(); break;
+                case OpCode::STA: execSTA(); break;
+                case OpCode::STX: execSTX(); break;
+                case OpCode::STY: execSTY(); break;
+                case OpCode::TAX: execTAX(); break;
+                case OpCode::TAY: execTAY(); break;
+                case OpCode::TXA: execTXA(); break;
+                case OpCode::TYA: execTYA(); break;
+                case OpCode::TSX: execTSX(); break;
+                case OpCode::TXS: execTXS(); break;
+                case OpCode::PHA: execPHA(); break;
+                case OpCode::PHP: execPHP(); break;
+                case OpCode::PLA: execPLA(); break;
+                case OpCode::PLP: execPLP(); break;
+                case OpCode::ASL: execASL(); break;
+                case OpCode::LSR: execLSR(); break;
+                case OpCode::ROL: execROL(); break;
+                case OpCode::ROR: execROR(); break;
+                case OpCode::AND: execAND(); break;
+                case OpCode::ORA: execORA(); break;
+                case OpCode::EOR: execEOR(); break;
+                case OpCode::BIT: execBIT(); break;
+                case OpCode::ADC: execADC(); break;
+                case OpCode::SBC: execSBC(); break;
+                case OpCode::CMP: execCMP(); break;
+                case OpCode::CPX: execCPX(); break;
+                case OpCode::CPY: execCPY(); break;
+                case OpCode::INC: execINC(); break;
+                case OpCode::INX: execINX(); break;
+                case OpCode::INY: execINY(); break;
+                case OpCode::DEC: execDEC(); break;
+                case OpCode::DEX: execDEX(); break;
+                case OpCode::DEY: execDEY(); break;
+                case OpCode::JMP: execJMP(); break;
+                case OpCode::JSR: execJSR(); break;
+                case OpCode::RTS: execRTS(); break;
+                case OpCode::BRK: execBRK(); break;
+                case OpCode::RTI: execRTI(); break;
+                case OpCode::BCC: execBCC(); break;
+                case OpCode::BCS: execBCS(); break;
+                case OpCode::BEQ: execBEQ(); break;
+                case OpCode::BMI: execBMI(); break;
+                case OpCode::BNE: execBNE(); break;
+                case OpCode::BPL: execBPL(); break;
+                case OpCode::BVC: execBVC(); break;
+                case OpCode::BVS: execBVS(); break;
+                case OpCode::CLC: execCLC(); break;
+                case OpCode::CLD: execCLD(); break;
+                case OpCode::CLI: execCLI(); break;
+                case OpCode::CLV: execCLV(); break;
+                case OpCode::SEC: execSEC(); break;
+                case OpCode::SED: execSED(); break;
+                case OpCode::SEI: execSEI(); break;
+                case OpCode::LAS: execLAS(); break;
+                case OpCode::LAX: execLAX(); break;
+                case OpCode::SAX: execSAX(); break;
+                case OpCode::SHA: execSHA(); break;
+                case OpCode::SHX: execSHX(); break;
+                case OpCode::SHY: execSHY(); break;
+                case OpCode::SHS: execSHS(); break;
+                case OpCode::ANC: execANC(); break;
+                case OpCode::ARR: execARR(); break;
+                case OpCode::ASR: execASR(); break;
+                case OpCode::DCP: execDCP(); break;
+                case OpCode::ISC: execISC(); break;
+                case OpCode::RLA: execRLA(); break;
+                case OpCode::RRA: execRRA(); break;
+                case OpCode::SBX: execSBX(); break;
+                case OpCode::SLO: execSLO(); break;
+                case OpCode::SRE: execSRE(); break;
+                case OpCode::XAA: execXAA(); break;
+                case OpCode::JAM: execJAM(); break;
+                default:
+                    throw std::runtime_error("Invalid opcode");
+            }
+        }
+        if (opState_.finished) {
+            opState_.executingOp_ = false;
+            opState_.reset();
+            ++steps_;
+        } else {
+            ++opState_.step;
+        }
         ++cycles_;
         return 1;
     }

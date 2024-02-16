@@ -68,6 +68,7 @@ namespace nes_core {
     };
 
     struct OperationExecutionState {
+        bool executingOp_ = false;
         std::uint8_t code = 0;
         std::uint8_t step = 0;
         std::uint8_t readLo = 0;
@@ -335,7 +336,6 @@ namespace nes_core {
         CPURegisters regs_;
         Bus* bus_ = nullptr;
 
-        bool isHighPrecision_ = false;
         OperationExecutionState opState_;
 
         std::int64_t cycles_ = 0;

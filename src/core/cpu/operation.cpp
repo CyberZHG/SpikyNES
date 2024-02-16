@@ -703,6 +703,7 @@ namespace nes_core {
         } else if (opState_.step == 6) {
             opState_.readHi = bus_->cpuRead(CPU_VECTOR_NMI + 1);
             regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            nmiActive_ = false;
             opState_.finished = true;
         }
     }
@@ -724,6 +725,7 @@ namespace nes_core {
         } else if (opState_.step == 6) {
             opState_.readHi = bus_->cpuRead(CPU_VECTOR_IRQ + 1);
             regs_.PC = (static_cast<std::uint16_t>(opState_.readHi) << 8) | opState_.readLo;
+            irqActive_ = false;
             opState_.finished = true;
         }
     }
