@@ -59,7 +59,6 @@ TEST_F(CPUTestBase, JAM) {
     const auto cycles = runProgram({0x02}, 1);
     EXPECT_EQ(cycles, 2);
     EXPECT_TRUE(emulator.cpu().halted());
-    EXPECT_EQ(emulator.cpu().step(), 0);
 }
 
 // ==================== NMI ====================
@@ -72,11 +71,7 @@ TEST_F(CPUTestBase, NMI) {
     emulator.bus().cpuWrite(0xFFFA, 0x00);
     emulator.bus().cpuWrite(0xFFFB, 0x05);
     emulator.cpu().nmi();
-    const auto stepsStart = emulator.cpu().steps();
-    int cycles = 0;
-    while (emulator.cpu().steps() == stepsStart) {
-        cycles += emulator.cpu().step();
-    }
+    const auto cycles = emulator.execOp();
     EXPECT_EQ(cycles, 7);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x0500);
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFC);
@@ -95,11 +90,7 @@ TEST_F(CPUTestBase, NMI_IgnoresIFlag) {
     emulator.bus().cpuWrite(0xFFFA, 0x00);
     emulator.bus().cpuWrite(0xFFFB, 0x05);
     emulator.cpu().nmi();
-    const auto stepsStart = emulator.cpu().steps();
-    int cycles = 0;
-    while (emulator.cpu().steps() == stepsStart) {
-        cycles += emulator.cpu().step();
-    }
+    const auto cycles = emulator.execOp();
     EXPECT_EQ(cycles, 7);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x0500);
 }
@@ -114,11 +105,7 @@ TEST_F(CPUTestBase, IRQ) {
     emulator.bus().cpuWrite(0xFFFE, 0x00);
     emulator.bus().cpuWrite(0xFFFF, 0x04);
     emulator.cpu().irq();
-    const auto stepsStart = emulator.cpu().steps();
-    int cycles = 0;
-    while (emulator.cpu().steps() == stepsStart) {
-        cycles += emulator.cpu().step();
-    }
+    const auto cycles = emulator.execOp();
     EXPECT_EQ(cycles, 7);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x0400);
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFC);
@@ -137,11 +124,7 @@ TEST_F(CPUTestBase, IRQ_MaskedByIFlag) {
     emulator.bus().cpuWrite(0xFFFE, 0x00);
     emulator.bus().cpuWrite(0xFFFF, 0x04);
     emulator.cpu().irq();
-    const auto stepsStart = emulator.cpu().steps();
-    int cycles = 0;
-    while (emulator.cpu().steps() == stepsStart) {
-        cycles += emulator.cpu().step();
-    }
+    const auto cycles = emulator.execOp();
     EXPECT_EQ(cycles, 2);
     EXPECT_EQ(emulator.cpu().registers().PC, CPU_PROGRAM_BEGIN + 1);
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFF);
@@ -158,11 +141,7 @@ TEST_F(CPUTestBase, NMI_PriorityOverIRQ) {
     emulator.bus().cpuWrite(0xFFFF, 0x04);
     emulator.cpu().nmi();
     emulator.cpu().irq();
-    const auto stepsStart = emulator.cpu().steps();
-    int cycles = 0;
-    while (emulator.cpu().steps() == stepsStart) {
-        cycles += emulator.cpu().step();
-    }
+    const auto cycles = emulator.execOp();
     EXPECT_EQ(cycles, 7);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x0500);
 }

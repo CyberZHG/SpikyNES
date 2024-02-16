@@ -418,14 +418,14 @@ namespace nes_core {
         dmaAlignCycle_ = true;
     }
 
-    int CPU::step() {
+    void CPU::step() {
         if (halted_) {
-            return 0;
+            return;
         }
         if (stallCycles_ > 0) {
             --stallCycles_;
             ++cycles_;
-            return 1;
+            return;
         }
         if (dmaPending_) {
             if (dmaAlignCycle_) {
@@ -434,7 +434,7 @@ namespace nes_core {
                     ++stallCycles_;
                 }
                 ++cycles_;
-                return 1;
+                return;
             }
             const auto addr = (static_cast<std::uint16_t>(dmaPage_) << 8) | dmaIndex_;
             if (cycles_ % 2 == 1) {
@@ -447,7 +447,7 @@ namespace nes_core {
                 dmaPending_ = false;
             }
             ++cycles_;
-            return 1;
+            return;
         }
         if (!opState_.executingOp) {
             if (nmiPending_ && !nmiActive_) {
@@ -465,7 +465,7 @@ namespace nes_core {
                 opState_.isStore = info.isStore;
                 opState_.executingOp = true;
                 ++cycles_;
-                return 1;
+                return;
             }
         }
         if (nmiActive_) {
@@ -594,6 +594,5 @@ namespace nes_core {
             ++opState_.step;
         }
         ++cycles_;
-        return 1;
     }
 }

@@ -97,11 +97,7 @@ namespace nes_core {
         [[nodiscard]] std::uint8_t cpuRead(std::uint16_t addr) const;
         void cpuWrite(std::uint16_t addr, std::uint16_t value);
 
-        /**
-         * Execute one instruction.
-         * @return Cycles consumed.
-         */
-        int step();
+        void step();
         [[nodiscard]] std::int64_t cycles() const { return cycles_; }
         void addCycles(const std::int64_t cycles) { cycles_ += cycles; }
         [[nodiscard]] std::int64_t steps() const { return steps_; }
