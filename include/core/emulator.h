@@ -16,7 +16,6 @@ namespace nes_core {
     class Emulator {
     public:
         Emulator();
-        virtual ~Emulator() = default;
 
         CPU& cpu() { return cpu_; }
         [[nodiscard]] const CPU& cpu() const { return cpu_; }
@@ -39,6 +38,7 @@ namespace nes_core {
         void run(double milliseconds);
 
         int step();
+        int execOp();
 
     private:
         CPU cpu_;

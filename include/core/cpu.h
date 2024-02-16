@@ -68,7 +68,7 @@ namespace nes_core {
     };
 
     struct OperationExecutionState {
-        bool executingOp_ = false;
+        bool executingOp = false;
         std::uint8_t code = 0;
         std::uint8_t step = 0;
         std::uint8_t readLo = 0;
@@ -107,7 +107,7 @@ namespace nes_core {
         [[nodiscard]] std::int64_t steps() const { return steps_; }
 
         /** Check if CPU is halted by JAM/KIL instruction. */
-        [[nodiscard]] bool isHalted() const { return halted_; }
+        [[nodiscard]] bool halted() const { return halted_; }
 
         /** Trigger a Non-Maskable Interrupt. */
         void nmi() { nmiPending_ = true; }
@@ -349,6 +349,7 @@ namespace nes_core {
         bool dmaPending_ = false;
         std::uint8_t dmaPage_ = 0;
         std::int32_t dmaIndex_ = 0;
+        std::uint8_t dmaByte_ = 0;
         bool dmaAlignCycle_ = false;
     };
 

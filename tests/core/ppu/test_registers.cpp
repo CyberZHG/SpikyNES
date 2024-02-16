@@ -905,8 +905,8 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage00) {
     emulator.bus().cpuWrite(programAddr + 3, 0x14);
     emulator.bus().cpuWrite(programAddr + 4, 0x40);
     emulator.cpu().registers().PC = programAddr;
-    emulator.step();
-    emulator.step();
+    emulator.execOp();
+    emulator.execOp();
     while (emulator.cpu().dmaPending()) {
         emulator.step();
     }
@@ -928,8 +928,8 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage02) {
     emulator.bus().cpuWrite(programAddr + 3, 0x14);
     emulator.bus().cpuWrite(programAddr + 4, 0x40);
     emulator.cpu().registers().PC = programAddr;
-    emulator.step();
-    emulator.step();
+    emulator.execOp();
+    emulator.execOp();
     while (emulator.cpu().dmaPending()) {
         emulator.step();
     }
@@ -951,8 +951,8 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage07) {
     emulator.bus().cpuWrite(programAddr + 3, 0x14);
     emulator.bus().cpuWrite(programAddr + 4, 0x40);
     emulator.cpu().registers().PC = programAddr;
-    emulator.step();
-    emulator.step();
+    emulator.execOp();
+    emulator.execOp();
     while (emulator.cpu().dmaPending()) {
         emulator.step();
     }
@@ -975,8 +975,8 @@ TEST_F(PPUTestBase, OAMDMA_StartsFromOAMADDR) {
     emulator.bus().cpuWrite(programAddr + 3, 0x14);
     emulator.bus().cpuWrite(programAddr + 4, 0x40);
     emulator.cpu().registers().PC = programAddr;
-    emulator.step();
-    emulator.step();
+    emulator.execOp();
+    emulator.execOp();
     while (emulator.cpu().dmaPending()) {
         emulator.step();
     }
@@ -1000,7 +1000,7 @@ TEST_F(PPUTestBase, OAMDMA_Cycles_OddAlignment) {
     emulator.bus().cpuWrite(programAddr + 6, 0x40);
     emulator.cpu().registers().PC = programAddr;
     for (int i = 0; i < 3; ++i) {
-        emulator.step();
+        emulator.execOp();
     }
     const auto cyclesBefore = emulator.cpu().cycles();
     ASSERT_TRUE(cyclesBefore % 2 == 1);
@@ -1024,7 +1024,7 @@ TEST_F(PPUTestBase, OAMDMA_Cycles_EvenAlignment) {
     emulator.bus().cpuWrite(programAddr + 5, 0x40);
     emulator.cpu().registers().PC = programAddr;
     for (int i = 0; i < 3; ++i) {
-        emulator.step();
+        emulator.execOp();
     }
     const auto cyclesBefore = emulator.cpu().cycles();
     ASSERT_TRUE(cyclesBefore % 2 == 0);

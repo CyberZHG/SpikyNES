@@ -30,12 +30,22 @@ namespace nes_core {
     }
 
     int Emulator::step() {
-        const auto cycles = cpu_.step();
-        for (int i = 0; i < cycles * 3; ++i) {
-            ppu_.step();
-        }
-        for (int i = 0; i < cycles; ++i) {
+        cpu_.step();
+        if (!cpu_.halted()) {
+            for (int i = 0; i < 3; ++i) {
+                ppu_.step();
+            }
             apu_.step();
+        }
+        return 1;
+    }
+
+    int Emulator::execOp() {
+        const auto steps = cpu_.steps();
+        std::int16_t cycles = 0;
+        while (cpu_.steps() == steps) {
+            step();
+            ++cycles;
         }
         return cycles;
     }

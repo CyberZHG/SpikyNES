@@ -366,7 +366,7 @@ namespace nes_core {
     }
 
     void OperationExecutionState::reset() {
-        executingOp_ = false;
+        executingOp = false;
         code = 0;
         step = 0;
         readLo = 0;
@@ -431,36 +431,39 @@ namespace nes_core {
             if (dmaAlignCycle_) {
                 dmaAlignCycle_ = false;
                 if (cycles_ % 2 == 1) {
-                    cycles_ += 2;
-                    return 2;
+                    ++stallCycles_;
                 }
                 ++cycles_;
                 return 1;
             }
             const auto addr = (static_cast<std::uint16_t>(dmaPage_) << 8) | dmaIndex_;
-            const auto value = bus_->cpuRead(addr);
-            bus_->cpuWrite(0x2004, value);
-            cycles_ += 2;
-            if (++dmaIndex_ >= 256) {
+            if (cycles_ % 2 == 1) {
+                dmaByte_ = bus_->cpuRead(addr);
+            } else {
+                bus_->cpuWrite(0x2004, dmaByte_);
+                ++dmaIndex_;
+            }
+            if (dmaIndex_ >= 256) {
                 dmaPending_ = false;
             }
-            return 2;
+            ++cycles_;
+            return 1;
         }
-        if (!opState_.executingOp_) {
+        if (!opState_.executingOp) {
             if (nmiPending_ && !nmiActive_) {
                 nmiPending_ = false;
                 nmiActive_ = true;
-                opState_.executingOp_ = true;
+                opState_.executingOp = true;
             } else if (irqPending_ && !regs_.I() && !nmiActive_ && !irqActive_) {
                 irqPending_ = false;
                 irqActive_ = true;
-                opState_.executingOp_ = true;
+                opState_.executingOp = true;
             } else {
                 opState_.code = bus_->cpuRead(regs_.PC++);
                 const auto& info = OP_INFO[opState_.code];
                 opState_.step = 1;
                 opState_.isStore = info.isStore;
-                opState_.executingOp_ = true;
+                opState_.executingOp = true;
                 ++cycles_;
                 return 1;
             }
@@ -584,7 +587,7 @@ namespace nes_core {
             }
         }
         if (opState_.finished) {
-            opState_.executingOp_ = false;
+            opState_.executingOp = false;
             opState_.reset();
             ++steps_;
         } else {
