@@ -59,7 +59,7 @@ TEST_F(VblNmiTimingRoms, 5_nmi_suppression) {
 TEST_F(VblNmiTimingRoms, 6_nmi_disable) {
     const std::string romPath = "../tests/roms/ppu/vbl_nmi_timing/6.nmi_disable.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 35) {
+    while (emulator.ppu().frame() < 120) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());

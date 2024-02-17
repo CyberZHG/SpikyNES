@@ -129,6 +129,15 @@ namespace nes_core {
         regs_.r(index) = value;
         if (index == 0) { // PPU_CTRL
             regs_.t = (regs_.t & 0xF3FF) | ((value & 0x03) << 10);
+            if (!regs_.vBlankNmiEnabled()) {
+                if (scanline_ == 241) {
+                    if (cycle_ == 1) {
+                        suppressVBlank_ = true;
+                    } else if (cycle_ == 2 || cycle_ == 3) {
+                        bus_->cpuNMIClear();
+                    }
+                }
+            }
             updateVBlankNMI();
         } else if (index == 4) {  // OAM_DATA
             oam_[regs_.oamAddr++] = value;
