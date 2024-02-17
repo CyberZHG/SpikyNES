@@ -234,7 +234,7 @@ namespace nes_core {
         regs_.bgPatternShiftLo = (regs_.bgPatternShiftLo & 0xFF00) | patternTableTileLo_;
         regs_.bgPatternShiftHi = (regs_.bgPatternShiftHi & 0xFF00) | patternTableTileHi_;
         // Find tile from coarse: ... .. ...Y. ...X.
-        const auto tile = ((regs_.v >> 6) & 2) | ((regs_.v >> 1) & 1);
+        const auto tile = ((regs_.v >> 5) & 2) | ((regs_.v >> 1) & 1);
         const auto paletteBits = (attrTableByte_ >> (tile << 1)) & 0x03;
         regs_.bgAttrShiftLo = (regs_.bgAttrShiftLo & 0xFF00) | ((paletteBits & 0x01) ? 0xFF : 0x00);
         regs_.bgAttrShiftHi = (regs_.bgAttrShiftHi & 0xFF00) | ((paletteBits & 0x02) ? 0xFF : 0x00);
@@ -244,7 +244,7 @@ namespace nes_core {
         regs_.bgPatternShiftLo = (regs_.bgPatternShiftLo & 0x00FF) | (patternTableTileLo_ << 8);
         regs_.bgPatternShiftHi = (regs_.bgPatternShiftHi & 0x00FF) | (patternTableTileHi_ << 8);
         // Find tile from coarse: ... .. ...Y. ...X.
-        const auto tile = ((regs_.v >> 6) & 2) | ((regs_.v >> 1) & 1);
+        const auto tile = ((regs_.v >> 5) & 2) | ((regs_.v >> 1) & 1);
         const auto paletteBits = (attrTableByte_ >> (tile << 1)) & 0x03;
         regs_.bgAttrShiftLo = (regs_.bgAttrShiftLo & 0x00FF) | ((paletteBits & 0x01) ? 0xFF00 : 0x0000);
         regs_.bgAttrShiftHi = (regs_.bgAttrShiftHi & 0x00FF) | ((paletteBits & 0x02) ? 0xFF00 : 0x0000);
