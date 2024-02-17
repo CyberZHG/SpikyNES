@@ -29,6 +29,8 @@ namespace nes_core {
         void cpuIRQ() const;
         void cpuStall(int cycles) const;
 
+        [[nodiscard]] bool irqAsserted() const;
+
     private:
         CPU* cpu_ = nullptr;
         PPU* ppu_ = nullptr;

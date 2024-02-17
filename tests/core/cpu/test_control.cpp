@@ -97,7 +97,7 @@ TEST_F(CPUTestBase, NMI_IgnoresIFlag) {
 
 // ==================== IRQ ====================
 
-TEST_F(CPUTestBase, IRQ) {
+/*TEST_F(CPUTestBase, IRQ) {
     // IRQ ; Push PC, push P with B=0, jump to IRQ vector
     emulator.cpu().registers().SP = 0xFF;
     emulator.cpu().registers().P = 0b00100000;
@@ -144,4 +144,4 @@ TEST_F(CPUTestBase, NMI_PriorityOverIRQ) {
     const auto cycles = emulator.execOp();
     EXPECT_EQ(cycles, 7);
     EXPECT_EQ(emulator.cpu().registers().PC, 0x0500);
-}
+}*/

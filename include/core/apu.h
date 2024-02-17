@@ -157,6 +157,8 @@ namespace nes_core {
 
         [[nodiscard]] float outputBuffer() const { return outputBuffer_; }
 
+        [[nodiscard]] bool irqAsserted() const { return regs_.frameIrqFlag || regs_.dmc.irqFlag; }
+
     protected:
         void quarterFrameStep();
         void halfFrameStep();

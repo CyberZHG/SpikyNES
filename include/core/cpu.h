@@ -340,6 +340,7 @@ namespace nes_core {
         bool halted_ = false;
         bool nmiPending_ = false;
         bool nmiActive_ = false;
+        bool prevIRQInhibit_ = true;
         bool irqPending_ = false;
         bool irqActive_ = false;
         bool dmaPending_ = false;

@@ -401,6 +401,7 @@ namespace nes_core {
         dmaIndex_ = 0;
         dmaPage_ = 0;
         dmaAlignCycle_ = false;
+        prevIRQInhibit_ = true;
     }
 
     std::uint8_t CPU::cpuRead(const std::uint16_t addr) const {
@@ -449,16 +450,16 @@ namespace nes_core {
             ++cycles_;
             return;
         }
-        if (!opState_.executingOp) {
-            if (nmiPending_ && !nmiActive_) {
+        if (!opState_.executingOp && !nmiActive_) {
+            if (steps_ == 0) {
+                prevIRQInhibit_ = regs_.I();
+            }
+            if (nmiPending_) {
                 nmiPending_ = false;
                 nmiActive_ = true;
-                opState_.executingOp = true;
-            } else if (irqPending_ && !regs_.I() && !nmiActive_ && !irqActive_) {
-                irqPending_ = false;
+            } else if (bus_->irqAsserted() && !prevIRQInhibit_ && !irqActive_) {
                 irqActive_ = true;
-                opState_.executingOp = true;
-            } else {
+            } else if (!irqActive_) {
                 opState_.code = bus_->cpuRead(regs_.PC++);
                 const auto& info = OP_INFO[opState_.code];
                 opState_.step = 1;

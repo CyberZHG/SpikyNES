@@ -550,7 +550,6 @@ namespace nes_core {
                     halfFrameStep();
                     if (!regs_.irqInhibited) {
                         regs_.frameIrqFlag = true;
-                        bus_->cpuIRQ();
                     }
                     break;
                 default: break;
@@ -593,7 +592,6 @@ namespace nes_core {
                     regs_.dmc.restart();
                 } else if (regs_.dmc.irqEnabled) {
                     regs_.dmc.irqFlag = true;
-                    bus_->cpuIRQ();
                 }
             }
         }

@@ -82,4 +82,8 @@ namespace nes_core {
     void Bus::cpuStall(const int cycles) const {
         cpu_->stall(cycles);
     }
+
+    bool Bus::irqAsserted() const {
+        return apu_->irqAsserted();
+    }
 }

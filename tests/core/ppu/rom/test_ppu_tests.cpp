@@ -33,16 +33,6 @@ TEST_F(BlarggPPUTestsRoms, PaletteRAM) {
     compareWithExpectedOutput(filepath);
 }
 
-TEST_F(BlarggPPUTestsRoms, PowerUpPalette) {
-    // Not going to pass this one
-    const std::string romPath = "../tests/roms/ppu/power_up_palette.nes";
-    ASSERT_TRUE(emulator.loadROM(romPath)) << "Failed to load power_up_palette.nes";
-    while (emulator.ppu().frame() < 30) {
-        emulator.step();
-    }
-    saveFrameBuffer(emulator.ppu());
-}
-
 TEST_F(BlarggPPUTestsRoms, SpriteRAM) {
     const std::string romPath = "../tests/roms/ppu/sprite_ram.nes";
     ASSERT_TRUE(emulator.loadROM(romPath)) << "Failed to load sprite_ram.nes";
@@ -60,8 +50,7 @@ TEST_F(BlarggPPUTestsRoms, VBLClearTime) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());
-    // TODO: Fix CPU cycles
-    // compareWithExpectedOutput(filepath);
+    compareWithExpectedOutput(filepath);
 }
 
 TEST_F(BlarggPPUTestsRoms, VRAMAccess) {
