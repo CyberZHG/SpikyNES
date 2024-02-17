@@ -339,6 +339,7 @@ namespace nes_core {
         int stallCycles_ = 0;
         bool halted_ = false;
         bool nmiPending_ = false;
+        bool nmiLatched_ = false;
         bool nmiActive_ = false;
         bool prevIRQInhibit_ = true;
         bool irqActive_ = false;

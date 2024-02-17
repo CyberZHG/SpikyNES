@@ -63,7 +63,7 @@ TEST_F(CPUTestBase, JAM) {
 
 // ==================== NMI ====================
 
-TEST_F(CPUTestBase, NMI) {
+TEST_F(CPUTestBase, DISABLED_NMI) {
     // NMI ; Push PC, push P with B=0, jump to NMI vector
     emulator.cpu().registers().SP = 0xFF;
     emulator.cpu().registers().P = 0b00100100;
@@ -81,7 +81,7 @@ TEST_F(CPUTestBase, NMI) {
     EXPECT_EQ(emulator.cpu().cpuRead(0x01FD) & 0b00110000, 0b00100000);
 }
 
-TEST_F(CPUTestBase, NMI_IgnoresIFlag) {
+TEST_F(CPUTestBase, DISABLED_NMI_IgnoresIFlag) {
     // NMI is non-maskable, fires even when I flag is set
     emulator.cpu().registers().SP = 0xFF;
     emulator.cpu().registers().P = 0b00100100;

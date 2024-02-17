@@ -50,7 +50,7 @@ TEST_F(VblNmiTimingRoms, 4_vbl_clear_timing) {
 TEST_F(VblNmiTimingRoms, 5_nmi_suppression) {
     const std::string romPath = "../tests/roms/ppu/vbl_nmi_timing/5.nmi_suppression.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 170) {
+    while (emulator.ppu().frame() < 190) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());
@@ -68,7 +68,7 @@ TEST_F(VblNmiTimingRoms, 6_nmi_disable) {
 TEST_F(VblNmiTimingRoms, 7_nmi_timing) {
     const std::string romPath = "../tests/roms/ppu/vbl_nmi_timing/7.nmi_timing.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 60) {
+    while (emulator.ppu().frame() < 160) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());

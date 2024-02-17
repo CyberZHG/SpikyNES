@@ -90,6 +90,7 @@ namespace nes_core {
         suppressVBlank_ = false;
         isVBlankNMIOn_ = false;
         isVBlankNMIOnPrev_ = false;
+        vBlankNMIPending_ = false;
         nametableByte_ = 0;
         attrTableByte_ = 0;
         patternTableTileLo_ = 0;
@@ -105,12 +106,12 @@ namespace nes_core {
                     suppressVBlank_ = true;
                 } else if (cycle_ == 2 || cycle_ == 3) {
                     bus_->cpuNMIClear();
+                    vBlankNMIPending_ = false;
                 }
             }
             value = (regs_.ppuStatus & 0xE0) | (bus_->lastBusValue() & 0x1F);
             regs_.clearVBlank();
             regs_.w = 0;
-            updateVBlankNMI();
         } else if (index == 4) {  // OAM_DATA
             value = oam_[regs_.oamAddr];
         } else if (index == 7) {  // PPU_DATA
@@ -135,10 +136,10 @@ namespace nes_core {
                         suppressVBlank_ = true;
                     } else if (cycle_ == 2 || cycle_ == 3) {
                         bus_->cpuNMIClear();
+                        vBlankNMIPending_ = false;
                     }
                 }
             }
-            updateVBlankNMI();
         } else if (index == 4) {  // OAM_DATA
             oam_[regs_.oamAddr++] = value;
         } else if (index == 5) {  // PPU_SCROLL
@@ -192,10 +193,14 @@ namespace nes_core {
 
     void PPU::updateVBlankNMI() {
         // See: https://forums.nesdev.org/viewtopic.php?t=20769
+        if (vBlankNMIPending_) {
+            vBlankNMIPending_ = false;
+            bus_->cpuNMI();
+        }
         isVBlankNMIOnPrev_ = isVBlankNMIOn_;
         isVBlankNMIOn_ = regs_.vBlank() && regs_.vBlankNmiEnabled();
         if (!isVBlankNMIOnPrev_ && isVBlankNMIOn_) {
-            bus_->cpuNMI();
+            vBlankNMIPending_ = true;
         }
     }
 
@@ -488,6 +493,7 @@ namespace nes_core {
 
     void PPU::step() {
         const auto renderingEnabled = regs_.renderingEnabled();
+        updateVBlankNMI();
         if (0 <= scanline_ && scanline_ < 240) {
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {
@@ -518,12 +524,10 @@ namespace nes_core {
                     regs_.setVBlank();
                 }
                 suppressVBlank_ = false;
-                updateVBlankNMI();
             }
         } else if (scanline_ == 261) {
             if (cycle_ == 1) {
                 regs_.ppuStatus &= ~0xE0;
-                updateVBlankNMI();
             }
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {

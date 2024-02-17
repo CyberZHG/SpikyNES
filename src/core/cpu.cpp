@@ -456,20 +456,16 @@ namespace nes_core {
             handleNMI();
         } else if (irqActive_) {
             handleIRQ();
+        } else if (nmiLatched_) {
+            nmiLatched_ = false;
+            nmiActive_ = true;
+            ++cycles_;
+            return;
         } else if (opState_.step == 0) {
-            if (nmiPending_) {
-                nmiPending_ = false;
-                nmiActive_ = true;
-                handleNMI();
-            } else if (bus_->irqAsserted() && !prevIRQInhibit_) {
-                irqActive_ = true;
-                handleIRQ();
-            } else {
-                opState_.code = bus_->cpuRead(regs_.PC++);
-                const auto& info = OP_INFO[opState_.code];
-                opState_.isStore = info.isStore;
-                opState_.executingOp = true;
-            }
+            opState_.code = bus_->cpuRead(regs_.PC++);
+            const auto& info = OP_INFO[opState_.code];
+            opState_.isStore = info.isStore;
+            opState_.executingOp = true;
         } else {
             const auto& info = OP_INFO[opState_.code];
             switch (info.mode) {
@@ -588,6 +584,12 @@ namespace nes_core {
             opState_.executingOp = false;
             opState_.reset();
             ++steps_;
+            if (nmiPending_) {
+                nmiPending_ = false;
+                nmiLatched_ = true;
+            } else if (bus_->irqAsserted() && !prevIRQInhibit_) {
+                irqActive_ = true;
+            }
         } else {
             ++opState_.step;
         }
