@@ -100,9 +100,12 @@ namespace nes_core {
         const auto index = addr & 0b00000111;
         std::uint8_t value = bus_->lastBusValue();
         if (index == 2) {  // PPU_STATUS
-            // Reading $2002 at the exact cycle VBlank is set suppresses the flag
-            if (scanline_ == 241 && cycle_ == 1) {
-                suppressVBlank_ = true;
+            if (scanline_ == 241) {
+                if (cycle_ == 1) {
+                    suppressVBlank_ = true;
+                } else if (cycle_ == 2 || cycle_ == 3) {
+                    bus_->cpuNMIClear();
+                }
             }
             value = (regs_.ppuStatus & 0xE0) | (bus_->lastBusValue() & 0x1F);
             regs_.clearVBlank();

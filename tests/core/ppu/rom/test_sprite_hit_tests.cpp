@@ -15,7 +15,7 @@ protected:
 TEST_F(SpriteHitTestsRoms, 01_basics) {
     const std::string romPath = "../tests/roms/ppu/sprite_hit_tests/01.basics.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 35) {
+    while (emulator.ppu().frame() < 50) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());
@@ -87,7 +87,7 @@ TEST_F(SpriteHitTestsRoms, 08_double_height) {
 TEST_F(SpriteHitTestsRoms, 09_timing_basics) {
     const std::string romPath = "../tests/roms/ppu/sprite_hit_tests/09.timing_basics.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 70) {
+    while (emulator.ppu().frame() < 80) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());
@@ -96,7 +96,7 @@ TEST_F(SpriteHitTestsRoms, 09_timing_basics) {
 TEST_F(SpriteHitTestsRoms, 10_timing_order) {
     const std::string romPath = "../tests/roms/ppu/sprite_hit_tests/10.timing_order.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 60) {
+    while (emulator.ppu().frame() < 80) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());

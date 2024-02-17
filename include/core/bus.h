@@ -26,6 +26,7 @@ namespace nes_core {
         void ppuWrite(std::uint16_t addr, std::uint8_t value) const;
 
         void cpuNMI() const;
+        void cpuNMIClear() const;
         void cpuIRQ() const;
         void cpuStall(int cycles) const;
 

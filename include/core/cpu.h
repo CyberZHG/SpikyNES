@@ -107,6 +107,8 @@ namespace nes_core {
 
         /** Trigger a Non-Maskable Interrupt. */
         void nmi() { nmiPending_ = true; }
+        /** Cancel a pending NMI (used for NMI suppression). */
+        void nmiClear() { nmiPending_ = false; }
         /** Check if NMI is pending. */
         [[nodiscard]] bool nmiPending() const { return nmiPending_; }
         /** Trigger an Interrupt Request (ignored if I flag is set). */

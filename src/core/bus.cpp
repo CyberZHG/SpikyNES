@@ -75,6 +75,10 @@ namespace nes_core {
         cpu_->nmi();
     }
 
+    void Bus::cpuNMIClear() const {
+        cpu_->nmiClear();
+    }
+
     void Bus::cpuIRQ() const {
         cpu_->irq();
     }
