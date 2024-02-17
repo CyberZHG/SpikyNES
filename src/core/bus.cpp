@@ -79,10 +79,6 @@ namespace nes_core {
         cpu_->nmiClear();
     }
 
-    void Bus::cpuIRQ() const {
-        cpu_->irq();
-    }
-
     void Bus::cpuStall(const int cycles) const {
         cpu_->stall(cycles);
     }

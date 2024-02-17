@@ -111,8 +111,6 @@ namespace nes_core {
         void nmiClear() { nmiPending_ = false; }
         /** Check if NMI is pending. */
         [[nodiscard]] bool nmiPending() const { return nmiPending_; }
-        /** Trigger an Interrupt Request (ignored if I flag is set). */
-        void irq() { irqPending_ = true; }
 
         /** Trigger OAM DMA transfer. */
         void triggerDMA(std::uint8_t page);
@@ -343,7 +341,6 @@ namespace nes_core {
         bool nmiPending_ = false;
         bool nmiActive_ = false;
         bool prevIRQInhibit_ = true;
-        bool irqPending_ = false;
         bool irqActive_ = false;
         bool dmaPending_ = false;
         std::uint8_t dmaPage_ = 0;

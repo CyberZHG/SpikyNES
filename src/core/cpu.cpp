@@ -395,7 +395,6 @@ namespace nes_core {
         halted_ = false;
         nmiPending_ = false;
         nmiActive_ = false;
-        irqPending_ = false;
         irqActive_ = false;
         dmaPending_ = false;
         dmaIndex_ = 0;
@@ -450,29 +449,27 @@ namespace nes_core {
             ++cycles_;
             return;
         }
-        if (!opState_.executingOp && !nmiActive_) {
-            if (steps_ == 0) {
-                prevIRQInhibit_ = regs_.I();
-            }
-            if (nmiPending_) {
-                nmiPending_ = false;
-                nmiActive_ = true;
-            } else if (bus_->irqAsserted() && !prevIRQInhibit_ && !irqActive_) {
-                irqActive_ = true;
-            } else if (!irqActive_) {
-                opState_.code = bus_->cpuRead(regs_.PC++);
-                const auto& info = OP_INFO[opState_.code];
-                opState_.step = 1;
-                opState_.isStore = info.isStore;
-                opState_.executingOp = true;
-                ++cycles_;
-                return;
-            }
+        if (opState_.step == 0) {
+            prevIRQInhibit_ = regs_.I();
         }
         if (nmiActive_) {
             handleNMI();
         } else if (irqActive_) {
             handleIRQ();
+        } else if (opState_.step == 0) {
+            if (nmiPending_) {
+                nmiPending_ = false;
+                nmiActive_ = true;
+                handleNMI();
+            } else if (bus_->irqAsserted() && !prevIRQInhibit_) {
+                irqActive_ = true;
+                handleIRQ();
+            } else {
+                opState_.code = bus_->cpuRead(regs_.PC++);
+                const auto& info = OP_INFO[opState_.code];
+                opState_.isStore = info.isStore;
+                opState_.executingOp = true;
+            }
         } else {
             const auto& info = OP_INFO[opState_.code];
             switch (info.mode) {

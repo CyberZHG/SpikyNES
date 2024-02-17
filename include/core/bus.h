@@ -27,7 +27,6 @@ namespace nes_core {
 
         void cpuNMI() const;
         void cpuNMIClear() const;
-        void cpuIRQ() const;
         void cpuStall(int cycles) const;
 
         [[nodiscard]] bool irqAsserted() const;
