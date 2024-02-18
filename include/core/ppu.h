@@ -120,7 +120,7 @@ namespace nes_core {
         void fetchPatternTableTileHi();
 
         void updateShiftRegisters();
-        void reloadShiftRegistersHi();
+        void reloadShiftRegisters();
 
         void incrementScrollX();
         void incrementScrollY();

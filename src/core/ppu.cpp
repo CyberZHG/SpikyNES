@@ -231,6 +231,13 @@ namespace nes_core {
     }
 
     void PPU::updateShiftRegisters() {
+        regs_.bgPatternShiftLo <<= 1;
+        regs_.bgPatternShiftHi <<= 1;
+        regs_.bgAttrShiftLo <<= 1;
+        regs_.bgAttrShiftHi <<= 1;
+    }
+
+    void PPU::reloadShiftRegisters() {
         regs_.bgPatternShiftLo = (regs_.bgPatternShiftLo & 0xFF00) | patternTableTileLo_;
         regs_.bgPatternShiftHi = (regs_.bgPatternShiftHi & 0xFF00) | patternTableTileHi_;
         // Find tile from coarse: ... .. ...Y. ...X.
@@ -238,16 +245,6 @@ namespace nes_core {
         const auto paletteBits = (attrTableByte_ >> (tile << 1)) & 0x03;
         regs_.bgAttrShiftLo = (regs_.bgAttrShiftLo & 0xFF00) | ((paletteBits & 0x01) ? 0xFF : 0x00);
         regs_.bgAttrShiftHi = (regs_.bgAttrShiftHi & 0xFF00) | ((paletteBits & 0x02) ? 0xFF : 0x00);
-    }
-
-    void PPU::reloadShiftRegistersHi() {
-        regs_.bgPatternShiftLo = (regs_.bgPatternShiftLo & 0x00FF) | (patternTableTileLo_ << 8);
-        regs_.bgPatternShiftHi = (regs_.bgPatternShiftHi & 0x00FF) | (patternTableTileHi_ << 8);
-        // Find tile from coarse: ... .. ...Y. ...X.
-        const auto tile = ((regs_.v >> 5) & 2) | ((regs_.v >> 1) & 1);
-        const auto paletteBits = (attrTableByte_ >> (tile << 1)) & 0x03;
-        regs_.bgAttrShiftLo = (regs_.bgAttrShiftLo & 0x00FF) | ((paletteBits & 0x01) ? 0xFF00 : 0x0000);
-        regs_.bgAttrShiftHi = (regs_.bgAttrShiftHi & 0x00FF) | ((paletteBits & 0x02) ? 0xFF00 : 0x0000);
     }
 
     void PPU::incrementScrollX() {
@@ -307,11 +304,7 @@ namespace nes_core {
                 fetchPatternTableTileHi();
                 break;
             case 7:
-                if (cycle_ == 328) {
-                    reloadShiftRegistersHi();
-                } else {
-                    updateShiftRegisters();
-                }
+                reloadShiftRegisters();
                 incrementScrollX();
                 break;
             default:
@@ -499,10 +492,7 @@ namespace nes_core {
                 if (1 <= cycle_ && cycle_ <= 256) {
                     renderPixel();
                     shiftSprites();
-                    regs_.bgPatternShiftLo <<= 1;
-                    regs_.bgPatternShiftHi <<= 1;
-                    regs_.bgAttrShiftLo <<= 1;
-                    regs_.bgAttrShiftHi <<= 1;
+                    updateShiftRegisters();
                     fetchBackgroundTileData();
                     if (cycle_ == 256) {
                         incrementScrollY();
@@ -515,6 +505,7 @@ namespace nes_core {
                         fetchSprites();
                     }
                 } else if (321 <= cycle_ && cycle_ <= 336) {
+                    updateShiftRegisters();
                     fetchBackgroundTileData();
                 }
             }
@@ -531,24 +522,24 @@ namespace nes_core {
             }
             if (renderingEnabled) {
                 if (1 <= cycle_ && cycle_ <= 256) {
-                    regs_.bgPatternShiftLo <<= 1;
-                    regs_.bgPatternShiftHi <<= 1;
-                    regs_.bgAttrShiftLo <<= 1;
-                    regs_.bgAttrShiftHi <<= 1;
+                    updateShiftRegisters();
                     fetchBackgroundTileData();
                     if (cycle_ == 256) {
                         incrementScrollY();
                     }
+                    if (cycle_ == 64) {
+                        sprites_.fill({});
+                    }
                 } else if (257 <= cycle_ && cycle_ <= 320) {
                     if (cycle_ == 257) {
                         copyScrollX();
-                        evaluateSprites();
                         fetchSprites();
                     }
                     if (cycle_ >= 280 && cycle_ <= 304) {
                         copyScrollY();
                     }
                 } else if (321 <= cycle_ && cycle_ <= 336) {
+                    updateShiftRegisters();
                     fetchBackgroundTileData();
                 }
                 if (cycle_ == 339 && frame_ % 2 == 1) {
