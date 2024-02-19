@@ -80,6 +80,15 @@ namespace nes_core {
         void setSpriteOverflow() { setBit(ppuStatus, 5); }
     };
 
+    struct SpriteEvaluationState {
+        int n = 0;  // n-th sprite
+        int m = 0;  // m-th byte
+        std::uint8_t oamLatch = 0;
+        std::uint8_t dummyWriteCycle = 0;
+
+        void reset();
+    };
+
     class PPU {
     public:
         explicit PPU(Bus* bus);
@@ -130,6 +139,7 @@ namespace nes_core {
         void fetchBackgroundTileData();
         void renderPixel();
 
+        void resetSecondaryOAM();
         void evaluateSprites();
         void fetchSprites();
         void shiftSprites();
@@ -159,6 +169,7 @@ namespace nes_core {
         std::array<SpriteData, 8> sprites_{};
         int spriteCount_ = 0;
         bool sprite0Rendering_ = false;
+        SpriteEvaluationState spriteEvalState_{};
 
         Mirroring mirroring_ = Mirroring::HORIZONTAL;
         std::int32_t scanline_ = 0;

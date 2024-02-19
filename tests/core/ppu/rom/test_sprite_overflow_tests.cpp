@@ -31,17 +31,15 @@ TEST_F(SpriteOverflowTestsRoms, 2_Details) {
 }
 
 TEST_F(SpriteOverflowTestsRoms, 3_Timing) {
-    // TODO: Fix CPU cycles
     const std::string romPath = "../tests/roms/ppu/sprite_overflow_tests/3.Timing.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 35) {
+    while (emulator.ppu().frame() < 120) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());
 }
 
 TEST_F(SpriteOverflowTestsRoms, 4_Obscure) {
-    // TODO: Add detailed OAM states
     const std::string romPath = "../tests/roms/ppu/sprite_overflow_tests/4.Obscure.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
     while (emulator.ppu().frame() < 35) {

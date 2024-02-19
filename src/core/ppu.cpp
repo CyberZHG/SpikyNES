@@ -71,6 +71,10 @@ namespace nes_core {
         ppuDataBuffer = 0;
     }
 
+    void SpriteEvaluationState::reset() {
+        n = m = oamLatch = dummyWriteCycle = 0;
+    }
+
     PPU::PPU(Bus *bus) {
         bus_ = bus;
     }
@@ -375,34 +379,69 @@ namespace nes_core {
         frameBuffer_[y * 256 + x] = 0xFF000000 | PALETTE[color];
     }
 
+    void PPU::resetSecondaryOAM() {
+        sprites_.fill({});
+    }
+
     void PPU::evaluateSprites() {
-        const auto spriteHeight = regs_.spriteSize();
-        auto scanline = static_cast<std::uint8_t>(scanline_);
-        if (scanline_ == 261) {
-            scanline = 0xFF;
+        auto& n = spriteEvalState_.n;
+        auto& m = spriteEvalState_.m;
+        auto& oamLatch = spriteEvalState_.oamLatch;
+        if (cycle_ == 65) {
+            spriteCount_ = 0;
+            sprite0Rendering_ = false;
+            spriteEvalState_.reset();
         }
-        spriteCount_ = 0;
-        sprite0Rendering_ = false;
-        for (int i = 0; i < 64; ++i) {
-            const auto y = oam_[i * 4];
-            const auto tile = oam_[i * 4 + 1];
-            const auto attribute = oam_[i * 4 + 2];
-            const auto x = oam_[i * 4 + 3];
-            if (const auto row = scanline - y; 0 <= row && row < spriteHeight) {
-                if (spriteCount_ < 8) {
-                    if (i == 0) {
-                        sprite0Rendering_ = true;
+        if (n >= 64) {
+            return;
+        }
+        const auto spriteHeight = regs_.spriteSize();
+        const auto scanline = static_cast<std::uint8_t>(scanline_);
+        if (cycle_ % 2 == 1) {
+            oamLatch = oam_[n * 4 + m];
+        } else {
+            if (spriteCount_ < 8) {
+                if (m == 0) {
+                    if (const auto row = scanline - oamLatch; 0 <= row && row < spriteHeight) {
+                        sprites_[spriteCount_].y = oamLatch;
+                        ++m;
+                    } else {
+                        ++n;
                     }
-                    sprites_[spriteCount_].y = y;
-                    sprites_[spriteCount_].tile = tile;
-                    sprites_[spriteCount_].attribute = attribute;
-                    sprites_[spriteCount_].x = x;
-                    ++spriteCount_;
                 } else {
-                    if (scanline_ != 261) {
-                        regs_.setSpriteOverflow();
+                    if (m == 1) {
+                        sprites_[spriteCount_].tile = oamLatch;
+                    } else if (m == 2) {
+                        sprites_[spriteCount_].attribute = oamLatch;
+                    } else {
+                        sprites_[spriteCount_].x = oamLatch;
                     }
-                    break;
+                    if (++m == 4) {
+                        m = 0;
+                        if (n == 0) {
+                            sprite0Rendering_ = true;
+                        }
+                        ++n;
+                        ++spriteCount_;
+                    }
+                }
+            } else {
+                if (spriteEvalState_.dummyWriteCycle > 0) {
+                    --spriteEvalState_.dummyWriteCycle;
+                    if (++m == 4) {
+                        m = 0;
+                        ++n;
+                    }
+                } else if (const auto row = scanline - oamLatch; 0 <= row && row < spriteHeight) {
+                    regs_.setSpriteOverflow();
+                    if (++m == 4) {
+                        m = 0;
+                        ++n;
+                    }
+                    spriteEvalState_.dummyWriteCycle = 3;
+                } else {
+                    m = (m + 1) & 0x03;
+                    ++n;
                 }
             }
         }
@@ -489,6 +528,7 @@ namespace nes_core {
         updateVBlankNMI();
         if (0 <= scanline_ && scanline_ < 240) {
             if (renderingEnabled) {
+                // Background
                 if (1 <= cycle_ && cycle_ <= 256) {
                     renderPixel();
                     shiftSprites();
@@ -501,12 +541,17 @@ namespace nes_core {
                     if (cycle_ == 257) {
                         regs_.oamAddr = 0;
                         copyScrollX();
-                        evaluateSprites();
                         fetchSprites();
                     }
                 } else if (321 <= cycle_ && cycle_ <= 336) {
                     updateShiftRegisters();
                     fetchBackgroundTileData();
+                }
+                // Sprites
+                if (cycle_ == 64) {
+                    resetSecondaryOAM();
+                } else if (65 <= cycle_ && cycle_ <= 256) {
+                    evaluateSprites();
                 }
             }
         } else if (scanline_ == 241) {
@@ -521,14 +566,12 @@ namespace nes_core {
                 regs_.ppuStatus &= ~0xE0;
             }
             if (renderingEnabled) {
+                // Background
                 if (1 <= cycle_ && cycle_ <= 256) {
                     updateShiftRegisters();
                     fetchBackgroundTileData();
                     if (cycle_ == 256) {
                         incrementScrollY();
-                    }
-                    if (cycle_ == 64) {
-                        sprites_.fill({});
                     }
                 } else if (257 <= cycle_ && cycle_ <= 320) {
                     if (cycle_ == 257) {
@@ -541,6 +584,10 @@ namespace nes_core {
                 } else if (321 <= cycle_ && cycle_ <= 336) {
                     updateShiftRegisters();
                     fetchBackgroundTileData();
+                }
+                // Sprites
+                if (cycle_ == 64) {
+                    resetSecondaryOAM();
                 }
                 if (cycle_ == 339 && frame_ % 2 == 1) {
                     cycle_ = -1;
