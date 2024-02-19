@@ -7,6 +7,7 @@
 #include <bitset>
 
 #include "core/emulator.h"
+#include "../../ppu/test_ppu_utils.h"
 
 using namespace nes_core;
 
@@ -137,4 +138,17 @@ TEST_F(NestestTest, RunNestest) {
         << "Official opcode tests failed with code: " << std::hex << static_cast<int>(mem02);
     EXPECT_EQ(mem03, 0x00)
         << "Unofficial opcode tests failed with code: " << std::hex << static_cast<int>(mem03);
+}
+
+TEST_F(NestestTest, NestestAll) {
+    const std::string romPath = "../tests/roms/cpu/nestest.nes";
+    ASSERT_TRUE(emulator.loadROM(romPath));
+    while (!emulator.cpu().halted() && emulator.ppu().frame() < 10) {
+        emulator.step();
+    }
+    emulator.controller1().press(Controller::Button::Start);
+    while (!emulator.cpu().halted() && emulator.ppu().frame() < 30) {
+        emulator.step();
+    }
+    const auto filepath = saveFrameBuffer(emulator.ppu());
 }

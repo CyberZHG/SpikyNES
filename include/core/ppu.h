@@ -147,6 +147,9 @@ namespace nes_core {
         void fetchSprites();
         void shiftSprites();
 
+        void refreshPPUBusDecay(std::uint8_t mask);
+        void decayPPUBusLatch();
+
     private:
         Bus* bus_ = nullptr;
         PPURegisters regs_{};
@@ -189,6 +192,9 @@ namespace nes_core {
         std::uint8_t attrTableByte_ = 0;
         std::uint8_t patternTableTileLo_ = 0;
         std::uint8_t patternTableTileHi_ = 0;
+
+        std::uint8_t ppuBusLatch_ = 0;
+        std::array<std::int64_t, 8> ppuBusLatchFrame_{};
     };
 
 }

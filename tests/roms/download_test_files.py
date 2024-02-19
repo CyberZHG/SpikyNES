@@ -22,7 +22,8 @@ PPU_TEST_FILE_URLS = [
     "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/blargg_ppu_tests_2005.09.15b/palette_ram.nes",
     "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/blargg_ppu_tests_2005.09.15b/sprite_ram.nes",
     "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/blargg_ppu_tests_2005.09.15b/vbl_clear_time.nes",
-    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/blargg_ppu_tests_2005.09.15b/vram_access.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/ppu_open_bus/ppu_open_bus.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/refs/heads/master/ppu_read_buffer/test_ppu_read_buffer.nes",
 ]
 
 download_dir = CURRENT_DIR / "ppu"

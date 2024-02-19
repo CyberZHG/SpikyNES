@@ -107,11 +107,14 @@ namespace nes_core {
         attrTableByte_ = 0;
         patternTableTileLo_ = 0;
         patternTableTileHi_ = 0;
+        ppuBusLatch_ = 0;
+        ppuBusLatchFrame_.fill(0);
     }
 
     std::uint8_t PPU::registerRead(const std::uint16_t addr) {
         const auto index = addr & 0b00000111;
-        std::uint8_t value = bus_->lastBusValue();
+        decayPPUBusLatch();
+        std::uint8_t value = ppuBusLatch_;
         if (index == 2) {  // PPU_STATUS
             if (scanline_ == 241) {
                 if (cycle_ == 1) {
@@ -121,18 +124,22 @@ namespace nes_core {
                     vBlankNMIPending_ = false;
                 }
             }
-            value = (regs_.ppuStatus & 0xE0) | (bus_->lastBusValue() & 0x1F);
+            value = (regs_.ppuStatus & 0xE0) | (ppuBusLatch_ & 0x1F);
             regs_.clearVBlank();
             regs_.w = 0;
         } else if (index == 4) {  // OAM_DATA
-            value = oam_[regs_.oamAddr];
+            value = oam_[regs_.oamAddr] & 0b11100011;
         } else if (index == 7) {  // PPU_DATA
             value = regs_.ppuDataBuffer;
             regs_.ppuDataBuffer = ppuRead(regs_.v & 0x2FFF);
             if ((regs_.v & PPU_MEM_MASK) >= PPU_PALETTE_START) {
-                value = ppuRead(regs_.v);
+                value = (ppuBusLatch_ & 0xC0) | (ppuRead(regs_.v) & 0x3F);
             }
             regs_.v += regs_.vRamIncrement();
+        }
+        ppuBusLatch_ = value;
+        if (index == 2) {
+            refreshPPUBusDecay(0b11100000);
         }
         return value;
     }
@@ -177,6 +184,8 @@ namespace nes_core {
             ppuWrite(regs_.v, value);
             regs_.v += regs_.vRamIncrement();
         }
+        ppuBusLatch_ = value;
+        refreshPPUBusDecay(0xFF);
     }
 
     std::uint16_t PPU::mirrorNametableAddr(std::uint16_t addr) const {
@@ -635,6 +644,22 @@ namespace nes_core {
             if (++scanline_ > 261) {
                 scanline_ = 0;
                 ++frame_;
+            }
+        }
+    }
+
+    void PPU::refreshPPUBusDecay(const std::uint8_t mask) {
+        for (int i = 0; i < 8; ++i) {
+            if (mask & (1 << i)) {
+                ppuBusLatchFrame_[i] = frame_;
+            }
+        }
+    }
+
+    void PPU::decayPPUBusLatch() {
+        for (int i = 0; i < 8; ++i) {
+            if (frame_ - ppuBusLatchFrame_[i] > 30) {
+                ppuBusLatch_ &= ~(1 << i);
             }
         }
     }

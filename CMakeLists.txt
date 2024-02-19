@@ -114,6 +114,8 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/apu/test_triangle.cpp
             tests/core/apu/test_noise.cpp
             tests/core/apu/test_dmc.cpp
+            tests/core/ppu/rom/test_ppu_read_buffer.cpp
+            tests/core/ppu/rom/test_ppu_open_bus.cpp
     )
 
     if(SPIKY_NES_ENABLE_ROM_TESTS)
