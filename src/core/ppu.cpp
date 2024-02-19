@@ -72,7 +72,12 @@ namespace nes_core {
     }
 
     void SpriteEvaluationState::reset() {
-        n = m = oamLatch = dummyWriteCycle = 0;
+        n = m = 0;
+        oamLatch = 0;
+        spriteInRange = false;
+        oamCopyDone = false;
+        secondaryOamAddr = 0;
+        overflowCounter = 0;
     }
 
     PPU::PPU(Bus *bus) {
@@ -82,12 +87,15 @@ namespace nes_core {
     void PPU::reset() {
         regs_.reset();
         oam_.fill(0);
+        secondaryOAM_.fill(0xFF);
         nametable_.fill(0);
         palette_.fill(0);
         frameBuffer_.fill(0);
         sprites_.fill({});
         spriteCount_ = 0;
+        sprite0Added_ = false;
         sprite0Rendering_ = false;
+        spriteEvalState_.reset();
         scanline_ = 0;
         cycle_ = 0;
         frame_ = 1;
@@ -320,7 +328,7 @@ namespace nes_core {
         const auto y = scanline_, x = cycle_ - 1;
         // Background
         std::uint8_t bgPattern = 0, bgPalette = 0;
-        if (regs_.bothRenderingEnabled() && x < 8 && !regs_.showBackgroundInLeft()) {
+        if (regs_.backgroundRenderingEnabled() && x < 8 && !regs_.showBackgroundInLeft()) {
             bgPattern = 0;
         } else if (regs_.backgroundRenderingEnabled()) {
             const auto mask = 0x8000 >> regs_.x;
@@ -336,7 +344,7 @@ namespace nes_core {
         // OAM
         std::uint8_t spritePattern = 0, spritePalette = 0, spriteY = 0;
         bool behindBackground = false, isSprite0 = false;
-        if (regs_.bothRenderingEnabled() && x < 8 && !regs_.showSpritesInLeft()) {
+        if (regs_.spriteRenderingEnabled() && x < 8 && !regs_.showSpritesInLeft()) {
             spritePattern = 0;
         } else if (regs_.spriteRenderingEnabled()) {
             for (int i = 0; i < spriteCount_; ++i) {
@@ -379,8 +387,8 @@ namespace nes_core {
         frameBuffer_[y * 256 + x] = 0xFF000000 | PALETTE[color];
     }
 
-    void PPU::resetSecondaryOAM() {
-        sprites_.fill({});
+    void PPU::clearSecondaryOAM() {
+        secondaryOAM_[(cycle_ - 1) >> 1] = 0xFF;
     }
 
     void PPU::evaluateSprites() {
@@ -388,78 +396,99 @@ namespace nes_core {
         auto& m = spriteEvalState_.m;
         auto& oamLatch = spriteEvalState_.oamLatch;
         if (cycle_ == 65) {
-            spriteCount_ = 0;
-            sprite0Rendering_ = false;
+            sprite0Added_ = false;
             spriteEvalState_.reset();
-        }
-        if (n >= 64) {
-            return;
+            n = regs_.oamAddr >> 2;
+            m = regs_.oamAddr & 0x03;
         }
         const auto spriteHeight = regs_.spriteSize();
-        const auto scanline = static_cast<std::uint8_t>(scanline_);
         if (cycle_ % 2 == 1) {
-            oamLatch = oam_[n * 4 + m];
+            oamLatch = oam_[(m & 0x03) | (n << 2)];
         } else {
-            if (spriteCount_ < 8) {
-                if (m == 0) {
-                    if (const auto row = scanline - oamLatch; 0 <= row && row < spriteHeight) {
-                        sprites_[spriteCount_].y = oamLatch;
-                        ++m;
+            if (spriteEvalState_.oamCopyDone) {
+                n = (n + 1) & 0x3F;
+            } else {
+                if (!spriteEvalState_.spriteInRange && scanline_ >= oamLatch && scanline_ < oamLatch + spriteHeight) {
+                    spriteEvalState_.spriteInRange = true;
+                }
+                if (spriteEvalState_.secondaryOamAddr < 32) {
+                    if (spriteEvalState_.spriteInRange) {
+                        secondaryOAM_[spriteEvalState_.secondaryOamAddr++] = oamLatch;
+                        if (cycle_ == 66) {
+                            sprite0Added_ = true;
+                        }
+                        if (++m == 4) {
+                            m = 0;
+                            n = (n + 1) & 0x3F;
+                            if (n == 0) {
+                                spriteEvalState_.oamCopyDone = true;
+                            }
+                        }
+                        if ((spriteEvalState_.secondaryOamAddr & 0x03) == 0) {
+                            spriteEvalState_.spriteInRange = false;
+                            if (m != 0) {
+                                if (!(scanline_ >= oamLatch && scanline_ < oamLatch + spriteHeight)) {
+                                    m = 0;
+                                }
+                            }
+                        }
                     } else {
-                        ++n;
-                    }
-                } else {
-                    if (m == 1) {
-                        sprites_[spriteCount_].tile = oamLatch;
-                    } else if (m == 2) {
-                        sprites_[spriteCount_].attribute = oamLatch;
-                    } else {
-                        sprites_[spriteCount_].x = oamLatch;
-                    }
-                    if (++m == 4) {
+                        n = (n + 1) & 0x3F;
                         m = 0;
                         if (n == 0) {
-                            sprite0Rendering_ = true;
+                            spriteEvalState_.oamCopyDone = true;
                         }
-                        ++n;
-                        ++spriteCount_;
                     }
-                }
-            } else {
-                if (spriteEvalState_.dummyWriteCycle > 0) {
-                    --spriteEvalState_.dummyWriteCycle;
-                    if (++m == 4) {
-                        m = 0;
-                        ++n;
-                    }
-                } else if (const auto row = scanline - oamLatch; 0 <= row && row < spriteHeight) {
-                    regs_.setSpriteOverflow();
-                    if (++m == 4) {
-                        m = 0;
-                        ++n;
-                    }
-                    spriteEvalState_.dummyWriteCycle = 3;
                 } else {
-                    m = (m + 1) & 0x03;
-                    ++n;
+                    if (spriteEvalState_.spriteInRange) {
+                        regs_.setSpriteOverflow();
+                        if (++m == 4) {
+                            m = 0;
+                            n = (n + 1) & 0x3F;
+                        }
+                        if (spriteEvalState_.overflowCounter == 0) {
+                            spriteEvalState_.overflowCounter = 3;
+                        } else {
+                            --spriteEvalState_.overflowCounter;
+                            if (spriteEvalState_.overflowCounter == 0) {
+                                spriteEvalState_.oamCopyDone = true;
+                                m = 0;
+                            }
+                        }
+                    } else {
+                        n = (n + 1) & 0x3F;
+                        m = (m + 1) & 0x03;
+                        if (n == 0) {
+                            spriteEvalState_.oamCopyDone = true;
+                        }
+                    }
                 }
             }
+        }
+        if (cycle_ == 256) {
+            spriteCount_ = spriteEvalState_.secondaryOamAddr >> 2;
+            sprite0Rendering_ = sprite0Added_;
         }
     }
 
     void PPU::fetchSprites() {
+        const int spriteIndex = (cycle_ - 257) >> 3;
         const auto spriteHeight = regs_.spriteSize();
         auto scanline = static_cast<std::uint8_t>(scanline_);
         if (scanline_ == 261) {
             scanline = 0xFF;
         }
-        for (int i = 0; i < spriteCount_; ++i) {
-            int row = scanline - sprites_[i].y;
-            if (sprites_[i].verticalFlip()) {
+        if (spriteIndex < spriteCount_) {
+            sprites_[spriteIndex].y = secondaryOAM_[spriteIndex * 4];
+            sprites_[spriteIndex].tile = secondaryOAM_[spriteIndex * 4 + 1];
+            sprites_[spriteIndex].attribute = secondaryOAM_[spriteIndex * 4 + 2];
+            sprites_[spriteIndex].x = secondaryOAM_[spriteIndex * 4 + 3];
+            int row = scanline - sprites_[spriteIndex].y;
+            if (sprites_[spriteIndex].verticalFlip()) {
                 row = spriteHeight - 1 - row;
             }
             auto patternTable = 0;
-            auto tile = sprites_[i].tile;
+            auto tile = sprites_[spriteIndex].tile;
             if (spriteHeight == 8) {
                 patternTable = regs_.spritePatternTableAddr();
             } else {
@@ -471,11 +500,11 @@ namespace nes_core {
                 }
             }
             const auto patternAddr = patternTable + tile * 16 + row;
-            sprites_[i].patternLo = ppuRead(patternAddr);
-            sprites_[i].patternHi = ppuRead(patternAddr + 8);
-            if (sprites_[i].horizontalFlip()) {
-                sprites_[i].patternLo = reverseBits(sprites_[i].patternLo);
-                sprites_[i].patternHi = reverseBits(sprites_[i].patternHi);
+            sprites_[spriteIndex].patternLo = ppuRead(patternAddr);
+            sprites_[spriteIndex].patternHi = ppuRead(patternAddr + 8);
+            if (sprites_[spriteIndex].horizontalFlip()) {
+                sprites_[spriteIndex].patternLo = reverseBits(sprites_[spriteIndex].patternLo);
+                sprites_[spriteIndex].patternHi = reverseBits(sprites_[spriteIndex].patternHi);
             }
         }
     }
@@ -539,19 +568,21 @@ namespace nes_core {
                     }
                 } else if (257 <= cycle_ && cycle_ <= 320) {
                     if (cycle_ == 257) {
-                        regs_.oamAddr = 0;
                         copyScrollX();
-                        fetchSprites();
                     }
                 } else if (321 <= cycle_ && cycle_ <= 336) {
                     updateShiftRegisters();
                     fetchBackgroundTileData();
                 }
                 // Sprites
-                if (cycle_ == 64) {
-                    resetSecondaryOAM();
+                if (1 <= cycle_ && cycle_ <= 64) {
+                    clearSecondaryOAM();
                 } else if (65 <= cycle_ && cycle_ <= 256) {
                     evaluateSprites();
+                } else if (257 <= cycle_ && cycle_ <= 320) {
+                    if ((cycle_ - 257) % 8 == 4) {
+                        fetchSprites();
+                    }
                 }
             }
         } else if (scanline_ == 241) {
@@ -576,7 +607,6 @@ namespace nes_core {
                 } else if (257 <= cycle_ && cycle_ <= 320) {
                     if (cycle_ == 257) {
                         copyScrollX();
-                        fetchSprites();
                     }
                     if (cycle_ >= 280 && cycle_ <= 304) {
                         copyScrollY();
@@ -586,8 +616,12 @@ namespace nes_core {
                     fetchBackgroundTileData();
                 }
                 // Sprites
-                if (cycle_ == 64) {
-                    resetSecondaryOAM();
+                if (1 <= cycle_ && cycle_ <= 64) {
+                    clearSecondaryOAM();
+                } else if (257 <= cycle_ && cycle_ <= 320) {
+                    if ((cycle_ - 257) % 8 == 4) {
+                        fetchSprites();
+                    }
                 }
                 if (cycle_ == 339 && frame_ % 2 == 1) {
                     cycle_ = -1;

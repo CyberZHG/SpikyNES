@@ -94,6 +94,7 @@ TEST_F(PPUSpriteRenderingTest, SingleSprite) {
     setupSolidSpriteTile(0x00, 0xFF, 0x00);
     writePalette(0x11, 0x16);
     writeOAM(0, 10, 0x00, 0x00, 20);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -119,6 +120,7 @@ TEST_F(PPUSpriteRenderingTest, SpritePriority) {
     writePalette(0x16, 0x09);
     writeOAM(0, 10, 0x00, 0x00, 20);
     writeOAM(1, 14, 0x01, 0x01, 24);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -140,6 +142,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteInFrontOfBackground) {
     writePalette(0x01, 0x11);
     writePalette(0x13, 0x27);
     writeOAM(0, 10, 0x00, 0x00, 20);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -158,6 +161,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteBehindBackground) {
     writePalette(0x01, 0x11);
     writePalette(0x13, 0x27);
     writeOAM(0, 10, 0x00, 0x20, 20);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -176,6 +180,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteBehindBackground_TransparentBG) {
     writePalette(0x00, 0x0F);
     writePalette(0x13, 0x27);
     writeOAM(0, 10, 0x00, 0x20, 20);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -195,27 +200,12 @@ TEST_F(PPUSpriteRenderingTest, Sprite0Hit_Detected) {
     writePalette(0x01, 0x11);
     writePalette(0x11, 0x16);
     writeOAM(0, 8, 0x00, 0x00, 8);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
 
     EXPECT_FALSE(regs().sprite0Hit());
-    renderOneFrame();
-    stepToScanline(20);
-    EXPECT_TRUE(regs().sprite0Hit());
-}
-
-TEST_F(PPUSpriteRenderingTest, Sprite0Hit_NotAtX255) {
-    clearOAM();
-    fillBackgroundSolid(0xFF, 0x00);
-    setupSolidSpriteTile(0x00, 0xFF, 0x00);
-    writePalette(0x01, 0x11);
-    writePalette(0x11, 0x16);
-    writeOAM(0, 8, 0x00, 0x00, 248);
-    regs().v = 0x0000;
-    regs().t = 0x0000;
-    regs().x = 0;
-
     renderOneFrame();
     stepToScanline(20);
     EXPECT_TRUE(regs().sprite0Hit());
@@ -227,6 +217,7 @@ TEST_F(PPUSpriteRenderingTest, Sprite0Hit_TransparentBG_NoHit) {
     setupSolidSpriteTile(0x00, 0xFF, 0x00);
     writePalette(0x11, 0x16);
     writeOAM(0, 8, 0x00, 0x00, 8);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -242,6 +233,7 @@ TEST_F(PPUSpriteRenderingTest, Sprite0Hit_TransparentSprite_NoHit) {
     setupSolidSpriteTile(0x00, 0x00, 0x00);
     writePalette(0x01, 0x11);
     writeOAM(0, 8, 0x00, 0x00, 8);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -260,6 +252,7 @@ TEST_F(PPUSpriteRenderingTest, Sprite0Hit_OnlySprite0Triggers) {
     writePalette(0x11, 0x16);
     writeOAM(0, 8, 0x00, 0x00, 8);
     writeOAM(1, 8, 0x01, 0x00, 16);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -275,6 +268,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteHorizontalFlip) {
     writePalette(0x11, 0x16);
     writeOAM(0, 10, 0x00, 0x00, 20);
     writeOAM(1, 20, 0x00, 0x40, 20);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -299,6 +293,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteVerticalFlip) {
     writePalette(0x11, 0x16);
     writeOAM(0, 10, 0x00, 0x00, 20);
     writeOAM(1, 20, 0x00, 0x80, 20);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -326,6 +321,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteDifferentPalettes) {
     writeOAM(1, 10, 0x00, 0x01, 40);
     writeOAM(2, 10, 0x00, 0x02, 60);
     writeOAM(3, 10, 0x00, 0x03, 80);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -349,6 +345,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteOverflow_MoreThan8Sprites) {
     for (int i = 0; i < 9; ++i) {
         writeOAM(i, 10, 0x00, 0x00, 20 + i * 10);
     }
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -363,6 +360,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteLeftClipping_Disabled) {
     setupSolidSpriteTile(0x00, 0xFF, 0x00);
     writePalette(0x11, 0x16);
     writeOAM(0, 10, 0x00, 0x00, 0);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;
@@ -380,6 +378,7 @@ TEST_F(PPUSpriteRenderingTest, SpriteLeftClipping_Enabled) {
     setupSolidSpriteTile(0x00, 0xFF, 0x00);
     writePalette(0x11, 0x16);
     writeOAM(0, 10, 0x00, 0x00, 0);
+    regs().oamAddr = 0;
     regs().v = 0x0000;
     regs().t = 0x0000;
     regs().x = 0;

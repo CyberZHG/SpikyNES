@@ -81,10 +81,13 @@ namespace nes_core {
     };
 
     struct SpriteEvaluationState {
-        int n = 0;  // n-th sprite
-        int m = 0;  // m-th byte
+        int n = 0;  // sprite index in primary OAM (0-63)
+        int m = 0;  // byte index within sprite (0-3)
         std::uint8_t oamLatch = 0;
-        std::uint8_t dummyWriteCycle = 0;
+        bool spriteInRange = false;
+        bool oamCopyDone = false;
+        std::uint8_t secondaryOamAddr = 0;
+        std::uint8_t overflowCounter = 0;
 
         void reset();
     };
@@ -139,7 +142,7 @@ namespace nes_core {
         void fetchBackgroundTileData();
         void renderPixel();
 
-        void resetSecondaryOAM();
+        void clearSecondaryOAM();
         void evaluateSprites();
         void fetchSprites();
         void shiftSprites();
@@ -149,6 +152,7 @@ namespace nes_core {
         PPURegisters regs_{};
 
         std::array<std::uint8_t, PPU_OAM_SIZE> oam_{};
+        std::array<std::uint8_t, PPU_SECONDARY_OAM_SIZE> secondaryOAM_{};
         std::array<std::uint8_t, PPU_NAMETABLE_SIZE> nametable_{};
         std::array<std::uint8_t, PPU_PALETTE_SIZE> palette_{};
         std::array<std::uint32_t, PPU_FRAME_BUFFER_SIZE> frameBuffer_{};
@@ -168,6 +172,7 @@ namespace nes_core {
         };
         std::array<SpriteData, 8> sprites_{};
         int spriteCount_ = 0;
+        bool sprite0Added_ = false;
         bool sprite0Rendering_ = false;
         SpriteEvaluationState spriteEvalState_{};
 
