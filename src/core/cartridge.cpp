@@ -2,6 +2,8 @@
 #include "core/constants.h"
 
 #include <fstream>
+#include <ranges>
+#include <algorithm>
 
 namespace nes_core {
 
@@ -10,40 +12,57 @@ namespace nes_core {
         if (!file) {
             return false;
         }
-        std::array<std::uint8_t, INES_HEADER_SIZE> headerBytes{};
-        file.read(reinterpret_cast<char*>(headerBytes.data()), INES_HEADER_SIZE);
-        if (!file) {
+        const std::vector<std::uint8_t> buffer{std::istreambuf_iterator(file), std::istreambuf_iterator<char>()};
+        constexpr std::array<std::uint8_t, 4> magic = {'N', 'E', 'S', 0x1A};
+        const auto magicIt = std::ranges::search(buffer, magic).begin();
+        if (magicIt == buffer.end()) {
             return false;
         }
-        if (headerBytes[0] != 'N' || headerBytes[1] != 'E' || headerBytes[2] != 'S' || headerBytes[3] != 0x1A) {
+        const auto headerOffset = static_cast<std::size_t>(std::distance(buffer.begin(), magicIt));
+        if (headerOffset + INES_HEADER_SIZE > buffer.size()) {
             return false;
         }
-        header_.prgRomBanks = headerBytes[4];
-        header_.chrRomBanks = headerBytes[5];
-        header_.mapper = (headerBytes[6] >> 4) | (headerBytes[7] & 0xF0);
-        header_.verticalMirroring = headerBytes[6] & 0x01;
-        header_.batteryBacked = headerBytes[6] & 0x02;
-        header_.trainer = headerBytes[6] & 0x04;
-        header_.prgRamBanks = headerBytes[8] > 0 ? headerBytes[8] : 1;
+        const std::uint8_t* h = buffer.data() + headerOffset;
 
+        header_.prgRomBanks = h[4];
+        header_.chrRomBanks = h[5];
+        header_.verticalMirroring = h[6] & 0x01;
+        header_.batteryBacked = h[6] & 0x02;
+        header_.trainer = h[6] & 0x04;
+
+        // iNES 2.0: bits 3-2 of byte 7 == 0b10
+        header_.isNES2 = (h[7] & 0x0C) == 0x08;
+        if (header_.isNES2) {
+            header_.mapper    = static_cast<std::uint16_t>(((h[8] & 0x0F) << 8) | (h[7] & 0xF0) | (h[6] >> 4));
+            header_.subMapper = (h[8] >> 4) & 0x0F;
+            header_.prgRamBanks = h[10] > 0 ? h[10] : 1;
+        } else {
+            header_.mapper    = (h[6] >> 4) | (h[7] & 0xF0);
+            header_.subMapper = 0;
+            header_.prgRamBanks = h[8] > 0 ? h[8] : 1;
+        }
+
+        auto dataOffset = headerOffset + INES_HEADER_SIZE;
         if (header_.trainer) {
-            file.seekg(512, std::ios::cur);
+            dataOffset += 512;
         }
 
         const auto prgRomSize = header_.prgRomBanks * PRG_ROM_BANK_SIZE;
-        prgRom_.resize(prgRomSize);
-        file.read(reinterpret_cast<char*>(prgRom_.data()), static_cast<std::streamsize>(prgRomSize));
-        if (!file) {
+        if (dataOffset + prgRomSize > buffer.size()) {
             return false;
         }
+        prgRom_.assign(buffer.begin() + dataOffset, buffer.begin() + dataOffset + prgRomSize);
+        dataOffset += prgRomSize;
 
         const auto prgRamSize = header_.prgRamBanks * PRG_RAM_BANK_SIZE;
         prgRam_.resize(prgRamSize);
 
         if (header_.chrRomBanks > 0) {
             const auto chrSize = header_.chrRomBanks * CHR_ROM_BANK_SIZE;
-            chrRom_.resize(chrSize);
-            file.read(reinterpret_cast<char*>(chrRom_.data()), static_cast<std::streamsize>(chrSize));
+            if (dataOffset + chrSize > buffer.size()) {
+                return false;
+            }
+            chrRom_.assign(buffer.begin() + dataOffset, buffer.begin() + dataOffset + chrSize);
         } else {
             chrRom_.resize(CHR_ROM_BANK_SIZE, 0);
         }
@@ -72,6 +91,9 @@ namespace nes_core {
             prgRomBanks, prgRamBanks, chrRomBanks,
             &prgRom_, &prgRam_, &chrRom_
         );
+        if (header_.isNES2) {
+            mapper_->setSubMapper(header_.subMapper);
+        }
     }
 
     std::uint8_t Cartridge::cpuRead(const std::uint16_t addr) const {

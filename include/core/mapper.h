@@ -21,6 +21,8 @@ namespace nes_core {
         [[nodiscard]] virtual std::uint8_t ppuRead(std::uint16_t addr) = 0;
         virtual void ppuWrite(std::uint16_t addr, std::uint8_t value) = 0;
 
+        void setSubMapper(const std::uint8_t subMapperId) { subMapper_ = subMapperId; };
+
     protected:
         std::uint8_t prgRomBanks_ = 0;
         std::uint8_t prgRamBanks_ = 0;
@@ -28,6 +30,11 @@ namespace nes_core {
         std::vector<std::uint8_t>* prgRom_ = nullptr;
         std::vector<std::uint8_t>* prgRam_ = nullptr;
         std::vector<std::uint8_t>* chrRom_ = nullptr;
+        std::uint8_t prgRomIndex_ = 0;
+        std::uint8_t prgRamIndex_ = 0;
+        std::uint8_t chrRomIndex_ = 0;
+
+        std::uint8_t subMapper_ = 0;
     };
 
 }

@@ -128,12 +128,14 @@ namespace nes_core {
             regs_.clearVBlank();
             regs_.w = 0;
         } else if (index == 4) {  // OAM_DATA
-            value = oam_[regs_.oamAddr] & 0b11100011;
+            value = oam_[regs_.oamAddr];
+            // To pass open bus test: value = oam_[regs_.oamAddr] & 0b11100011;
         } else if (index == 7) {  // PPU_DATA
             value = regs_.ppuDataBuffer;
-            regs_.ppuDataBuffer = ppuRead(regs_.v & 0x2FFF);
+            regs_.ppuDataBuffer = ppuRead(regs_.v);
             if ((regs_.v & PPU_MEM_MASK) >= PPU_PALETTE_START) {
                 value = (ppuBusLatch_ & 0xC0) | (ppuRead(regs_.v) & 0x3F);
+                regs_.ppuDataBuffer = ppuRead(regs_.v - 0x1000);
             }
             regs_.v += regs_.vRamIncrement();
         }

@@ -15,7 +15,9 @@ namespace nes_core {
         std::uint8_t prgRomBanks = 0;  // PRG ROM size in 16KB units
         std::uint8_t prgRamBanks = 0;  // PRG RAM size in 8KB units
         std::uint8_t chrRomBanks = 0;  // CHR ROM size in 8KB units
-        std::uint8_t mapper = 0;
+        std::uint16_t mapper = 0;      // Mapper number
+        std::uint8_t subMapper = 0;    // Sub-mapper number
+        bool isNES2 = false;
         bool verticalMirroring = false;
         bool batteryBacked = false;
         bool trainer = false;

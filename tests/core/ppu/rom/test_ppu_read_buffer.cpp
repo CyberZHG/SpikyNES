@@ -14,7 +14,7 @@ protected:
 TEST_F(PPUReadBuffer, ppu_read_buffer) {
     const std::string romPath = "../tests/roms/ppu/test_ppu_read_buffer.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 1000) {
+    while (emulator.ppu().frame() < 1300) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());

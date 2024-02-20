@@ -13,6 +13,8 @@ namespace nes_core {
         void ppuWrite(std::uint16_t addr, std::uint8_t value) override;
     };
 
+    using MapperNROM = Mapper000;
+
 }
 
 #endif //SPIKYNES_MAPPER_000_H
