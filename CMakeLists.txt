@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.0)
-project(SpikyNES)
+project(SpikyNes)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,6 +10,7 @@ option(SPIKY_NES_ENABLE_TESTS "Build tests" OFF)
 option(SPIKY_NES_ENABLE_ROM_TESTS "Build ROM tests" OFF)
 option(SPIKY_NES_ENABLE_STRICT "Use strict compile options" OFF)
 option(SPIKY_NES_ENABLE_COVERAGE "Enable coverage reporting" OFF)
+option(SPIKY_NES_ENABLE_UI "Build SDL UI" OFF)
 
 if(APPLE)
     set(ENV{PKG_CONFIG_PATH} "/opt/homebrew/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
@@ -36,7 +37,7 @@ if(SPIKY_NES_ENABLE_COVERAGE)
     endif()
 endif()
 
-add_library(SpikyNESCore STATIC
+add_library(SpikyNesCore STATIC
         include/core/emulator.h
         src/core/emulator.cpp
         include/core/cpu.h
@@ -66,7 +67,7 @@ add_library(SpikyNESCore STATIC
         src/core/mapper/mapper_003.cpp
 )
 
-target_include_directories(SpikyNESCore
+target_include_directories(SpikyNesCore
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
@@ -137,9 +138,53 @@ if(SPIKY_NES_ENABLE_TESTS)
     endif()
 
     target_link_libraries(runTests
-            PRIVATE SpikyNESCore
+            PRIVATE SpikyNesCore
             PRIVATE gtest gtest_main
     )
 
-    add_test(NAME SpikyNESCoreTests COMMAND runTests)
+    add_test(NAME SpikyNesCoreTests COMMAND runTests)
+endif()
+
+if(SPIKY_NES_ENABLE_UI)
+    include(FetchContent)
+
+    FetchContent_Declare(
+            SDL
+            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+            GIT_TAG release-3.4.0
+    )
+
+    FetchContent_MakeAvailable(SDL)
+
+    FetchContent_Declare(
+            imgui
+            GIT_REPOSITORY https://github.com/ocornut/imgui.git
+            GIT_TAG docking
+    )
+    FetchContent_MakeAvailable(imgui)
+
+    add_executable(SpikyNesUI
+            src/ui/main.cpp
+            include/ui/sdl_emulator.h
+            src/ui/sdl_emulator.cpp
+    )
+
+    target_sources(SpikyNesUI PRIVATE
+            ${imgui_SOURCE_DIR}/imgui.cpp
+            ${imgui_SOURCE_DIR}/imgui_draw.cpp
+            ${imgui_SOURCE_DIR}/imgui_tables.cpp
+            ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp
+    )
+
+    target_include_directories(SpikyNesUI
+            PRIVATE ${imgui_SOURCE_DIR}
+            PRIVATE ${imgui_SOURCE_DIR}/backends
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    target_link_libraries(SpikyNesUI
+            PRIVATE SpikyNesCore SDL3::SDL3
+    )
 endif()
