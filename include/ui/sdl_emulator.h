@@ -23,7 +23,6 @@ namespace nes_ui {
         void pollEvents();
         void renderMenu();
         void render();
-        void delayFrame();
 
     private:
         bool running_ = true;

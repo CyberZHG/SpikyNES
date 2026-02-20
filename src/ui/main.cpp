@@ -9,7 +9,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         emulator.pollEvents();
         emulator.renderMenu();
         emulator.render();
-        emulator.delayFrame();
     }
     return 0;
 }

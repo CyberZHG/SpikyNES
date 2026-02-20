@@ -122,6 +122,7 @@ namespace nes_ui {
                     if (!path.empty()) {
                         emulator_.loadROM(path);
                         state_ = EmulationState::Running;
+                        perfCounter_ = SDL_GetPerformanceCounter();
                     }
                 }
                 pclose(fp);
@@ -272,19 +273,6 @@ namespace nes_ui {
             ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer_);
         }
         SDL_RenderPresent(renderer_);
-    }
-
-    void SDLEmulator::delayFrame() {
-        SDL_Delay(1);
-        /*const auto current_time = SDL_GetPerformanceCounter();
-        const auto frequency = static_cast<double>(SDL_GetPerformanceFrequency());
-        const double frame_time = static_cast<double>(current_time - perfCounter_) / frequency;
-        constexpr double target_frame_time = 1.0 / 60.0;
-        if (frame_time < target_frame_time) {
-            const double delay_time = (target_frame_time - frame_time) * 1000.0;
-            SDL_Delay(static_cast<std::uint32_t>(delay_time));
-        }
-        perfCounter_ = SDL_GetPerformanceCounter();*/
     }
 
     void SDLEmulator::openFileCallback(void *userdata, const char * const *files, [[maybe_unused]] int filter) {
