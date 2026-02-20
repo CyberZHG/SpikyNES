@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_sdlrenderer3.h>
 
@@ -56,7 +57,22 @@ namespace nes_ui {
         ImGui_ImplSDLRenderer3_Init(renderer_);
         imguiInitialized_ = true;
 
+        SDL_AudioSpec spec;
+        spec.freq = 44100.0;
+        spec.format = SDL_AUDIO_F32;
+        spec.channels = 1;
+
+        audioStream_ = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, nullptr, nullptr);
+        if (!audioStream_) {
+            std::cerr << "SDL_OpenAudioDeviceStream failed: " << SDL_GetError() << std::endl;
+            return false;
+        }
+
+        audioDevice_ = SDL_GetAudioStreamDevice(audioStream_);
+        SDL_ResumeAudioDevice(audioDevice_);
+
         perfCounter_ = SDL_GetPerformanceCounter();
+        audioBuffer_.reserve(1024);
         return true;
     }
 
@@ -66,6 +82,11 @@ namespace nes_ui {
             ImGui_ImplSDL3_Shutdown();
             ImGui::DestroyContext();
             imguiInitialized_ = false;
+        }
+
+        if (audioStream_) {
+            SDL_DestroyAudioStream(audioStream_);
+            audioStream_ = nullptr;
         }
         if (texture_) {
             SDL_DestroyTexture(texture_);
@@ -199,40 +220,63 @@ namespace nes_ui {
     }
 
     void SDLEmulator::renderMenu() {
-        ImGui_ImplSDLRenderer3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
-        if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Open")) {
-                    pendingFileDialog_ = true;
+        if (state_ == EmulationState::Idle) {
+            ImGui_ImplSDLRenderer3_NewFrame();
+            ImGui_ImplSDL3_NewFrame();
+            ImGui::NewFrame();
+            if (ImGui::BeginMainMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Open")) {
+                        pendingFileDialog_ = true;
+                    }
+                    if (ImGui::MenuItem("Exit")) {
+                        running_ = false;
+                    }
+                    ImGui::EndMenu();
                 }
-                if (ImGui::MenuItem("Exit")) {
-                    running_ = false;
-                }
-                ImGui::EndMenu();
+                ImGui::EndMainMenuBar();
             }
-            ImGui::EndMainMenuBar();
+            ImGui::Render();
         }
-        ImGui::Render();
     }
 
     void SDLEmulator::render() {
+        constexpr double audioCycles = 1789773.0 / 44100.0;
         if (state_ == EmulationState::Running) {
-            const auto frame = emulator_.ppu().frame();
-            while (emulator_.ppu().frame() == frame) {
-                emulator_.step();
+            const auto current_time = SDL_GetPerformanceCounter();
+            const auto frequency = static_cast<double>(SDL_GetPerformanceFrequency());
+            const double elapsed = static_cast<double>(current_time - perfCounter_) * 1000.0 / frequency;
+            perfCounter_ = SDL_GetPerformanceCounter();
+            remainingLag_ += elapsed;
+            while (remainingLag_ > 1000.0 / 60.0988) {
+                remainingLag_ -= 1000.0 / 60.0988;
+                const auto frame = emulator_.ppu().frame();
+                audioBuffer_.clear();
+                while (emulator_.ppu().frame() == frame) {
+                    emulator_.step();
+                    audioSampleCounter_ += 1.0;
+                    if (audioSampleCounter_ >= audioCycles) {
+                        audioSampleCounter_ -= audioCycles;
+                        audioBuffer_.push_back(emulator_.apu().outputBuffer());
+                    }
+                }
+                SDL_PutAudioStreamData(audioStream_, audioBuffer_.data(), audioBuffer_.size() * sizeof(float));
             }
+        } else {
+            perfCounter_ = SDL_GetPerformanceCounter();
         }
         SDL_UpdateTexture(texture_, nullptr, emulator_.ppu().frameBuffer().data(), 256 * sizeof(std::uint32_t));
         SDL_RenderClear(renderer_);
         SDL_RenderTexture(renderer_, texture_, nullptr, nullptr);
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer_);
+        if (state_ == EmulationState::Idle) {
+            ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer_);
+        }
         SDL_RenderPresent(renderer_);
     }
 
     void SDLEmulator::delayFrame() {
-        const auto current_time = SDL_GetPerformanceCounter();
+        SDL_Delay(1);
+        /*const auto current_time = SDL_GetPerformanceCounter();
         const auto frequency = static_cast<double>(SDL_GetPerformanceFrequency());
         const double frame_time = static_cast<double>(current_time - perfCounter_) / frequency;
         constexpr double target_frame_time = 1.0 / 60.0;
@@ -240,7 +284,7 @@ namespace nes_ui {
             const double delay_time = (target_frame_time - frame_time) * 1000.0;
             SDL_Delay(static_cast<std::uint32_t>(delay_time));
         }
-        perfCounter_ = SDL_GetPerformanceCounter();
+        perfCounter_ = SDL_GetPerformanceCounter();*/
     }
 
     void SDLEmulator::openFileCallback(void *userdata, const char * const *files, [[maybe_unused]] int filter) {
@@ -248,6 +292,7 @@ namespace nes_ui {
         if (files && files[0]) {
             self->emulator_.loadROM(files[0]);
             self->state_ = EmulationState::Running;
+            self->perfCounter_ = SDL_GetPerformanceCounter();
         }
     }
 }

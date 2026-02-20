@@ -128,8 +128,12 @@ namespace nes_core {
             regs_.clearVBlank();
             regs_.w = 0;
         } else if (index == 4) {  // OAM_DATA
-            value = oam_[regs_.oamAddr];
-            // To pass open bus test: value = oam_[regs_.oamAddr] & 0b11100011;
+            if (regs_.oamAddr % 4 == 2) {
+                // Open bus: Bits 2-4 of sprite attributes should always be clear when read
+                value = oam_[regs_.oamAddr] & 0b11100011;
+            } else {
+                value = oam_[regs_.oamAddr];
+            }
         } else if (index == 7) {  // PPU_DATA
             value = regs_.ppuDataBuffer;
             regs_.ppuDataBuffer = ppuRead(regs_.v);
@@ -146,7 +150,7 @@ namespace nes_core {
         return value;
     }
 
-    void PPU::registerWrite(const std::uint16_t addr, const std::uint8_t value) {
+    void PPU::registerWrite(const std::uint16_t addr, std::uint8_t value) {
         const auto index = addr & 0b00000111;
         regs_.r(index) = value;
         if (index == 0) { // PPU_CTRL
