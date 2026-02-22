@@ -102,6 +102,7 @@ namespace nes_core {
         suppressVBlank_ = false;
         isVBlankNMIOn_ = false;
         isVBlankNMIOnPrev_ = false;
+        vBlankNMIPending_ = false;
         vramAddrUpdateDelay_ = 0;
         pendingVramAddr_ = 0;
         nametableByte_ = 0;
@@ -122,6 +123,7 @@ namespace nes_core {
                     suppressVBlank_ = true;
                 } else if (cycle_ == 2 || cycle_ == 3) {
                     bus_->cpuNMIClear();
+                    vBlankNMIPending_ = false;
                 }
             }
             value = (regs_.ppuStatus & 0xE0) | (ppuBusLatch_ & 0x1F);
@@ -161,6 +163,7 @@ namespace nes_core {
                         suppressVBlank_ = true;
                     } else if (cycle_ == 2 || cycle_ == 3) {
                         bus_->cpuNMIClear();
+                        vBlankNMIPending_ = false;
                     }
                 }
             }
@@ -224,10 +227,14 @@ namespace nes_core {
 
     void PPU::updateVBlankNMI() {
         // See: https://forums.nesdev.org/viewtopic.php?t=20769
+        if (vBlankNMIPending_) {
+            vBlankNMIPending_ = false;
+            bus_->cpuNMI();
+        }
         isVBlankNMIOnPrev_ = isVBlankNMIOn_;
         isVBlankNMIOn_ = regs_.vBlank() && regs_.vBlankNmiEnabled();
         if (!isVBlankNMIOnPrev_ && isVBlankNMIOn_) {
-            bus_->cpuNMI();
+            vBlankNMIPending_ = true;
         }
     }
 
@@ -573,6 +580,7 @@ namespace nes_core {
                 regs_.v = pendingVramAddr_;
             }
         }
+        updateVBlankNMI();
         const auto renderingEnabled = regs_.renderingEnabled();
         if (0 <= scanline_ && scanline_ < 240) {
             if (renderingEnabled) {
@@ -651,7 +659,6 @@ namespace nes_core {
                 }
             }
         }
-        updateVBlankNMI();
         if (++cycle_ > 340) {
             cycle_ = 0;
             if (++scanline_ > 261) {

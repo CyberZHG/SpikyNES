@@ -186,6 +186,7 @@ namespace nes_core {
         bool suppressVBlank_ = false;
         bool isVBlankNMIOn_ = false;
         bool isVBlankNMIOnPrev_ = false;
+        bool vBlankNMIPending_ = false;
         int vramAddrUpdateDelay_ = 0;
         std::uint16_t pendingVramAddr_ = 0;
 

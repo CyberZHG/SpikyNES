@@ -912,7 +912,11 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage00) {
     }
     for (int i = 0; i < 256; ++i) {
         emulator.ppu().registerWrite(0x2003, static_cast<std::uint8_t>(i));
-        EXPECT_EQ(emulator.ppu().registerRead(0x2004), static_cast<std::uint8_t>(i));
+        auto expected = static_cast<std::uint8_t>(i);
+        if (i % 4 == 2) {
+            expected &= 0b11100011;
+        }
+        EXPECT_EQ(emulator.ppu().registerRead(0x2004), expected);
     }
 }
 
@@ -935,7 +939,11 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage02) {
     }
     for (int i = 0; i < 256; ++i) {
         emulator.ppu().registerWrite(0x2003, static_cast<std::uint8_t>(i));
-        EXPECT_EQ(emulator.ppu().registerRead(0x2004), static_cast<std::uint8_t>(255 - i));
+        auto expected = static_cast<std::uint8_t>(255 - i);
+        if (i % 4 == 2) {
+            expected &= 0b11100011;
+        }
+        EXPECT_EQ(emulator.ppu().registerRead(0x2004), expected);
     }
 }
 
@@ -958,7 +966,11 @@ TEST_F(PPUTestBase, OAMDMA_TransferFromPage07) {
     }
     for (int i = 0; i < 256; ++i) {
         emulator.ppu().registerWrite(0x2003, static_cast<std::uint8_t>(i));
-        EXPECT_EQ(emulator.ppu().registerRead(0x2004), static_cast<std::uint8_t>((i * 3) & 0xFF));
+        auto expected = static_cast<std::uint8_t>((i * 3) & 0xFF);
+        if (i % 4 == 2) {
+            expected &= 0b11100011;
+        }
+        EXPECT_EQ(emulator.ppu().registerRead(0x2004), expected);
     }
 }
 
@@ -982,7 +994,11 @@ TEST_F(PPUTestBase, OAMDMA_StartsFromOAMADDR) {
     }
     for (int i = 0; i < 256; ++i) {
         emulator.ppu().registerWrite(0x2003, static_cast<std::uint8_t>((i + 4) & 0xFF));
-        EXPECT_EQ(emulator.ppu().registerRead(0x2004), static_cast<std::uint8_t>(i + 0x10));
+        auto expected = static_cast<std::uint8_t>(i + 0x10);
+        if (i % 4 == 2) {
+            expected &= 0b11100011;
+        }
+        EXPECT_EQ(emulator.ppu().registerRead(0x2004), expected);
     }
 }
 
