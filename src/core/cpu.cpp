@@ -456,11 +456,6 @@ namespace nes_core {
             handleNMI();
         } else if (irqActive_) {
             handleIRQ();
-        } else if (nmiLatched_) {
-            nmiLatched_ = false;
-            nmiActive_ = true;
-            ++cycles_;
-            return;
         } else if (opState_.step == 0) {
             opState_.code = bus_->cpuRead(regs_.PC++);
             const auto& info = OP_INFO[opState_.code];
@@ -586,7 +581,7 @@ namespace nes_core {
             ++steps_;
             if (nmiPending_) {
                 nmiPending_ = false;
-                nmiLatched_ = true;
+                nmiActive_ = true;
             } else if (bus_->irqAsserted() && !prevIRQInhibit_) {
                 irqActive_ = true;
             }
