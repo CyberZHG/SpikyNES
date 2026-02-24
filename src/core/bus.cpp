@@ -83,6 +83,10 @@ namespace nes_core {
         cpu_->stall(cycles);
     }
 
+    std::int64_t Bus::cpuCycles() const {
+        return cpu_->cycles();
+    }
+
     bool Bus::irqAsserted() const {
         return apu_->irqAsserted();
     }

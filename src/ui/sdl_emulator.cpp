@@ -32,6 +32,7 @@ namespace nes_ui {
             SDL_Quit();
             return false;
         }
+        // SDL_SetRenderVSync(renderer_, 1);
 
         texture_ = SDL_CreateTexture(
             renderer_,
@@ -242,37 +243,50 @@ namespace nes_ui {
     }
 
     void SDLEmulator::render() {
-        constexpr double audioCycles = 1789773.0 / 44100.0;
-        if (state_ == EmulationState::Running) {
+        constexpr double cpuHz = 1789773.0;
+        constexpr double audioCycles = cpuHz / 44100.0;
+        if (state_ == EmulationState::Idle) {
+            SDL_RenderClear(renderer_);
+            ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer_);
+            SDL_RenderPresent(renderer_);
+            SDL_Delay(16);
+            perfCounter_ = SDL_GetPerformanceCounter();
+        } else if (state_ == EmulationState::Running) {
             const auto current_time = SDL_GetPerformanceCounter();
             const auto frequency = static_cast<double>(SDL_GetPerformanceFrequency());
             const double elapsed = static_cast<double>(current_time - perfCounter_) * 1000.0 / frequency;
             perfCounter_ = SDL_GetPerformanceCounter();
-            remainingLag_ += elapsed;
-            while (remainingLag_ > 1000.0 / 60.0988) {
-                remainingLag_ -= 1000.0 / 60.0988;
-                const auto frame = emulator_.ppu().frame();
-                audioBuffer_.clear();
-                while (emulator_.ppu().frame() == frame) {
-                    emulator_.step();
-                    audioSampleCounter_ += 1.0;
-                    if (audioSampleCounter_ >= audioCycles) {
-                        audioSampleCounter_ -= audioCycles;
-                        audioBuffer_.push_back(emulator_.apu().outputBuffer());
-                    }
+
+            cycleAccumulator_ += elapsed * cpuHz / 1000.0;
+            const auto cyclesToRun = static_cast<int64_t>(cycleAccumulator_);
+            cycleAccumulator_ -= static_cast<double>(cyclesToRun);
+
+            auto prevFrame = emulator_.ppu().frame();
+            bool newFrame = false;
+            for (int64_t i = 0; i < cyclesToRun; ++i) {
+                emulator_.step();
+                audioSampleCounter_ += 1.0;
+                if (audioSampleCounter_ >= audioCycles) {
+                    audioSampleCounter_ -= audioCycles;
+                    audioBuffer_.push_back(emulator_.apu().outputBuffer());
                 }
-                SDL_PutAudioStreamData(audioStream_, audioBuffer_.data(), audioBuffer_.size() * sizeof(float));
+                const auto frame = emulator_.ppu().frame();
+                if (frame != prevFrame) {
+                    SDL_PutAudioStreamData(audioStream_, audioBuffer_.data(), audioBuffer_.size() * sizeof(float));
+                    audioBuffer_.clear();
+                    SDL_UpdateTexture(texture_, nullptr, emulator_.ppu().frameBuffer().data(), 256 * sizeof(std::uint32_t));
+                    prevFrame = frame;
+                    newFrame = true;
+                }
             }
-        } else {
-            perfCounter_ = SDL_GetPerformanceCounter();
+            if (newFrame) {
+                SDL_RenderClear(renderer_);
+                SDL_RenderTexture(renderer_, texture_, nullptr, nullptr);
+                SDL_RenderPresent(renderer_);
+            } else {
+                SDL_Delay(1);
+            }
         }
-        SDL_UpdateTexture(texture_, nullptr, emulator_.ppu().frameBuffer().data(), 256 * sizeof(std::uint32_t));
-        SDL_RenderClear(renderer_);
-        SDL_RenderTexture(renderer_, texture_, nullptr, nullptr);
-        if (state_ == EmulationState::Idle) {
-            ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer_);
-        }
-        SDL_RenderPresent(renderer_);
     }
 
     void SDLEmulator::openFileCallback(void *userdata, const char * const *files, [[maybe_unused]] int filter) {

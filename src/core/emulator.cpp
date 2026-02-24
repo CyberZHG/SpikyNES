@@ -30,13 +30,13 @@ namespace nes_core {
     }
 
     int Emulator::step() {
-        cpu_.step();
         if (!cpu_.halted()) {
             for (int i = 0; i < 3; ++i) {
                 ppu_.step();
             }
             apu_.step();
         }
+        cpu_.step();
         return 1;
     }
 

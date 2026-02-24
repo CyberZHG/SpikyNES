@@ -600,6 +600,8 @@ namespace nes_core {
                 } else if (321 <= cycle_ && cycle_ <= 336) {
                     updateShiftRegisters();
                     fetchBackgroundTileData();
+                } else if (337 <= cycle_ && cycle_ <= 340) {
+                    fetchNametableByte();
                 }
                 // Sprites
                 if (1 <= cycle_ && cycle_ <= 64) {
@@ -620,10 +622,8 @@ namespace nes_core {
                 suppressVBlank_ = false;
             }
         } else if (scanline_ == 261) {
-            if (cycle_ == 0) {
-                regs_.ppuStatus &= ~0x60;  // Clear sprite0Hit and spriteOverflow
-            } else if (cycle_ == 1) {
-                regs_.ppuStatus &= ~0x80;  // Clear VBlank
+            if (cycle_ == 1) {
+                regs_.ppuStatus &= ~0xE0;  // Clear VBlank, sprite0Hit, and spriteOverflow
             }
             if (renderingEnabled) {
                 // Background
@@ -643,6 +643,8 @@ namespace nes_core {
                 } else if (321 <= cycle_ && cycle_ <= 336) {
                     updateShiftRegisters();
                     fetchBackgroundTileData();
+                } else if (337 <= cycle_ && cycle_ <= 340) {
+                    fetchNametableByte();
                 }
                 // Sprites
                 if (1 <= cycle_ && cycle_ <= 64) {
