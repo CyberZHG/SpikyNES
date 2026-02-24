@@ -29,28 +29,28 @@ protected:
 
 TEST_F(PPUFrameTimingTest, VBlank_ClearAfterReset) {
     // VBlank flag should be clear after reset
-    expectNextPosition(1, 0, 0);
+    expectNextPosition(0, 0, 0);
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
 }
 
 TEST_F(PPUFrameTimingTest, VBlank_NotSetBeforeScanline241) {
     // VBlank is not set until we reach scanline 241, cycle 1
     stepPPU(241 * 341 + 1);
-    expectNextPosition(1, 241, 1);
+    expectNextPosition(0, 241, 1);
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
 }
 
 TEST_F(PPUFrameTimingTest, VBlank_SetAtScanline241Cycle0) {
     // VBlank is set at scanline 241, cycle 1
     stepPPU(241 * 341 + 2);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 }
 
 TEST_F(PPUFrameTimingTest, VBlank_ClearedByReadingPPUSTATUS) {
     // Reading PPUSTATUS ($2002) clears VBlank flag
     stepPPU(241 * 341 + 2);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 
     emulator.ppu().registerRead(0x2002);
@@ -60,25 +60,25 @@ TEST_F(PPUFrameTimingTest, VBlank_ClearedByReadingPPUSTATUS) {
 TEST_F(PPUFrameTimingTest, VBlank_ClearedAtPreRenderScanline) {
     // VBlank is cleared at scanline 261 (pre-render), cycle 1
     stepPPU(241 * 341 + 2);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 
     stepPPU(20 * 341);
-    expectNextPosition(1, 261, 2);
+    expectNextPosition(0, 261, 2);
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
 }
 
 TEST_F(PPUFrameTimingTest, VBlank_SetAgainNextFrame) {
     // VBlank is set again at scanline 241 of the next frame
     stepPPU(241 * 341 + 2);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 
     emulator.ppu().registerRead(0x2002);
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
 
     stepPPU(21 * 341 - 1 + 241 * 341 + 1);
-    expectNextPosition(2, 241, 2);
+    expectNextPosition(1, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 }
 
@@ -87,39 +87,39 @@ TEST_F(PPUFrameTimingTest, VBlank_SetAgainNextFrame) {
 TEST_F(PPUFrameTimingTest, VBlank_Suppressed_WhenReadingAt241Cycle1) {
     // Reading $2002 at the exact cycle VBlank would be set suppresses the flag
     stepPPU(241 * 341 + 1);
-    expectNextPosition(1, 241, 1);
+    expectNextPosition(0, 241, 1);
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
 
     emulator.ppu().registerRead(0x2002);
 
     stepPPU(1);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
 }
 
 TEST_F(PPUFrameTimingTest, VBlank_NotSuppressed_WhenReadingBeforeSetCycle) {
     // Reading $2002 before the VBlank set cycle does not suppress it
     stepPPU(241 * 341);
-    expectNextPosition(1, 241, 0);
+    expectNextPosition(0, 241, 0);
 
     emulator.ppu().registerRead(0x2002);
 
     stepPPU(2);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 }
 
 TEST_F(PPUFrameTimingTest, VBlank_NotSuppressed_WhenReadingAfterSetCycle) {
     // Reading $2002 after the VBlank set cycle clears it but doesn't affect next frame
     stepPPU(241 * 341 + 2);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 
     emulator.ppu().registerRead(0x2002);
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
 
     stepPPU(21 * 341 - 1 + 241 * 341 + 1);
-    expectNextPosition(2, 241, 2);
+    expectNextPosition(1, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
 }
 
@@ -129,12 +129,12 @@ TEST_F(PPUFrameTimingTest, VBlank_SuppressionAlsoSuppressesNMI) {
     EXPECT_FALSE(emulator.cpu().nmiPending());
 
     stepPPU(241 * 341 + 1);
-    expectNextPosition(1, 241, 1);
+    expectNextPosition(0, 241, 1);
 
     emulator.ppu().registerRead(0x2002);
 
     stepPPU(1);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_FALSE(emulator.ppu().registers().vBlank());
     EXPECT_FALSE(emulator.cpu().nmiPending());
 }
@@ -147,7 +147,7 @@ TEST_F(PPUFrameTimingTest, NMI_NotTriggeredWhenDisabled) {
     EXPECT_FALSE(emulator.cpu().nmiPending());
 
     stepPPU(241 * 341 + 2);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
     EXPECT_FALSE(emulator.cpu().nmiPending());
 }
@@ -158,7 +158,7 @@ TEST_F(PPUFrameTimingTest, DISABLED_NMI_TriggeredWhenEnabled) {
     EXPECT_FALSE(emulator.cpu().nmiPending());
 
     stepPPU(241 * 341 + 2);
-    expectNextPosition(1, 241, 2);
+    expectNextPosition(0, 241, 2);
     EXPECT_TRUE(emulator.ppu().registers().vBlank());
     EXPECT_TRUE(emulator.cpu().nmiPending());
 }
@@ -169,6 +169,7 @@ TEST_F(PPUFrameTimingTest, OddFrameSkip_Disabled_WhenRenderingOff) {
     // No odd frame skip when rendering is disabled (full 89342 cycles per frame)
     emulator.ppu().registerWrite(0x2001, 0x00);
 
+    stepPPU(262 * 341);
     stepPPU(262 * 341 + 1);
     expectNextPosition(2, 0, 1);
 
@@ -181,6 +182,7 @@ TEST_F(PPUFrameTimingTest, OddFrameSkip_Enabled_WhenRenderingOn) {
     // Odd frame is 1 cycle shorter when rendering is enabled (89341 cycles)
     emulator.ppu().registerWrite(0x2001, 0x18);
 
+    stepPPU(262 * 341);
     stepPPU(262 * 341);
     expectNextPosition(2, 0, 1);
 

@@ -182,7 +182,7 @@ namespace nes_core {
         Mirroring mirroring_ = Mirroring::HORIZONTAL;
         std::int32_t scanline_ = 0;
         std::int32_t cycle_ = 0;
-        std::int64_t frame_ = 1;
+        std::int64_t frame_ = 0;
         bool suppressVBlank_ = false;
         bool isVBlankNMIOn_ = false;
         bool isVBlankNMIOnPrev_ = false;

@@ -98,7 +98,7 @@ namespace nes_core {
         spriteEvalState_.reset();
         scanline_ = 0;
         cycle_ = 0;
-        frame_ = 1;
+        frame_ = 0;
         suppressVBlank_ = false;
         isVBlankNMIOn_ = false;
         isVBlankNMIOnPrev_ = false;
@@ -152,9 +152,11 @@ namespace nes_core {
         return value;
     }
 
-    void PPU::registerWrite(const std::uint16_t addr, std::uint8_t value) {
+    void PPU::registerWrite(const std::uint16_t addr, const std::uint8_t value) {
         const auto index = addr & 0b00000111;
-        regs_.r(index) = value;
+        if (index != 2) {  // PPUSTATUS is read-only
+            regs_.r(index) = value;
+        }
         if (index == 0) { // PPU_CTRL
             regs_.t = (regs_.t & 0xF3FF) | ((value & 0x03) << 10);
             if (!regs_.vBlankNmiEnabled()) {
