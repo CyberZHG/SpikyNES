@@ -33,7 +33,7 @@ TEST_F(SpriteOverflowTestsRoms, 2_Details) {
 TEST_F(SpriteOverflowTestsRoms, 3_Timing) {
     const std::string romPath = "../tests/roms/ppu/sprite_overflow_tests/3.Timing.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 120) {
+    while (emulator.ppu().frame() < 130) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());

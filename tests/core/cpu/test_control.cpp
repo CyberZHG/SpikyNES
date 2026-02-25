@@ -51,6 +51,23 @@ TEST_F(CPUTestBase, BRK_RTI_RoundTrip) {
     EXPECT_EQ(emulator.cpu().registers().SP, 0xFF);
 }
 
+TEST_F(CPUTestBase, BRK_NMI_Hijack) {
+    // If NMI is pending when BRK pushes P, CPU fetches NMI vector instead of IRQ vector
+    emulator.cpu().registers().SP = 0xFF;
+    emulator.cpu().registers().P = 0b00110100;
+    emulator.bus().cpuWrite(0xFFFE, 0x00);
+    emulator.bus().cpuWrite(0xFFFF, 0x04);
+    emulator.bus().cpuWrite(0xFFFA, 0x00);
+    emulator.bus().cpuWrite(0xFFFB, 0x05);
+    emulator.cpu().nmi();
+    const auto cycles = runProgram({0x00}, 1);
+    EXPECT_EQ(cycles, 7);
+    EXPECT_EQ(emulator.cpu().registers().PC, 0x0500);
+    EXPECT_EQ(emulator.cpu().registers().SP, 0xFC);
+    EXPECT_TRUE(emulator.cpu().registers().I());
+    EXPECT_EQ(emulator.cpu().cpuRead(0x01FD) & 0b00110000, 0b00110000);
+}
+
 // ==================== JAM (Unofficial) ====================
 
 TEST_F(CPUTestBase, JAM) {

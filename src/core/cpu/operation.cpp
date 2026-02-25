@@ -444,6 +444,10 @@ namespace nes_core {
             pushByte(regs_.PC & 0xFF);
         } else if (opState_.step == 4) {
             pushByte(regs_.P | 0b00110000);
+            if (nmiPending_) {
+                nmiPending_ = false;
+                nmiActive_ = true;
+            }
         } else if (opState_.step == 5) {
             opState_.readLo = bus_->cpuRead(CPU_VECTOR_IRQ);
         } else if (opState_.step == 6) {
