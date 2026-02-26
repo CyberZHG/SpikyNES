@@ -426,13 +426,14 @@ namespace nes_core {
             m = regs_.oamAddr & 0x03;
         }
         const auto spriteHeight = regs_.spriteSize();
+        const int y = scanline_ == 261 ? -1 : scanline_;
         if (cycle_ % 2 == 1) {
             oamLatch = oam_[(m & 0x03) | (n << 2)];
         } else {
             if (spriteEvalState_.oamCopyDone) {
                 n = (n + 1) & 0x3F;
             } else {
-                if (!spriteEvalState_.spriteInRange && scanline_ >= oamLatch && scanline_ < oamLatch + spriteHeight) {
+                if (!spriteEvalState_.spriteInRange && y >= oamLatch && y < oamLatch + spriteHeight) {
                     spriteEvalState_.spriteInRange = true;
                 }
                 if (spriteEvalState_.secondaryOamAddr < 32) {
@@ -451,7 +452,7 @@ namespace nes_core {
                         if ((spriteEvalState_.secondaryOamAddr & 0x03) == 0) {
                             spriteEvalState_.spriteInRange = false;
                             if (m != 0) {
-                                if (!(scanline_ >= oamLatch && scanline_ < oamLatch + spriteHeight)) {
+                                if (!(y >= oamLatch && y < oamLatch + spriteHeight)) {
                                     m = 0;
                                 }
                             }
@@ -464,6 +465,7 @@ namespace nes_core {
                         }
                     }
                 } else {
+                    oamLatch = secondaryOAM_[spriteEvalState_.secondaryOamAddr & 0x1F];
                     if (spriteEvalState_.spriteInRange) {
                         regs_.setSpriteOverflow();
                         if (++m == 4) {
@@ -611,6 +613,7 @@ namespace nes_core {
                 } else if (65 <= cycle_ && cycle_ <= 256) {
                     evaluateSprites();
                 } else if (257 <= cycle_ && cycle_ <= 320) {
+                    regs_.oamAddr = 0;
                     if ((cycle_ - 257) % 8 == 4) {
                         fetchSprites();
                     }
@@ -651,7 +654,10 @@ namespace nes_core {
                 // Sprites
                 if (1 <= cycle_ && cycle_ <= 64) {
                     clearSecondaryOAM();
+                } else if (65 <= cycle_ && cycle_ <= 256) {
+                    evaluateSprites();
                 } else if (257 <= cycle_ && cycle_ <= 320) {
+                    regs_.oamAddr = 0;
                     if ((cycle_ - 257) % 8 == 4) {
                         fetchSprites();
                     }
