@@ -618,6 +618,10 @@ namespace nes_core {
                         fetchSprites();
                     }
                 }
+            } else {
+                if (1 <= cycle_ && cycle_ <= 256) {
+                    frameBuffer_[scanline_ * 256 + cycle_ - 1] = 0xFF000000 | PALETTE[ppuRead(PPU_PALETTE_START)];
+                }
             }
         } else if (scanline_ == 241) {
             if (cycle_ == 1) {
