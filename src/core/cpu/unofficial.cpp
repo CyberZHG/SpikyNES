@@ -25,21 +25,33 @@ namespace nes_core {
 
     void CPU::execSHA() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
-            bus_->cpuWrite(opState_.addr, regs_.A & regs_.X & static_cast<std::uint8_t>((opState_.addr >> 8) + 1));
+            const auto result = static_cast<std::uint8_t>(regs_.A & regs_.X & (opState_.readHi + 1));
+            const auto writeAddr = opState_.hasPageCross
+                ? static_cast<std::uint16_t>((result << 8) | (opState_.addr & 0xFF))
+                : opState_.addr;
+            bus_->cpuWrite(writeAddr, result);
             opState_.finished = true;
         }
     }
 
     void CPU::execSHX() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
-            bus_->cpuWrite(opState_.addr, regs_.X & static_cast<std::uint8_t>((opState_.addr >> 8) + 1));
+            const auto result = static_cast<std::uint8_t>(regs_.X & (opState_.readHi + 1));
+            const auto writeAddr = opState_.hasPageCross
+                ? static_cast<std::uint16_t>((result << 8) | (opState_.addr & 0xFF))
+                : opState_.addr;
+            bus_->cpuWrite(writeAddr, result);
             opState_.finished = true;
         }
     }
 
     void CPU::execSHY() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
-            bus_->cpuWrite(opState_.addr, regs_.Y & static_cast<std::uint8_t>((opState_.addr >> 8) + 1));
+            const auto result = static_cast<std::uint8_t>(regs_.Y & (opState_.readHi + 1));
+            const auto writeAddr = opState_.hasPageCross
+                ? static_cast<std::uint16_t>((result << 8) | (opState_.addr & 0xFF))
+                : opState_.addr;
+            bus_->cpuWrite(writeAddr, result);
             opState_.finished = true;
         }
     }
@@ -47,7 +59,11 @@ namespace nes_core {
     void CPU::execSHS() {
         if (opState_.step == opState_.addressingFinishedStep + 1) {
             regs_.SP = regs_.A & regs_.X;
-            bus_->cpuWrite(opState_.addr, regs_.SP & static_cast<std::uint8_t>((opState_.addr >> 8) + 1));
+            const auto result = static_cast<std::uint8_t>(regs_.SP & (opState_.readHi + 1));
+            const auto writeAddr = opState_.hasPageCross
+                ? static_cast<std::uint16_t>((result << 8) | (opState_.addr & 0xFF))
+                : opState_.addr;
+            bus_->cpuWrite(writeAddr, result);
             opState_.finished = true;
         }
     }
