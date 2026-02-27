@@ -204,10 +204,11 @@ namespace nes_core {
     }
 
     std::uint16_t PPU::mirrorNametableAddr(std::uint16_t addr) const {
-        switch (mirroring_) {
+        switch (bus_->mirroring()) {
             case Mirroring::HORIZONTAL:
-                if ((0x0400 <= addr && addr < 0x0800) || (0x0C00 <= addr && addr < 0x1000)) {
-                    addr -= 0x0400;
+                addr &= ~0x400;
+                if (addr >= 0x800) {
+                    addr -= 0x400;
                 }
                 break;
             case Mirroring::VERTICAL:
@@ -215,6 +216,14 @@ namespace nes_core {
                     addr -= 0x0800;
                 }
                 break;
+            case Mirroring::SINGLE_LOWER:
+                addr &= 0x3FF;
+                break;
+            case Mirroring::SINGLE_UPPER:
+                addr = (addr & 0x3FF) | 0x400;
+                break;
+            case Mirroring::INVALID:
+                throw std::runtime_error("Invalid mirroring");
         }
         return addr;
     }

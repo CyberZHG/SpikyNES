@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "core/constants.h"
+
 namespace nes_core {
 
     class CPU;
@@ -31,6 +33,7 @@ namespace nes_core {
         [[nodiscard]] std::int64_t cpuCycles() const;
 
         [[nodiscard]] bool irqAsserted() const;
+        [[nodiscard]] Mirroring mirroring() const;
 
     private:
         CPU* cpu_ = nullptr;

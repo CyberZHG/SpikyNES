@@ -90,4 +90,8 @@ namespace nes_core {
     bool Bus::irqAsserted() const {
         return apu_->irqAsserted();
     }
+
+    Mirroring Bus::mirroring() const {
+        return cartridge_->mirroring();
+    }
 }

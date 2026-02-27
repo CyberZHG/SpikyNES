@@ -5,7 +5,11 @@
 #include <vector>
 #include <memory>
 
+#include "core/constants.h"
+
 namespace nes_core {
+    class Bus;
+
     class Mapper {
     public:
         Mapper() = default;
@@ -21,9 +25,14 @@ namespace nes_core {
         [[nodiscard]] virtual std::uint8_t ppuRead(std::uint16_t addr) = 0;
         virtual void ppuWrite(std::uint16_t addr, std::uint8_t value) = 0;
 
+        [[nodiscard]] virtual Mirroring mirroring() const { return Mirroring::INVALID; }
+
         void setSubMapper(const std::uint8_t subMapperId) { subMapper_ = subMapperId; };
+        void setBus(Bus* bus) { bus_ = bus; }
 
     protected:
+        Bus* bus_ = nullptr;
+
         std::uint8_t prgRomBanks_ = 0;
         std::uint8_t prgRamBanks_ = 0;
         std::uint8_t chrRomBanks_ = 0;

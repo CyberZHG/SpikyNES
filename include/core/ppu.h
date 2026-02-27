@@ -109,11 +109,7 @@ namespace nes_core {
 
         void step();
 
-        enum class Mirroring {
-            HORIZONTAL,
-            VERTICAL,
-        };
-        void setMirroring(const Mirroring mirroring) { mirroring_ = mirroring; }
+        using Mirroring = nes_core::Mirroring;
 
         [[nodiscard]] std::int32_t scanline() const { return scanline_; }
         [[nodiscard]] std::int32_t cycle() const { return cycle_; }
@@ -179,7 +175,6 @@ namespace nes_core {
         bool sprite0Rendering_ = false;
         SpriteEvaluationState spriteEvalState_{};
 
-        Mirroring mirroring_ = Mirroring::HORIZONTAL;
         std::int32_t scanline_ = 0;
         std::int32_t cycle_ = 0;
         std::int64_t frame_ = 0;

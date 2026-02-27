@@ -45,6 +45,14 @@ namespace nes_core {
 
     constexpr std::size_t INES_HEADER_SIZE = 16;
 
+    enum class Mirroring {
+        INVALID,
+        HORIZONTAL,
+        VERTICAL,
+        SINGLE_LOWER,
+        SINGLE_UPPER,
+    };
+
 }
 
 #endif //SPIKYNES_CONSTANTS_H

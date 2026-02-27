@@ -810,7 +810,7 @@ TEST_F(PPUTestBase, PPUDATA_NametableMirror_3000) {
 
 TEST_F(PPUTestBase, PPUDATA_NametableHorizontalMirroring) {
     // Horizontal mirroring: $2000=$2400, $2800=$2C00
-    emulator.ppu().setMirroring(PPU::Mirroring::HORIZONTAL);
+    emulator.cartridge().setMirroring(Mirroring::HORIZONTAL);
     emulator.ppu().registerWrite(0x2000, 0x00);
 
     emulator.ppu().registers().v = 0x2000;
@@ -830,7 +830,7 @@ TEST_F(PPUTestBase, PPUDATA_NametableHorizontalMirroring) {
 
 TEST_F(PPUTestBase, PPUDATA_NametableVerticalMirroring) {
     // Vertical mirroring: $2000=$2800, $2400=$2C00
-    emulator.ppu().setMirroring(PPU::Mirroring::VERTICAL);
+    emulator.cartridge().setMirroring(Mirroring::VERTICAL);
     emulator.ppu().registerWrite(0x2000, 0x00);
 
     emulator.ppu().registers().v = 0x2000;

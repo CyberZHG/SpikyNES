@@ -6,6 +6,9 @@
 #include <algorithm>
 
 namespace nes_core {
+    Cartridge::Cartridge(Bus *bus) {
+        bus_ = bus;
+    }
 
     bool Cartridge::loadFromFile(const std::string& path) {
         std::ifstream file(path, std::ios::binary);
@@ -67,6 +70,7 @@ namespace nes_core {
             chrRom_.resize(CHR_ROM_BANK_SIZE, 0);
         }
 
+        mirroring_ = header_.verticalMirroring ? Mirroring::VERTICAL : Mirroring::HORIZONTAL;
         initMapper(header_.mapper, header_.prgRomBanks, header_.prgRamBanks, header_.chrRomBanks);
 
         return true;
@@ -91,8 +95,11 @@ namespace nes_core {
             prgRomBanks, prgRamBanks, chrRomBanks,
             &prgRom_, &prgRam_, &chrRom_
         );
-        if (header_.isNES2) {
-            mapper_->setSubMapper(header_.subMapper);
+        if (mapper_ != nullptr) {
+            if (header_.isNES2) {
+                mapper_->setSubMapper(header_.subMapper);
+            }
+            mapper_->setBus(bus_);
         }
     }
 
@@ -137,6 +144,15 @@ namespace nes_core {
             return chrRom_[addr];
         }
         return 0;
+    }
+
+    Mirroring Cartridge::mirroring() const {
+        if (mapper_) {
+            if (const auto m = mapper_->mirroring(); m != Mirroring::INVALID) {
+                return m;
+            }
+        }
+        return mirroring_;
     }
 
     void Cartridge::ppuWrite(const std::uint16_t addr, const std::uint8_t value) {

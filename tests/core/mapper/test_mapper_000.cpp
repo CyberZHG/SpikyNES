@@ -6,7 +6,7 @@ using namespace nes_core;
 
 class Mapper000Test : public testing::Test {
 protected:
-    Cartridge cartridge;
+    Cartridge cartridge{nullptr};
 };
 
 TEST_F(Mapper000Test, PrgRom16KB_Mirroring) {
