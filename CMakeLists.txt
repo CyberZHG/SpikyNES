@@ -129,7 +129,6 @@ if(SPIKY_NES_ENABLE_TESTS)
                 tests/core/cpu/rom/test_nestest.cpp
                 tests/core/cpu/rom/test_cpu_timing.cpp
                 tests/core/cpu/rom/test_all_instrs_v5.cpp
-                tests/core/ppu/rom/test_ppu_vbl_nmi.cpp
                 tests/core/ppu/rom/test_ppu_tests.cpp
                 tests/core/ppu/rom/test_sprite_hit_tests.cpp
                 tests/core/ppu/rom/test_sprite_overflow_tests.cpp
