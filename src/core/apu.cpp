@@ -89,7 +89,10 @@ namespace nes_core {
         if (lengthCounter == 0) {
             return 0;
         }
-        if (timerPeriod < 8 || timerPeriod > 0x7FF) {
+        if (timerPeriod < 8) {
+            return 0;
+        }
+        if (!sweepNegate && (timerPeriod + (timerPeriod >> sweepShift)) > 0x7FF) {
             return 0;
         }
         if ((duty & (1 << (7 - dutyBit))) == 0) {
@@ -117,14 +120,17 @@ namespace nes_core {
 
     void PulseRegisters::sweepStep(const bool isPulse1) {
         if (sweepEnabled && sweepCounter == 0 && sweepShift > 0 && timerPeriod >= 8) {
-            auto update = timerPeriod >> sweepShift;
+            const std::uint16_t shiftResult = timerPeriod >> sweepShift;
             if (sweepNegate) {
-                update = -update;
+                timerPeriod -= shiftResult;
                 if (isPulse1) {
-                    --update;
+                    --timerPeriod;
+                }
+            } else {
+                if (const std::uint16_t targetPeriod = timerPeriod + shiftResult; targetPeriod <= 0x7FF) {
+                    timerPeriod = targetPeriod;
                 }
             }
-            timerPeriod += update;
         }
         if (sweepCounter == 0 || sweepReload) {
             sweepCounter = sweepDividerPeriod;

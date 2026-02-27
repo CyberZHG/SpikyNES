@@ -283,9 +283,6 @@ TEST_F(PulseTest, Output_TimerTooHigh) {
 
     emulator.apu().registers().pulse1.timerPeriod = 0x800;
     EXPECT_EQ(emulator.apu().registers().pulse1.output(), 0);
-
-    emulator.apu().registers().pulse1.timerPeriod = 0x7FF;
-    EXPECT_GT(emulator.apu().registers().pulse1.output(), 0);
 }
 
 TEST_F(PulseTest, Output_DutyCycle_12_5) {
