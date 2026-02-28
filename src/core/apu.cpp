@@ -18,7 +18,7 @@ namespace nes_core {
     };
 
     constexpr std::uint16_t DMC_RATE_TABLE[16] = {
-        428, 380, 340, 320, 286, 254, 226, 214, 190, 160, 142, 128, 106, 84, 72, 54,
+        427, 379, 339, 319, 285, 253, 225, 213, 189, 159, 141, 127, 105, 83, 71, 53,
     };
 
     void PulseRegisters::reset() {
@@ -606,9 +606,9 @@ namespace nes_core {
             regs_.pulse1.timerStep();
             regs_.pulse2.timerStep();
             regs_.noise.timerStep();
-            regs_.dmc.timerStep();
         }
         regs_.triangle.timerStep();
+        regs_.dmc.timerStep();
         if (cycle_ % 2 == 0 && regs_.dmcEnabled && regs_.dmc.sampleBufferEmpty && regs_.dmc.bytesRemaining > 0) {
             const int stallCycles = (bus_->cpuCycles() % 2 == 0) ? 3 : 4;
             bus_->cpuStall(stallCycles);

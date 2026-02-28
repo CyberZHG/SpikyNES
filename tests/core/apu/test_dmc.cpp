@@ -91,7 +91,7 @@ TEST_F(DMCTest, OutputUnit_TimerReload) {
     emulator.apu().write(0x4010, 0b00000001);
     emulator.apu().registers().dmc.timer = 0;
     emulator.apu().registers().dmc.timerStep();
-    EXPECT_EQ(emulator.apu().registers().dmc.timer, 380);
+    EXPECT_EQ(emulator.apu().registers().dmc.timer, 379);
 }
 
 TEST_F(DMCTest, OutputUnit_IncrementByTwo) {

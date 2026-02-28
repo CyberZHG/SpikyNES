@@ -35,6 +35,7 @@ TEST_F(TriangleTest, RegisterWrite_Timer) {
 }
 
 TEST_F(TriangleTest, RegisterWrite_LengthCounterLoad) {
+    emulator.apu().write(0x4015, 0b00000100);
     emulator.apu().write(0x400B, 0b00000000);
     EXPECT_EQ(emulator.apu().registers().triangle.lengthCounter, 10);
 
@@ -82,8 +83,8 @@ TEST_F(TriangleTest, LinearCounter_HaltKeepsLinearStart) {
 
 TEST_F(TriangleTest, LengthCounter_Decrement) {
     emulator.apu().write(0x4008, 0b00000000);
-    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().write(0x4015, 0b00000100);
+    emulator.apu().write(0x400B, 0b00000000);
 
     emulator.apu().registers().triangle.lengthCounterStep();
     EXPECT_EQ(emulator.apu().registers().triangle.lengthCounter, 9);
@@ -99,8 +100,8 @@ TEST_F(TriangleTest, LengthCounter_Decrement) {
 
 TEST_F(TriangleTest, LengthCounter_Halt) {
     emulator.apu().write(0x4008, 0b10000000);
-    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().write(0x4015, 0b00000100);
+    emulator.apu().write(0x400B, 0b00000000);
 
     for (int i = 0; i < 20; ++i) {
         emulator.apu().registers().triangle.lengthCounterStep();
@@ -128,8 +129,8 @@ TEST_F(TriangleTest, Timer_Countdown) {
 TEST_F(TriangleTest, Timer_SequencerAdvance) {
     emulator.apu().write(0x4008, 0b10001111);
     emulator.apu().write(0x400A, 0x00);
-    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().write(0x4015, 0b00000100);
+    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().registers().triangle.linearCounterStep();
 
     emulator.apu().registers().triangle.dutyIndex = 0;
@@ -170,8 +171,8 @@ TEST_F(TriangleTest, Timer_SilencedWhenLinearCounterZero) {
 
 TEST_F(TriangleTest, Output_SequencerValues) {
     emulator.apu().write(0x4008, 0b10001111);
-    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().write(0x4015, 0b00000100);
+    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().registers().triangle.linearCounterStep();
 
     for (int i = 0; i < 16; ++i) {
@@ -186,8 +187,8 @@ TEST_F(TriangleTest, Output_SequencerValues) {
 
 TEST_F(TriangleTest, Output_SilencedByLengthCounter) {
     emulator.apu().write(0x4008, 0b10001111);
-    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().write(0x4015, 0b00000100);
+    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().registers().triangle.linearCounterStep();
 
     emulator.apu().registers().triangle.dutyIndex = 0;
@@ -199,8 +200,8 @@ TEST_F(TriangleTest, Output_SilencedByLengthCounter) {
 
 TEST_F(TriangleTest, Output_SilencedByLinearCounter) {
     emulator.apu().write(0x4008, 0b10001111);
-    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().write(0x4015, 0b00000100);
+    emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().registers().triangle.linearCounterStep();
 
     emulator.apu().registers().triangle.dutyIndex = 0;
@@ -213,10 +214,9 @@ TEST_F(TriangleTest, Output_SilencedByLinearCounter) {
 TEST_F(TriangleTest, Enable_ProducesOutput) {
     emulator.apu().write(0x4008, 0b10001111);
     emulator.apu().write(0x400A, 0x10);
+    emulator.apu().write(0x4015, 0b00000100);
     emulator.apu().write(0x400B, 0b00000000);
     emulator.apu().registers().triangle.linearCounter = 15;
-
-    emulator.apu().write(0x4015, 0b00000100);
     emulator.apu().step();
     EXPECT_GT(emulator.apu().outputBuffer(), 0.0f);
 
@@ -226,8 +226,8 @@ TEST_F(TriangleTest, Enable_ProducesOutput) {
 }
 
 TEST_F(TriangleTest, Enable_ClearsLengthCounter) {
-    emulator.apu().write(0x400B, 0b11111000);
     emulator.apu().write(0x4015, 0b00000100);
+    emulator.apu().write(0x400B, 0b11111000);
     EXPECT_EQ(emulator.apu().registers().triangle.lengthCounter, 30);
 
     emulator.apu().write(0x4015, 0b00000000);

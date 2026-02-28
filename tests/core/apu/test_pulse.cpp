@@ -66,6 +66,7 @@ TEST_F(PulseTest, RegisterWrite_Timer) {
 }
 
 TEST_F(PulseTest, RegisterWrite_LengthCounterLoad) {
+    emulator.apu().write(0x4015, 0b00000001);
     emulator.apu().write(0x4003, 0b00000000);
     EXPECT_EQ(emulator.apu().registers().pulse1.lengthCounter, 10);
 
@@ -88,8 +89,8 @@ TEST_F(PulseTest, RegisterWrite_PhaseReset) {
 TEST_F(PulseTest, Envelope_ConstantVolume) {
     emulator.apu().write(0x4000, 0b00011010);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().registers().pulse1.dutyBit = 1;
     EXPECT_EQ(emulator.apu().registers().pulse1.output(), 10);
 }
@@ -143,8 +144,8 @@ TEST_F(PulseTest, Envelope_Restart) {
 
 TEST_F(PulseTest, LengthCounter_Decrement) {
     emulator.apu().write(0x4000, 0b00000000);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
 
     EXPECT_EQ(emulator.apu().registers().pulse1.lengthCounter, 10);
 
@@ -162,8 +163,8 @@ TEST_F(PulseTest, LengthCounter_Decrement) {
 
 TEST_F(PulseTest, LengthCounter_Halt) {
     emulator.apu().write(0x4000, 0b00100000);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
 
     EXPECT_EQ(emulator.apu().registers().pulse1.lengthCounter, 10);
 
@@ -176,8 +177,8 @@ TEST_F(PulseTest, LengthCounter_Halt) {
 TEST_F(PulseTest, LengthCounter_Mutes) {
     emulator.apu().write(0x4000, 0b00011111);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().registers().pulse1.dutyBit = 1;
 
     EXPECT_GT(emulator.apu().registers().pulse1.output(), 0);
@@ -264,8 +265,8 @@ TEST_F(PulseTest, Timer_SequencerAdvance) {
 TEST_F(PulseTest, Output_TimerTooLow) {
     emulator.apu().write(0x4000, 0b00011111);
     emulator.apu().write(0x4002, 0x07);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().registers().pulse1.dutyBit = 1;
 
     EXPECT_EQ(emulator.apu().registers().pulse1.output(), 0);
@@ -288,8 +289,8 @@ TEST_F(PulseTest, Output_TimerTooHigh) {
 TEST_F(PulseTest, Output_DutyCycle_12_5) {
     emulator.apu().write(0x4000, 0b00011111);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
 
     emulator.apu().registers().pulse1.dutyBit = 0;
     EXPECT_EQ(emulator.apu().registers().pulse1.output(), 0);
@@ -306,8 +307,8 @@ TEST_F(PulseTest, Output_DutyCycle_12_5) {
 TEST_F(PulseTest, Output_DutyCycle_25) {
     emulator.apu().write(0x4000, 0b01011111);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
 
     emulator.apu().registers().pulse1.dutyBit = 0;
     EXPECT_EQ(emulator.apu().registers().pulse1.output(), 0);
@@ -326,8 +327,8 @@ TEST_F(PulseTest, Output_DutyCycle_25) {
 TEST_F(PulseTest, Output_DutyCycle_50) {
     emulator.apu().write(0x4000, 0b10011111);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
 
     emulator.apu().registers().pulse1.dutyBit = 0;
     EXPECT_EQ(emulator.apu().registers().pulse1.output(), 0);
@@ -346,8 +347,8 @@ TEST_F(PulseTest, Output_DutyCycle_50) {
 TEST_F(PulseTest, Output_DutyCycle_75) {
     emulator.apu().write(0x4000, 0b11011111);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
 
     emulator.apu().registers().pulse1.dutyBit = 0;
     EXPECT_GT(emulator.apu().registers().pulse1.output(), 0);
@@ -366,8 +367,8 @@ TEST_F(PulseTest, Output_DutyCycle_75) {
 TEST_F(PulseTest, Output_VolumeConstant) {
     emulator.apu().write(0x4000, 0b00011010);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().registers().pulse1.dutyBit = 1;
 
     EXPECT_EQ(emulator.apu().registers().pulse1.output(), 10);
@@ -376,8 +377,8 @@ TEST_F(PulseTest, Output_VolumeConstant) {
 TEST_F(PulseTest, Output_VolumeEnvelope) {
     emulator.apu().write(0x4000, 0b00001111);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().registers().pulse1.dutyBit = 1;
 
     emulator.apu().registers().pulse1.envelopeStep();
@@ -392,9 +393,8 @@ TEST_F(PulseTest, Output_VolumeEnvelope) {
 TEST_F(PulseTest, Enable_DisablesOutput) {
     emulator.apu().write(0x4000, 0b11011111);
     emulator.apu().write(0x4002, 0x10);
-    emulator.apu().write(0x4003, 0b00000000);
-
     emulator.apu().write(0x4015, 0b00000001);
+    emulator.apu().write(0x4003, 0b00000000);
     emulator.apu().step();
     EXPECT_GT(emulator.apu().outputBuffer(), 0.0f);
 
@@ -406,9 +406,8 @@ TEST_F(PulseTest, Enable_DisablesOutput) {
 TEST_F(PulseTest, Enable_Pulse2) {
     emulator.apu().write(0x4004, 0b11011111);
     emulator.apu().write(0x4006, 0x10);
-    emulator.apu().write(0x4007, 0b00000000);
-
     emulator.apu().write(0x4015, 0b00000010);
+    emulator.apu().write(0x4007, 0b00000000);
     emulator.apu().step();
     EXPECT_GT(emulator.apu().outputBuffer(), 0.0f);
 

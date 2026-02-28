@@ -14,7 +14,7 @@ protected:
 TEST_F(APUTest, apu_test) {
     const std::string romPath = "../tests/roms/apu/apu_test.nes";
     ASSERT_TRUE(emulator.loadROM(romPath));
-    while (emulator.ppu().frame() < 180) {
+    while (emulator.ppu().frame() < 310) {
         emulator.step();
     }
     const auto filepath = saveFrameBuffer(emulator.ppu());
