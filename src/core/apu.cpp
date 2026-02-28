@@ -468,22 +468,34 @@ namespace nes_core {
             case 0x4002:
             case 0x4003:
                 regs_.pulse1.write(addr, value);
+                if (addr == 0x4003 && !regs_.pulse1Enabled) {
+                    regs_.pulse1.lengthCounter = 0;
+                }
                 break;
             case 0x4004:
             case 0x4005:
             case 0x4006:
             case 0x4007:
                 regs_.pulse2.write(addr, value);
+                if (addr == 0x4007 && !regs_.pulse2Enabled) {
+                    regs_.pulse2.lengthCounter = 0;
+                }
                 break;
             case 0x4008:
             case 0x400A:
             case 0x400B:
                 regs_.triangle.write(addr, value);
+                if (addr == 0x400B && !regs_.triangleEnabled) {
+                    regs_.triangle.lengthCounter = 0;
+                }
                 break;
             case 0x400C:
             case 0x400E:
             case 0x400F:
                 regs_.noise.write(addr, value);
+                if (addr == 0x400F && !regs_.noiseEnabled) {
+                    regs_.noise.lengthCounter = 0;
+                }
                 break;
             case 0x4010:
             case 0x4011:
