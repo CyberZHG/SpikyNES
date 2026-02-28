@@ -115,6 +115,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/ppu/test_ppu_utils.h
             tests/core/ppu/test_ppu_utils.cpp
             tests/core/mapper/test_mapper_000.cpp
+            tests/core/mapper/test_mapper_001.cpp
             tests/core/mapper/test_mapper_003.cpp
             tests/core/apu/test_pulse.cpp
             tests/core/apu/test_triangle.cpp
