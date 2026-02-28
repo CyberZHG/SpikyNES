@@ -14,6 +14,7 @@ namespace nes_core {
     }
 
     void Emulator::reset() {
+        cartridge_.reset();
         cpu_.reset();
         ppu_.reset();
         apu_.reset();

@@ -67,13 +67,28 @@ namespace nes_core {
             }
             chrRom_.assign(buffer.begin() + dataOffset, buffer.begin() + dataOffset + chrSize);
         } else {
-            chrRom_.resize(CHR_ROM_BANK_SIZE, 0);
+            // iNES 2.0: byte 11 bits 3-0 encode CHR RAM size as 64 << exponent
+            // iNES 1.0: default 8KB CHR RAM
+            std::size_t chrRamSize = CHR_ROM_BANK_SIZE;
+            if (header_.isNES2) {
+                const std::uint8_t chrRamExp = h[11] & 0x0F;
+                if (chrRamExp != 0) {
+                    chrRamSize = 64u << chrRamExp;
+                }
+            }
+            chrRam_.resize(chrRamSize, 0);
         }
 
         mirroring_ = header_.verticalMirroring ? Mirroring::VERTICAL : Mirroring::HORIZONTAL;
         initMapper(header_.mapper, header_.prgRomBanks, header_.prgRamBanks, header_.chrRomBanks);
 
         return true;
+    }
+
+    void Cartridge::reset() {
+        if (mapper_ != nullptr) {
+            mapper_->reset();
+        }
     }
 
     void Cartridge::initPrgRom(const std::size_t size) {
@@ -88,12 +103,16 @@ namespace nes_core {
         chrRom_.resize(size, 0);
     }
 
+    void Cartridge::initChrRam(const std::size_t size) {
+        chrRam_.resize(size, 0);
+    }
+
     void Cartridge::initMapper(const std::uint16_t mapperId,
         const std::uint8_t prgRomBanks, const std::uint8_t prgRamBanks, const std::uint8_t chrRomBanks) {
         mapper_ = Mapper::create(
             mapperId,
             prgRomBanks, prgRamBanks, chrRomBanks,
-            &prgRom_, &prgRam_, &chrRom_
+            &prgRom_, &prgRam_, &chrRom_, &chrRam_
         );
         if (mapper_ != nullptr) {
             if (header_.isNES2) {

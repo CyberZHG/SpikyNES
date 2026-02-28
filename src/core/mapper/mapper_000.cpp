@@ -28,8 +28,14 @@ namespace nes_core {
 
     std::uint8_t Mapper000::ppuRead(const std::uint16_t addr) {
         if (addr < 0x2000) {
-            if (chrRom_ != nullptr && !chrRom_->empty()) {
-                return chrRom_->at(addr);
+            if (chrRomBanks_ == 0) {
+                if (chrRam_ != nullptr && !chrRam_->empty()) {
+                    return chrRam_->at(addr);
+                }
+            } else {
+                if (chrRom_ != nullptr && !chrRom_->empty()) {
+                    return chrRom_->at(addr);
+                }
             }
         }
         return 0;
@@ -38,8 +44,8 @@ namespace nes_core {
     void Mapper000::ppuWrite(const std::uint16_t addr, const std::uint8_t value) {
         if (addr < 0x2000) {
             if (chrRomBanks_ == 0) {  // CHR RAM
-                if (chrRom_ != nullptr && !chrRom_->empty()) {
-                    chrRom_->at(addr) = value;
+                if (chrRam_ != nullptr && !chrRam_->empty()) {
+                    chrRam_->at(addr) = value;
                 }
             }
         }

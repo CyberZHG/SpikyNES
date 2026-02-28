@@ -11,7 +11,8 @@ namespace nes_core {
         const std::uint8_t chrRomBanks,
         std::vector<std::uint8_t>* prgRom,
         std::vector<std::uint8_t>* prgRam,
-        std::vector<std::uint8_t>* chrRom) {
+        std::vector<std::uint8_t>* chrRom,
+        std::vector<std::uint8_t>* chrRam) {
         std::unique_ptr<Mapper> mapper = nullptr;
         switch (mapperId) {
             case 0: mapper = std::make_unique<Mapper000>(); break;
@@ -26,6 +27,7 @@ namespace nes_core {
             mapper->prgRom_ = prgRom;
             mapper->prgRam_ = prgRam;
             mapper->chrRom_ = chrRom;
+            mapper->chrRam_ = chrRam;
         }
         return mapper;
     }

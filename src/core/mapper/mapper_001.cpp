@@ -10,6 +10,18 @@ namespace nes_core {
         subMapper_ = 2;
     }
 
+    void Mapper001::reset() {
+        Mapper::reset();
+        shiftRegister_ = 0b10000;
+        prgRomBankMode_ = 3;
+        chrRomBankMode_ = 0;
+        nametableMode_ = 0;
+        chrRomIndex0_ = 0;
+        chrRomIndex1_ = 0;
+        prgRamDisabled_ = false;
+        lastWriteCycle_ = -2;
+    }
+
     std::uint8_t Mapper001::cpuRead(const std::uint16_t addr) {
         if (0x6000 <= addr && addr <= 0x7FFF) {
             if (!prgRamDisabled_ && prgRam_ != nullptr && !prgRam_->empty()) {
@@ -74,23 +86,27 @@ namespace nes_core {
         if (addr > 0x1FFF) {
             return 0;
         }
+        auto* chr = (chrRomBanks_ == 0) ? chrRam_ : chrRom_;
+        if (chr == nullptr || chr->empty()) {
+            return 0;
+        }
         if (chrRomBankMode_ == 0) {
             // switch 8 KB at a time; low bit of index ignored
             const auto bankAddr = (chrRomIndex0_ & 0b11110) * CHR_BANK_4K + addr;
-            return chrRom_->at(bankAddr);
+            return chr->at(bankAddr % chr->size());
         }
         // switch two separate 4 KB banks
         if (addr <= 0x0FFF) {
             const auto bankAddr = (chrRomIndex0_ & 0b11111) * CHR_BANK_4K + addr;
-            return chrRom_->at(bankAddr);
+            return chr->at(bankAddr % chr->size());
         }
         const auto bankAddr = (chrRomIndex1_ & 0b11111) * CHR_BANK_4K + (addr - 0x1000);
-        return chrRom_->at(bankAddr);
+        return chr->at(bankAddr % chr->size());
     }
 
     void Mapper001::ppuWrite(const std::uint16_t addr, const std::uint8_t value) {
         // CHR-ROM is read-only; writes only apply when using CHR-RAM (chrRomBanks == 0)
-        if (chrRomBanks_ != 0 || chrRom_ == nullptr || chrRom_->empty()) {
+        if (chrRomBanks_ != 0 || chrRam_ == nullptr || chrRam_->empty()) {
             return;
         }
         if (addr > 0x1FFF) {
@@ -104,8 +120,8 @@ namespace nes_core {
         } else {
             bankAddr = (chrRomIndex1_ & 0b11111) * CHR_BANK_4K + (addr - 0x1000);
         }
-        if (bankAddr < chrRom_->size()) {
-            chrRom_->at(bankAddr) = value;
+        if (bankAddr < chrRam_->size()) {
+            chrRam_->at(bankAddr) = value;
         }
     }
 

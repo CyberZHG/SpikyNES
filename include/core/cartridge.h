@@ -30,6 +30,7 @@ namespace nes_core {
         explicit Cartridge(Bus* bus);
 
         bool loadFromFile(const std::string& path);
+        void reset();
 
         /** Initialize PRG ROM with given size (for testing). */
         void initPrgRom(std::size_t size);
@@ -37,6 +38,8 @@ namespace nes_core {
         void initPrgRam(std::size_t size = PRG_RAM_BANK_SIZE);
         /** Initialize CHR ROM with given size (for testing). */
         void initChrRom(std::size_t size);
+        /** Initialize CHR RAM with given size (for testing). */
+        void initChrRam(std::size_t size = CHR_ROM_BANK_SIZE);
 
         void initMapper(std::uint16_t mapperId, std::uint8_t prgRomBanks, std::uint8_t prgRamBanks, std::uint8_t chrRomBanks);
 
@@ -58,6 +61,7 @@ namespace nes_core {
         std::vector<std::uint8_t> prgRom_{};
         std::vector<std::uint8_t> prgRam_{};
         std::vector<std::uint8_t> chrRom_{};
+        std::vector<std::uint8_t> chrRam_{};
         std::unique_ptr<Mapper> mapper_ = nullptr;
         Mirroring mirroring_ = Mirroring::HORIZONTAL;
     };

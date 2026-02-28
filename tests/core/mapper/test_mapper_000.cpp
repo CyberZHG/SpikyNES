@@ -98,7 +98,7 @@ TEST_F(Mapper000Test, ChrRam_NoChr_ReturnsZero) {
 
 TEST_F(Mapper000Test, ChrRam_ReadWrite) {
     cartridge.initPrgRom(PRG_ROM_BANK_SIZE);
-    cartridge.initChrRom(CHR_ROM_BANK_SIZE);
+    cartridge.initChrRam(CHR_ROM_BANK_SIZE);
     cartridge.initMapper(0, 1, 0, 0);
 
     for (std::uint16_t addr = 0x0000; addr < 0x0100; ++addr) {
@@ -130,7 +130,7 @@ TEST_F(Mapper000Test, AddressBoundaries_Cpu) {
 
 TEST_F(Mapper000Test, AddressBoundaries_Ppu) {
     cartridge.initPrgRom(PRG_ROM_BANK_SIZE);
-    cartridge.initChrRom(CHR_ROM_BANK_SIZE);
+    cartridge.initChrRam(CHR_ROM_BANK_SIZE);
     cartridge.initMapper(0, 1, 0, 0);
 
     cartridge.ppuWrite(0x0000, 0x11);
@@ -187,6 +187,7 @@ TEST_F(Mapper000Test, ChrRom_vs_ChrRam) {
     cartridge.ppuWrite(0x1000, 0xAA);
     EXPECT_EQ(cartridge.ppuRead(0x1000), 0x00);
 
+    cartridge.initChrRam(CHR_ROM_BANK_SIZE);
     cartridge.initMapper(0, 1, 0, 0);
     cartridge.ppuWrite(0x1000, 0xBB);
     EXPECT_EQ(cartridge.ppuRead(0x1000), 0xBB);
@@ -195,7 +196,7 @@ TEST_F(Mapper000Test, ChrRom_vs_ChrRam) {
 TEST_F(Mapper000Test, MultipleConfigurations) {
     cartridge.initPrgRom(PRG_ROM_SIZE);
     cartridge.initPrgRam(PRG_RAM_SIZE);
-    cartridge.initChrRom(CHR_ROM_BANK_SIZE);
+    cartridge.initChrRam(CHR_ROM_BANK_SIZE);
     cartridge.initMapper(0, 2, 1, 0);
 
     cartridge.cpuWrite(0x6000, 0x01);

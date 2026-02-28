@@ -9,6 +9,8 @@ namespace nes_core {
     public:
         Mapper001();
 
+        void reset() override;
+
         std::uint8_t cpuRead(std::uint16_t addr) override;
         void cpuWrite(std::uint16_t addr, std::uint8_t value) override;
 
