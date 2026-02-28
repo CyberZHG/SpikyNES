@@ -552,20 +552,30 @@ namespace nes_core {
 
         if (!regs_.sequencerMode) {
             // 4-step sequence
-            switch (cycle_ % 14915) {
-                case 3728:
+            switch (cycle_ % 29830) {
+                case 7457:
                     quarterFrameStep();
                     break;
-                case 7456:
+                case 14913:
                     quarterFrameStep();
                     halfFrameStep();
                     break;
-                case 11185:
+                case 22371:
                     quarterFrameStep();
                     break;
-                case 14914:
+                case 29828:
+                    if (!regs_.irqInhibited) {
+                        regs_.frameIrqFlag = true;
+                    }
+                    break;
+                case 29829:
                     quarterFrameStep();
                     halfFrameStep();
+                    if (!regs_.irqInhibited) {
+                        regs_.frameIrqFlag = true;
+                    }
+                    break;
+                case 0:
                     if (!regs_.irqInhibited) {
                         regs_.frameIrqFlag = true;
                     }
@@ -574,18 +584,18 @@ namespace nes_core {
             }
         } else {
             // 5-step sequence
-            switch (cycle_ % 18641) {
-                case 3728:
+            switch (cycle_ % 37282) {
+                case 7457:
                     quarterFrameStep();
                     break;
-                case 7456:
+                case 14913:
                     quarterFrameStep();
                     halfFrameStep();
                     break;
-                case 11185:
+                case 22371:
                     quarterFrameStep();
                     break;
-                case 18640:
+                case 37281:
                     quarterFrameStep();
                     halfFrameStep();
                     break;
