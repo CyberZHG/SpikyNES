@@ -69,6 +69,8 @@ add_library(SpikyNesCore STATIC
         src/core/mapper/mapper_001.cpp
         include/core/mapper/mapper_002.h
         src/core/mapper/mapper_002.cpp
+        include/core/mapper/mapper_004.h
+        src/core/mapper/mapper_004.cpp
 )
 
 target_include_directories(SpikyNesCore
