@@ -83,10 +83,10 @@ namespace nes_core {
     }
 
     std::uint8_t Mapper001::ppuRead(const std::uint16_t addr) {
-        if (addr > 0x1FFF) {
+        if (addr >= 0x2000) {
             return 0;
         }
-        auto* chr = (chrRomBanks_ == 0) ? chrRam_ : chrRom_;
+        const auto* chr = (chrRomBanks_ == 0) ? chrRam_ : chrRom_;
         if (chr == nullptr || chr->empty()) {
             return 0;
         }

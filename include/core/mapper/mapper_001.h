@@ -28,8 +28,8 @@ namespace nes_core {
         std::uint8_t chrRomIndex0_ = 0;
         std::uint8_t chrRomIndex1_ = 0;
 
-        std::int64_t lastWriteCycle_ = -2;  // for consecutive write filtering
-        bool prgRamDisabled_ = false;       // MMC1B: bit 4 of $E000
+        std::int64_t lastWriteCycle_ = -2;
+        bool prgRamDisabled_ = false;
 
         void writeRegister(std::uint16_t addr, std::uint8_t value);
     };
