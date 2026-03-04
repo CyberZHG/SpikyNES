@@ -140,6 +140,7 @@ if(SPIKY_NES_ENABLE_TESTS)
                 tests/core/ppu/rom/test_sprite_overflow_tests.cpp
                 tests/core/ppu/rom/test_vbl_nmi_timing.cpp
                 tests/core/apu/rom/test_apu_test.cpp
+                tests/core/mapper/rom/test_mmc3.cpp
         )
         target_compile_definitions(runTests PRIVATE SPIKY_NES_ROM_TESTS_ENABLED)
     endif()

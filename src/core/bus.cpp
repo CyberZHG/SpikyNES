@@ -87,8 +87,12 @@ namespace nes_core {
         return cpu_->cycles();
     }
 
+    void Bus::notifyA12(const std::uint16_t addr) const {
+        cartridge_->notifyA12(addr);
+    }
+
     bool Bus::irqAsserted() const {
-        return apu_->irqAsserted();
+        return apu_->irqAsserted() || cartridge_->irqAsserted();
     }
 
     Mirroring Bus::mirroring() const {

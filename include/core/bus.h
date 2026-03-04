@@ -32,6 +32,8 @@ namespace nes_core {
         void cpuStall(int cycles) const;
         [[nodiscard]] std::int64_t cpuCycles() const;
 
+        void notifyA12(std::uint16_t addr) const;
+
         [[nodiscard]] bool irqAsserted() const;
         [[nodiscard]] Mirroring mirroring() const;
 

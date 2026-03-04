@@ -109,8 +109,6 @@ namespace nes_core {
 
         void step();
 
-        using Mirroring = nes_core::Mirroring;
-
         [[nodiscard]] std::int32_t scanline() const { return scanline_; }
         [[nodiscard]] std::int32_t cycle() const { return cycle_; }
         [[nodiscard]] std::int64_t frame() const { return frame_; }

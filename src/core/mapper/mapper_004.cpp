@@ -18,6 +18,9 @@ namespace nes_core {
         irqLatch_ = 0;
         irqCounter_ = 0;
         irqDisabled_ = false;
+        irqReload_ = false;
+        irqFlag_ = false;
+        a12LowCycle_ = 0;
     }
 
     std::uint8_t Mapper004::cpuRead(const std::uint16_t addr) {
@@ -39,19 +42,19 @@ namespace nes_core {
             } else if (0xA000 <= addr && addr <= 0xBFFF) {
                 bankAddr = romIndices_[7] * 0x2000 + (addr - 0xA000);
             } else if (0xC000 <= addr && addr <= 0xDFFF) {
-                bankAddr = (prgRomBanks_ - 2) * 0x2000 + (addr - 0xC000);
+                bankAddr = (prgRomBanks_ * 2 - 2) * 0x2000 + (addr - 0xC000);
             } else {
-                bankAddr = (prgRomBanks_ - 1) * 0x2000 + (addr - 0xE000);
+                bankAddr = (prgRomBanks_ * 2 - 1) * 0x2000 + (addr - 0xE000);
             }
         } else {
             if (0x8000 <= addr && addr <= 0x9FFF) {
-                bankAddr = (prgRomBanks_ - 2) * 0x2000 + (addr - 0x8000);
+                bankAddr = (prgRomBanks_ * 2 - 2) * 0x2000 + (addr - 0x8000);
             } else if (0xA000 <= addr && addr <= 0xBFFF) {
                 bankAddr = romIndices_[7] * 0x2000 + (addr - 0xA000);
             } else if (0xC000 <= addr && addr <= 0xDFFF) {
                 bankAddr = romIndices_[6] * 0x2000 + (addr - 0xC000);
             } else {
-                bankAddr = (prgRomBanks_ - 1) * 0x2000 + (addr - 0xE000);
+                bankAddr = (prgRomBanks_ * 2 - 1) * 0x2000 + (addr - 0xE000);
             }
         }
         return prgRom_->at(bankAddr % prgRom_->size());
@@ -84,10 +87,16 @@ namespace nes_core {
             if (addr % 2 == 0) {
                 irqLatch_ = value;
             } else {
+                irqReload_ = true;
                 irqCounter_ = 0;
             }
         } else if (0xE000 <= addr && addr <= 0xFFFF) {
-            irqDisabled_ = addr % 2 == 0;
+            if (addr % 2 == 0) {
+                irqDisabled_ = true;
+                irqFlag_ = false;
+            } else {
+                irqDisabled_ = false;
+            }
         }
     }
 
@@ -147,5 +156,37 @@ namespace nes_core {
 
     Mirroring Mapper004::mirroring() const {
         return nametableMode_ == 0 ? Mirroring::VERTICAL : Mirroring::HORIZONTAL;
+    }
+
+    bool Mapper004::irqAsserted() const {
+        return irqFlag_;
+    }
+
+    void Mapper004::notifyA12(const std::uint16_t addr) {
+        if (bus_ == nullptr) {
+            return;
+        }
+        if (addr & 0x1000) {
+            if (a12LowCycle_ > 0) {
+                if (bus_->cpuCycles() - a12LowCycle_ >= 3) {
+                    clockIrqCounter();
+                }
+                a12LowCycle_ = 0;
+            }
+        } else if (a12LowCycle_ == 0) {
+            a12LowCycle_ = bus_->cpuCycles();
+        }
+    }
+
+    void Mapper004::clockIrqCounter() {
+        if (irqCounter_ == 0 || irqReload_) {
+            irqCounter_ = irqLatch_;
+        } else {
+            --irqCounter_;
+        }
+        if (irqCounter_ == 0 && !irqDisabled_) {
+            irqFlag_ = true;
+        }
+        irqReload_ = false;
     }
 }

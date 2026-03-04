@@ -165,6 +165,16 @@ namespace nes_core {
         return 0;
     }
 
+    void Cartridge::notifyA12(const std::uint16_t addr) const {
+        if (mapper_ != nullptr) {
+            mapper_->notifyA12(addr);
+        }
+    }
+
+    bool Cartridge::irqAsserted() const {
+        return mapper_ != nullptr && mapper_->irqAsserted();
+    }
+
     Mirroring Cartridge::mirroring() const {
         if (mapper_) {
             if (const auto m = mapper_->mirroring(); m != Mirroring::INVALID) {

@@ -193,11 +193,15 @@ namespace nes_core {
                     pendingVramAddr_ = regs_.t;
                 } else {
                     regs_.v = regs_.t;
+                    bus_->notifyA12(regs_.v & PPU_MEM_MASK);
                 }
             }
         } else if (index == 7) {  // PPU_DATA
             ppuWrite(regs_.v, value);
             regs_.v += regs_.vRamIncrement();
+            if (!regs_.renderingEnabled() || scanline_ >= 240) {
+                bus_->notifyA12(regs_.v & PPU_MEM_MASK);
+            }
         }
         ppuBusLatch_ = value;
         refreshPPUBusDecay(0xFF);
@@ -558,9 +562,11 @@ namespace nes_core {
     std::uint8_t PPU::ppuRead(std::uint16_t addr) const {
         addr &= PPU_MEM_MASK;
         if (addr < CHR_ROM_BANK_SIZE) {
+            bus_->notifyA12(addr);
             return bus_->ppuRead(addr);
         }
         if (addr < PPU_PALETTE_START) {
+            bus_->notifyA12(addr);
             if (addr >= PPU_NAMETABLE_MIRRO_START) {
                 addr -= PPU_NAMETABLE_SIZE;
             }
@@ -610,11 +616,18 @@ namespace nes_core {
                     if (cycle_ == 257) {
                         copyScrollX();
                     }
+                    switch ((cycle_ - 257) % 8) {
+                        case 0: fetchNametableByte(); break;
+                        case 2: fetchAttributeTableByte(); break;
+                        default: break;
+                    }
                 } else if (321 <= cycle_ && cycle_ <= 336) {
                     updateShiftRegisters();
                     fetchBackgroundTileData();
                 } else if (337 <= cycle_ && cycle_ <= 340) {
-                    fetchNametableByte();
+                    if (cycle_ % 2 == 1) {
+                        fetchNametableByte();
+                    }
                 }
                 // Sprites
                 if (1 <= cycle_ && cycle_ <= 64) {
@@ -658,11 +671,18 @@ namespace nes_core {
                     if (cycle_ >= 280 && cycle_ <= 304) {
                         copyScrollY();
                     }
+                    switch ((cycle_ - 257) % 8) {
+                        case 0: fetchNametableByte(); break;
+                        case 2: fetchAttributeTableByte(); break;
+                        default: break;
+                    }
                 } else if (321 <= cycle_ && cycle_ <= 336) {
                     updateShiftRegisters();
                     fetchBackgroundTileData();
                 } else if (337 <= cycle_ && cycle_ <= 340) {
-                    fetchNametableByte();
+                    if (cycle_ % 2 == 1) {
+                        fetchNametableByte();
+                    }
                 }
                 // Sprites
                 if (1 <= cycle_ && cycle_ <= 64) {

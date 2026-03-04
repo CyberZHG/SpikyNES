@@ -27,6 +27,9 @@ namespace nes_core {
         virtual void ppuWrite(std::uint16_t addr, std::uint8_t value) = 0;
 
         [[nodiscard]] virtual Mirroring mirroring() const { return Mirroring::INVALID; }
+        [[nodiscard]] virtual bool irqAsserted() const { return false; }
+
+        virtual void notifyA12(std::uint16_t) {}
 
         virtual void reset() {
             prgRomIndex_ = 0;

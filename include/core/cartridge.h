@@ -49,8 +49,11 @@ namespace nes_core {
         [[nodiscard]] std::uint8_t ppuRead(std::uint16_t addr) const;
         void ppuWrite(std::uint16_t addr, std::uint8_t value);
 
+        void notifyA12(std::uint16_t addr) const;
+
         [[nodiscard]] Mirroring mirroring() const;
-        void setMirroring(Mirroring m) { mirroring_ = m; }
+        [[nodiscard]] bool irqAsserted() const;
+        void setMirroring(const Mirroring m) { mirroring_ = m; }
 
         [[nodiscard]] const INESHeader& header() const { return header_; }
 

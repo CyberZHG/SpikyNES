@@ -89,3 +89,17 @@ download_dir.mkdir(parents=True, exist_ok=True)
 for url in APU_TEST_FILE_URLS:
     filename = url.split("/")[-1]
     urllib.request.urlretrieve(url, download_dir / filename)
+
+MMC3_TEST_FILE_URLS = [
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/master/mmc3_test_2/rom_singles/1-clocking.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/master/mmc3_test_2/rom_singles/2-details.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/master/mmc3_test_2/rom_singles/3-A12_clocking.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/master/mmc3_test_2/rom_singles/4-scanline_timing.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/master/mmc3_test_2/rom_singles/5-MMC3.nes",
+    "https://raw.githubusercontent.com/christopherpow/nes-test-roms/master/mmc3_test_2/rom_singles/6-MMC3_alt.nes",
+]
+download_dir = CURRENT_DIR / "mapper" / "mmc3"
+download_dir.mkdir(parents=True, exist_ok=True)
+for url in MMC3_TEST_FILE_URLS:
+    filename = url.split("/")[-1]
+    urllib.request.urlretrieve(url, download_dir / filename)

@@ -18,9 +18,13 @@ namespace nes_core {
         void ppuWrite(std::uint16_t addr, std::uint8_t value) override;
 
         [[nodiscard]] Mirroring mirroring() const override;
+        [[nodiscard]] bool irqAsserted() const override;
+
+        void notifyA12(std::uint16_t addr) override;
 
     private:
         [[nodiscard]] int chrBankAddr(std::uint16_t addr) const;
+        void clockIrqCounter();
 
         std::uint8_t bankToUpdate_ = 0;
         std::uint8_t prgRomBankMode_ = 0;
@@ -29,13 +33,16 @@ namespace nes_core {
 
         std::array<std::uint8_t, 8> romIndices_{};
 
-        std::int64_t lastWriteCycle_ = -2;
         bool writeProtected_ = false;
         bool prgRamEnabled_ = false;
 
         std::uint8_t irqLatch_ = 0;
         std::uint8_t irqCounter_ = 0;
-        std::uint8_t irqDisabled_ = false;
+        bool irqDisabled_ = false;
+        bool irqReload_ = false;
+        bool irqFlag_ = false;
+
+        std::uint64_t a12LowCycle_ = 0;
     };
 
     using MapperMMC3 = Mapper004;
