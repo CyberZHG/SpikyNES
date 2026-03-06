@@ -87,6 +87,18 @@ namespace nes_core {
         return cpu_->cycles();
     }
 
+    std::int32_t Bus::ppuScanline() const {
+        return ppu_->scanline();
+    }
+
+    std::int32_t Bus::ppuCycle() const {
+        return ppu_->cycle();
+    }
+
+    std::int64_t Bus::ppuFrame() const {
+        return ppu_->frame();
+    }
+
     void Bus::notifyA12(const std::uint16_t addr) const {
         cartridge_->notifyA12(addr);
     }

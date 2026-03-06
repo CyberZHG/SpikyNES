@@ -1,6 +1,8 @@
 #include "core/bus.h"
 #include "core/cpu.h"
 
+#include <iostream>
+
 namespace nes_core {
     enum class OpCode {
         // Load/Store

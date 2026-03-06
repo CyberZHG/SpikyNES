@@ -42,7 +42,7 @@ namespace nes_core {
         bool irqReload_ = false;
         bool irqFlag_ = false;
 
-        std::uint64_t a12LowCycle_ = 0;
+        std::int64_t a12LowCycle_ = 0;
     };
 
     using MapperMMC3 = Mapper004;

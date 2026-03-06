@@ -173,7 +173,7 @@ namespace nes_core {
     private:
         Bus* bus_ = nullptr;
         APURegisters regs_{};
-        std::uint64_t cycle_ = 0;
+        std::int64_t cycle_ = 0;
         float outputBuffer_ = 0.0;
         int frameResetCountdown_ = -1;
     };

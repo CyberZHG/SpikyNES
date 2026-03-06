@@ -144,6 +144,9 @@ namespace nes_core {
                 regs_.ppuDataBuffer = ppuRead(regs_.v - 0x1000);
             }
             regs_.v += regs_.vRamIncrement();
+            if (!regs_.renderingEnabled() || scanline_ >= 240) {
+                bus_->notifyA12(regs_.v & PPU_MEM_MASK);
+            }
         }
         ppuBusLatch_ = value;
         if (index == 2) {
@@ -517,34 +520,40 @@ namespace nes_core {
         if (scanline_ == 261) {
             scanline = 0xFF;
         }
+        const auto spriteY = secondaryOAM_[spriteIndex * 4];
+        const auto spriteTile = secondaryOAM_[spriteIndex * 4 + 1];
+        const auto spriteAttr = secondaryOAM_[spriteIndex * 4 + 2];
+        int row = scanline - spriteY;
+        if (spriteAttr & 0x80) {
+            row = spriteHeight - 1 - row;
+        }
+        int patternTable;
+        int tile = spriteTile;
+        if (spriteHeight == 8) {
+            patternTable = regs_.spritePatternTableAddr();
+        } else {
+            patternTable = (tile & 1) ? 0x1000 : 0x0000;
+            tile &= 0xFE;
+            if (row >= 8) {
+                ++tile;
+                row -= 8;
+            }
+        }
+        const auto patternAddr = patternTable + tile * 16 + row;
         if (spriteIndex < spriteCount_) {
-            sprites_[spriteIndex].y = secondaryOAM_[spriteIndex * 4];
-            sprites_[spriteIndex].tile = secondaryOAM_[spriteIndex * 4 + 1];
-            sprites_[spriteIndex].attribute = secondaryOAM_[spriteIndex * 4 + 2];
+            sprites_[spriteIndex].y = spriteY;
+            sprites_[spriteIndex].tile = spriteTile;
+            sprites_[spriteIndex].attribute = spriteAttr;
             sprites_[spriteIndex].x = secondaryOAM_[spriteIndex * 4 + 3];
-            int row = scanline - sprites_[spriteIndex].y;
-            if (sprites_[spriteIndex].verticalFlip()) {
-                row = spriteHeight - 1 - row;
-            }
-            auto patternTable = 0;
-            auto tile = sprites_[spriteIndex].tile;
-            if (spriteHeight == 8) {
-                patternTable = regs_.spritePatternTableAddr();
-            } else {
-                patternTable = (tile & 1) ? 0x1000 : 0x0000;
-                tile &= 0xFE;
-                if (row >= 8) {
-                    ++tile;
-                    row -= 8;
-                }
-            }
-            const auto patternAddr = patternTable + tile * 16 + row;
             sprites_[spriteIndex].patternLo = ppuRead(patternAddr);
             sprites_[spriteIndex].patternHi = ppuRead(patternAddr + 8);
             if (sprites_[spriteIndex].horizontalFlip()) {
                 sprites_[spriteIndex].patternLo = reverseBits(sprites_[spriteIndex].patternLo);
                 sprites_[spriteIndex].patternHi = reverseBits(sprites_[spriteIndex].patternHi);
             }
+        } else {
+            (void)ppuRead(patternAddr);
+            (void)ppuRead(patternAddr + 8);
         }
     }
 

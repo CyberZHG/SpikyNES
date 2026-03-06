@@ -32,6 +32,10 @@ namespace nes_core {
         void cpuStall(int cycles) const;
         [[nodiscard]] std::int64_t cpuCycles() const;
 
+        [[nodiscard]] std::int32_t ppuScanline() const;
+        [[nodiscard]] std::int32_t ppuCycle() const;
+        [[nodiscard]] std::int64_t ppuFrame() const;
+
         void notifyA12(std::uint16_t addr) const;
 
         [[nodiscard]] bool irqAsserted() const;

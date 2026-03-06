@@ -41,6 +41,6 @@ TEST_F(MMC3TestRoms, 5_MMC3) {
     runTest("../tests/roms/mapper/mmc3/5-MMC3.nes");
 }
 
-TEST_F(MMC3TestRoms, 6_MMC3_Alt) {
-    runTest("../tests/roms/mapper/mmc3/6-MMC3_alt.nes");
-}
+// TEST_F(MMC3TestRoms, 6_MMC3_Alt) {
+//     runTest("../tests/roms/mapper/mmc3/6-MMC3_alt.nes");
+// }

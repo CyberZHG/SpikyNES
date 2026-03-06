@@ -168,7 +168,7 @@ namespace nes_core {
         }
         if (addr & 0x1000) {
             if (a12LowCycle_ > 0) {
-                if (bus_->cpuCycles() - a12LowCycle_ >= 3) {
+                if (bus_->cpuCycles() >= a12LowCycle_ + 2) {
                     clockIrqCounter();
                 }
                 a12LowCycle_ = 0;
@@ -184,9 +184,9 @@ namespace nes_core {
         } else {
             --irqCounter_;
         }
+        irqReload_ = false;
         if (irqCounter_ == 0 && !irqDisabled_) {
             irqFlag_ = true;
         }
-        irqReload_ = false;
     }
 }
