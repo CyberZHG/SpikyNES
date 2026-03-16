@@ -200,6 +200,7 @@ namespace nes_core {
                 }
             }
         } else if (index == 7) {  // PPU_DATA
+            bus_->notifyA12(regs_.v & PPU_MEM_MASK);
             ppuWrite(regs_.v, value);
             regs_.v += regs_.vRamIncrement();
             if (!regs_.renderingEnabled() || scanline_ >= 240) {
@@ -523,7 +524,7 @@ namespace nes_core {
         const auto spriteY = secondaryOAM_[spriteIndex * 4];
         const auto spriteTile = secondaryOAM_[spriteIndex * 4 + 1];
         const auto spriteAttr = secondaryOAM_[spriteIndex * 4 + 2];
-        int row = scanline - spriteY;
+        int row = static_cast<uint8_t>(scanline - spriteY) & (spriteHeight - 1);
         if (spriteAttr & 0x80) {
             row = spriteHeight - 1 - row;
         }
@@ -606,6 +607,9 @@ namespace nes_core {
         if (vramAddrUpdateDelay_ > 0) {
             if (--vramAddrUpdateDelay_ == 0) {
                 regs_.v = pendingVramAddr_;
+                if (!regs_.renderingEnabled() || (scanline_ >= 240 && scanline_ != 261)) {
+                    bus_->notifyA12(regs_.v & PPU_MEM_MASK);
+                }
             }
         }
         updateVBlankNMI();

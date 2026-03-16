@@ -168,7 +168,7 @@ namespace nes_core {
         }
         if (addr & 0x1000) {
             if (a12LowCycle_ > 0) {
-                if (bus_->cpuCycles() >= a12LowCycle_ + 2) {
+                if (bus_->cpuCycles() >= a12LowCycle_ + 3) {
                     clockIrqCounter();
                 }
                 a12LowCycle_ = 0;
