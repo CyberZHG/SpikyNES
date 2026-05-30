@@ -32,7 +32,7 @@ namespace nes_ui {
             SDL_Quit();
             return false;
         }
-        // SDL_SetRenderVSync(renderer_, 1);
+        SDL_SetRenderVSync(renderer_, 1);
 
         texture_ = SDL_CreateTexture(
             renderer_,
@@ -245,47 +245,81 @@ namespace nes_ui {
     void SDLEmulator::render() {
         constexpr double ppuHz = 1789773.0 * 3.0;
         constexpr double audioCycles = ppuHz / 44100.0;
+        constexpr double nesFrameTime = 29780.5 / 1789773.0;
+
         if (state_ == EmulationState::Idle) {
             SDL_RenderClear(renderer_);
             ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer_);
             SDL_RenderPresent(renderer_);
-            SDL_Delay(16);
             perfCounter_ = SDL_GetPerformanceCounter();
-        } else if (state_ == EmulationState::Running) {
-            const auto current_time = SDL_GetPerformanceCounter();
-            const auto frequency = static_cast<double>(SDL_GetPerformanceFrequency());
-            const double elapsed = static_cast<double>(current_time - perfCounter_) * 1000.0 / frequency;
-            perfCounter_ = SDL_GetPerformanceCounter();
+            return;
+        }
+        if (state_ != EmulationState::Running) {
+            return;
+        }
 
-            cycleAccumulator_ += elapsed * ppuHz / 1000.0;
-            const auto cyclesToRun = static_cast<int64_t>(cycleAccumulator_);
-            cycleAccumulator_ -= static_cast<double>(cyclesToRun);
+        double refresh = 60.0;
+        if (const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(window_))) {
+            if (mode->refresh_rate > 1.0f) refresh = static_cast<double>(mode->refresh_rate);
+        }
+        const double refreshInterval = 1.0 / refresh;
+        const bool vsync = refresh >= 58.0;
+        if (vsync != vsyncOn_) {
+            SDL_SetRenderVSync(renderer_, vsync ? 1 : 0);
+            vsyncOn_ = vsync;
+        }
 
-            auto prevFrame = emulator_.ppu().frame();
-            bool newFrame = false;
-            for (int64_t i = 0; i < cyclesToRun; ++i) {
+        const auto frequency = static_cast<double>(SDL_GetPerformanceFrequency());
+        const auto current_time = SDL_GetPerformanceCounter();
+        double elapsed = static_cast<double>(current_time - perfCounter_) / frequency;
+        perfCounter_ = current_time;
+        if (elapsed > 0.1) {
+            elapsed = 0.1;
+        }
+        frameAccumulator_ += elapsed;
+
+        int frames = 0;
+        while (frameAccumulator_ >= nesFrameTime && frames < 4) {
+            frameAccumulator_ -= nesFrameTime;
+            ++frames;
+            const auto startFrame = emulator_.ppu().frame();
+            while (emulator_.ppu().frame() == startFrame) {
                 emulator_.step();
                 audioSampleCounter_ += 1.0;
                 if (audioSampleCounter_ >= audioCycles) {
                     audioSampleCounter_ -= audioCycles;
                     audioBuffer_.push_back(emulator_.apu().outputBuffer());
                 }
-                const auto frame = emulator_.ppu().frame();
-                if (frame != prevFrame) {
-                    SDL_PutAudioStreamData(audioStream_, audioBuffer_.data(), audioBuffer_.size() * sizeof(float));
-                    audioBuffer_.clear();
-                    SDL_UpdateTexture(texture_, nullptr, emulator_.ppu().frameBuffer().data(), 256 * sizeof(std::uint32_t));
-                    prevFrame = frame;
-                    newFrame = true;
-                }
             }
-            if (newFrame) {
-                SDL_RenderClear(renderer_);
-                SDL_RenderTexture(renderer_, texture_, nullptr, nullptr);
-                SDL_RenderPresent(renderer_);
-            } else {
-                SDL_Delay(1);
+            SDL_PutAudioStreamData(audioStream_, audioBuffer_.data(), audioBuffer_.size() * sizeof(float));
+            audioBuffer_.clear();
+            SDL_UpdateTexture(texture_, nullptr, emulator_.ppu().frameBuffer().data(), 256 * sizeof(std::uint32_t));
+        }
+        if (frames == 4) {
+            frameAccumulator_ = 0.0;
+        }
+
+        const auto workEnd = SDL_GetPerformanceCounter();
+        const double workSec = static_cast<double>(workEnd - current_time) / frequency;
+
+        if (vsync || frames > 0) {
+            SDL_RenderClear(renderer_);
+            SDL_RenderTexture(renderer_, texture_, nullptr, nullptr);
+            SDL_RenderPresent(renderer_);
+        }
+
+        double sleepSec;
+        if (vsync) {
+            double margin = workSec + 0.003;
+            if (margin > refreshInterval * 0.6) {
+                margin = refreshInterval * 0.6;
             }
+            sleepSec = refreshInterval - margin;
+        } else {
+            sleepSec = nesFrameTime - frameAccumulator_;
+        }
+        if (sleepSec > 0.0) {
+            SDL_DelayPrecise(static_cast<Uint64>(sleepSec * 1e9));
         }
     }
 

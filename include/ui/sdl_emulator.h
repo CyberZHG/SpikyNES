@@ -29,8 +29,9 @@ namespace nes_ui {
         bool pendingFileDialog_ = false;
         EmulationState state_ = EmulationState::Idle;
         std::uint64_t perfCounter_ = 0;
-        double cycleAccumulator_ = 0.0;
+        double frameAccumulator_ = 0.0;
         double audioSampleCounter_ = 0.0;
+        bool vsyncOn_ = true;
         std::vector<float> audioBuffer_{};
 
         nes_core::Emulator emulator_{};
