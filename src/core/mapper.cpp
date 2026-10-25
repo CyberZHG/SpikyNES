@@ -4,6 +4,7 @@
 #include "core/mapper/mapper_002.h"
 #include "core/mapper/mapper_003.h"
 #include "core/mapper/mapper_004.h"
+#include "core/mapper/mapper_007.h"
 
 namespace nes_core {
     std::unique_ptr<Mapper> Mapper::create(
@@ -22,6 +23,7 @@ namespace nes_core {
             case 2: mapper = std::make_unique<Mapper002>(); break;
             case 3: mapper = std::make_unique<Mapper003>(); break;
             case 4: mapper = std::make_unique<Mapper004>(); break;
+            case 7: mapper = std::make_unique<Mapper007>(); break;
             default: break;
         }
         if (mapper != nullptr) {

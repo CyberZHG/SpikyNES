@@ -57,6 +57,7 @@ namespace nes_core {
         [[nodiscard]] bool irqAsserted() const;
         void setMirroring(const Mirroring m) { mirroring_ = m; }
 
+        INESHeader& header() { return header_; }
         [[nodiscard]] const INESHeader& header() const { return header_; }
 
     private:
