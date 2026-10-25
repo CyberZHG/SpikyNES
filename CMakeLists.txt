@@ -185,6 +185,13 @@ if(SPIKY_NES_ENABLE_UI)
     )
     FetchContent_MakeAvailable(imgui)
 
+    FetchContent_Declare(
+            tinypng
+            GIT_REPOSITORY https://github.com/CyberZHG/TinyPNG.git
+            GIT_TAG v1.0.0
+    )
+    FetchContent_MakeAvailable(tinypng)
+
     add_executable(SpikyNesUI
             src/ui/main.cpp
             include/ui/sdl_emulator.h
@@ -208,6 +215,7 @@ if(SPIKY_NES_ENABLE_UI)
 
     target_link_libraries(SpikyNesUI
             PRIVATE SpikyNesCore SDL3::SDL3
+            PRIVATE TinyPNG
     )
 endif()
 

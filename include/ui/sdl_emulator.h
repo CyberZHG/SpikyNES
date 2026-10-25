@@ -25,6 +25,8 @@ namespace nes_ui {
         void render();
 
     private:
+        void saveScreenshot() const;
+
         bool running_ = true;
         bool pendingFileDialog_ = false;
         EmulationState state_ = EmulationState::Idle;

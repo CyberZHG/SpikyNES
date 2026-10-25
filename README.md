@@ -3,7 +3,15 @@ SpikyNES
 
 A toy NES emulator.
 
-Supported mappers: 0 (NROM), 1 (MMC1), 2 (UxROM), 3 (CNROM), 4 (MMC3).
+## Supported Mappers
+
+| ID | Name  |                                      Screenshot                                      |
+|:--:|:-----:|:------------------------------------------------------------------------------------:|
+| 0  | NROM  | ![](https://github.com/user-attachments/assets/63170c28-883c-48d6-827e-87b49db437c5) |
+| 1  | MMC1  | ![](https://github.com/user-attachments/assets/ccb4ddde-9d73-4f12-b29c-6b3b414fa06d) |
+| 2  | UxROM | ![](https://github.com/user-attachments/assets/2f4fcfb2-3329-44e3-9857-db3a39879625) |
+| 3  | CNROM | ![](https://github.com/user-attachments/assets/d37bb1dd-ef5e-47e6-ae39-c1a33b4791c6) |
+| 4  | MMC3  | ![](https://github.com/user-attachments/assets/f243b95f-f529-4e86-b120-5d04fcf54e39) |
 
 ## Build
 

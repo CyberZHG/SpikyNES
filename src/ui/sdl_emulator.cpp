@@ -3,7 +3,13 @@
 
 #include <iostream>
 #include <cstdio>
+#include <cstdint>
+#include <ctime>
+#include <span>
+#include <string>
+#include <vector>
 #include <imgui.h>
+#include <tiny_png/tiny_png.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_sdlrenderer3.h>
 
@@ -175,6 +181,11 @@ namespace nes_ui {
                     case SDLK_K:
                         emulator_.controller1().press(nes_core::Controller::Button::B);
                         break;
+                    case SDLK_C:
+                        if (!event.key.repeat) {
+                            saveScreenshot();
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -320,6 +331,34 @@ namespace nes_ui {
         }
         if (sleepSec > 0.0) {
             SDL_DelayPrecise(static_cast<Uint64>(sleepSec * 1e9));
+        }
+    }
+
+    void SDLEmulator::saveScreenshot() const {
+        const auto& frame = emulator_.ppu().frameBuffer();
+
+        std::vector<std::uint8_t> rgb(frame.size() * 3);
+        for (std::size_t i = 0; i < frame.size(); ++i) {
+            rgb[i * 3] = static_cast<std::uint8_t>((frame[i] & 0x00FF0000) >> 16);
+            rgb[i * 3 + 1] = static_cast<std::uint8_t>((frame[i] & 0x0000FF00) >> 8);
+            rgb[i * 3 + 2] = static_cast<std::uint8_t>(frame[i] & 0x000000FF);
+        }
+
+        char name[64] = {};
+        const std::time_t now = std::time(nullptr);
+        std::tm tm{};
+#ifdef _WIN32
+        localtime_s(&tm, &now);
+#else
+        localtime_r(&now, &tm);
+#endif
+        std::strftime(name, sizeof(name), "screenshot_%Y%m%d_%H%M%S.png", &tm);
+
+        const std::span<const std::uint8_t> pixels(rgb.data(), rgb.size());
+        if (tiny_png::save_image(name, 256, 240, pixels, tiny_png::ColorType::RGB)) {
+            std::cout << "Saved screenshot: " << name << std::endl;
+        } else {
+            std::cerr << "Failed to save screenshot: " << name << std::endl;
         }
     }
 
