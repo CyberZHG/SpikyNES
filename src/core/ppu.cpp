@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "core/ppu.h"
 #include "core/bus.h"
 

@@ -1,15 +1,11 @@
-#include "test_image_utils.h"
-
 #include <span>
-
+#include "test_image_utils.h"
 #include "tiny_png/tiny_png.h"
-
 using namespace tiny_png;
 
 bool writePNG(const std::string& path, const int width, const int height, const std::uint8_t* data) {
     const std::span<const std::uint8_t> pixels(data, static_cast<std::size_t>(width) * height * 3);
-    return save_image(path, static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height), pixels,
-                      ColorType::RGB);
+    return save_image(path, static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height), pixels, ColorType::RGB);
 }
 
 bool writePNG(const std::string& path, const std::array<std::uint32_t, 256 * 240>& data) {

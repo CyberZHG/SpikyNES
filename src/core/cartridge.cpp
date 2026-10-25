@@ -1,6 +1,7 @@
 #include "core/cartridge.h"
 #include "core/constants.h"
 
+#include <array>
 #include <fstream>
 #include <ranges>
 #include <algorithm>

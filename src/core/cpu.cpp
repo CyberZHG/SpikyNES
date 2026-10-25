@@ -2,6 +2,7 @@
 #include "core/cpu.h"
 
 #include <iostream>
+#include <stdexcept>
 
 namespace nes_core {
     enum class OpCode {

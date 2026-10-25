@@ -1,6 +1,7 @@
 #ifndef SPIKYNES_MAPPER_004_H
 #define SPIKYNES_MAPPER_004_H
 
+#include <array>
 #include "core/mapper.h"
 
 namespace nes_core {
