@@ -87,7 +87,9 @@ class TestEmulator(TestCase):
         self.emulator.run_frame()
         self.emulator.run_frame()
         frame = self.emulator.frame_buffer()
-        self.assertEqual(spiky_nes.SCREEN_WIDTH * spiky_nes.SCREEN_HEIGHT * 4, len(frame))
+        self.assertEqual(
+            spiky_nes.SCREEN_WIDTH * spiky_nes.SCREEN_HEIGHT * 4, len(frame)
+        )
         self.assertEqual(bytes([0x3C, 0xBC, 0xFC, 0xFF]) * (len(frame) // 4), frame)
 
     def test_audio_samples(self):
