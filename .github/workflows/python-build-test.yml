@@ -1,0 +1,45 @@
+name: Python Build & Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [ "3.9", "3.13" ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "latest"
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Download Test ROMs
+        run: python tests/roms/download_test_files.py
+
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Lint
+        run: |
+          black --check python/wrapper python/tests
+          isort --check-only python/wrapper python/tests
+          flake8 python/wrapper python/tests
+
+      - name: Test
+        run: pytest -v python/tests

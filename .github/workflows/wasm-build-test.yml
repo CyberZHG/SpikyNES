@@ -1,0 +1,44 @@
+name: WASM Build & Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "latest"
+
+      - name: Install Emscripten SDK
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download Test ROMs
+        run: python3 tests/roms/download_test_files.py
+
+      - name: Build
+        working-directory: wasm
+        run: |
+          npm ci
+          npm run build
+
+      - name: Lint
+        working-directory: wasm
+        run: npm run lint
+
+      - name: Test
+        working-directory: wasm
+        run: npm test

@@ -33,6 +33,7 @@ namespace nes_core {
         [[nodiscard]] const Controller& controller2() const { return controller2_; }
 
         bool loadROM(const std::string& path);
+        bool loadROMFromMemory(const std::vector<std::uint8_t>& buffer);
         void reset();
 
         void run(double milliseconds);

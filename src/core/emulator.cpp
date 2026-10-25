@@ -13,6 +13,14 @@ namespace nes_core {
         return true;
     }
 
+    bool Emulator::loadROMFromMemory(const std::vector<std::uint8_t>& buffer) {
+        if (!cartridge_.loadFromMemory(buffer)) {
+            return false;
+        }
+        reset();
+        return true;
+    }
+
     void Emulator::reset() {
         cartridge_.reset();
         cpu_.reset();

@@ -30,6 +30,7 @@ namespace nes_core {
         explicit Cartridge(Bus* bus);
 
         bool loadFromFile(const std::string& path);
+        bool loadFromMemory(const std::vector<std::uint8_t>& buffer);
         void reset();
 
         /** Initialize PRG ROM with given size (for testing). */

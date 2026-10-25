@@ -1,0 +1,54 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "spiky-nes"
+version = "0.1.0"
+description = "A toy NES emulator."
+requires-python = ">=3.8"
+readme = "python/README.md"
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/CyberZHG/SpikyNES"
+Repository = "https://github.com/CyberZHG/SpikyNES"
+Issues = "https://github.com/CyberZHG/SpikyNES/issues"
+
+[tool.scikit-build]
+build-dir = "cmake-build-python/{wheel_tag}"
+build.verbose = true
+
+[tool.scikit-build.cmake.define]
+SPIKY_NES_BIND_PYTHON = "ON"
+
+[tool.scikit-build.sdist]
+exclude = [
+    ".*",
+    "build*",
+    "cmake-build*",
+    "dist",
+    "tests",
+    "wasm",
+    "*.md",
+    "python/tests",
+]
+include = [
+    "python/README.md",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "black",
+    "isort",
+    "flake8",
+]
+
+[tool.isort]
+profile = "black"

@@ -11,6 +11,8 @@ option(SPIKY_NES_ENABLE_ROM_TESTS "Build ROM tests" OFF)
 option(SPIKY_NES_ENABLE_STRICT "Use strict compile options" OFF)
 option(SPIKY_NES_ENABLE_COVERAGE "Enable coverage reporting" OFF)
 option(SPIKY_NES_ENABLE_UI "Build SDL UI" OFF)
+option(SPIKY_NES_BIND_PYTHON "Enable Python binding" OFF)
+option(SPIKY_NES_BIND_ES "Enable ECMAScript binding" OFF)
 
 if(APPLE)
     set(ENV{PKG_CONFIG_PATH} "/opt/homebrew/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
@@ -90,8 +92,18 @@ if(SPIKY_NES_ENABLE_TESTS)
 
     FetchContent_MakeAvailable(googletest)
 
+    FetchContent_Declare(
+            tinypng
+            GIT_REPOSITORY https://github.com/CyberZHG/TinyPNG.git
+            GIT_TAG v1.0.0
+    )
+
+    FetchContent_MakeAvailable(tinypng)
+
     add_executable(runTests
             tests/test_main.cpp
+            tests/core/test_image_utils.h
+            tests/core/test_image_utils.cpp
             tests/core/cpu/test_cpu_utils.cpp
             tests/core/cpu/test_cpu_utils.h
             tests/core/cpu/test_load.cpp
@@ -149,6 +161,7 @@ if(SPIKY_NES_ENABLE_TESTS)
     target_link_libraries(runTests
             PRIVATE SpikyNesCore
             PRIVATE gtest gtest_main
+            PRIVATE TinyPNG
     )
 
     add_test(NAME SpikyNesCoreTests COMMAND runTests)
@@ -195,5 +208,47 @@ if(SPIKY_NES_ENABLE_UI)
 
     target_link_libraries(SpikyNesUI
             PRIVATE SpikyNesCore SDL3::SDL3
+    )
+endif()
+
+if(SPIKY_NES_BIND_PYTHON)
+    include(FetchContent)
+    FetchContent_Declare(
+            pybind11
+            GIT_REPOSITORY https://github.com/pybind/pybind11.git
+            GIT_TAG v3.0
+    )
+    FetchContent_MakeAvailable(pybind11)
+
+    pybind11_add_module(_core
+            python/binding.cpp
+    )
+    target_link_libraries(_core
+            PRIVATE SpikyNesCore
+    )
+    install(TARGETS _core
+            LIBRARY DESTINATION spiky_nes)
+    install(FILES python/wrapper/__init__.py DESTINATION spiky_nes)
+endif()
+
+if(SPIKY_NES_BIND_ES)
+    add_executable(SpikyNesWASM
+            wasm/binding.cpp
+    )
+
+    target_link_libraries(SpikyNesWASM
+            PRIVATE SpikyNesCore
+    )
+
+    target_compile_options(SpikyNesWASM PRIVATE "-O3")
+
+    set_target_properties(SpikyNesWASM PROPERTIES SUFFIX ".js")
+
+    target_link_options(SpikyNesWASM PRIVATE
+            "--bind"
+            "-sMODULARIZE=1"
+            "-sEXPORT_ES6=1"
+            "-sEXPORT_NAME=SpikyNesWASMModule"
+            "-sALLOW_MEMORY_GROWTH=1"
     )
 endif()

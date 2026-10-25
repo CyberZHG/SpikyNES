@@ -1,0 +1,26 @@
+{
+  "name": "spiky-nes",
+  "version": "0.1.0",
+  "description": "A toy NES emulator.",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "wasm/SpikyNesWASM.js",
+    "wasm/SpikyNesWASM.wasm"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "mocha": "^11.7.5"
+  },
+  "scripts": {
+    "build": "bash build.sh",
+    "lint": "npx eslint index.js test/**/*.js",
+    "test": "mocha test/**/*.js"
+  },
+  "repository": "github:CyberZHG/SpikyNES"
+}

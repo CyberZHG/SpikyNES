@@ -16,6 +16,10 @@ namespace nes_core {
             return false;
         }
         const std::vector<std::uint8_t> buffer{std::istreambuf_iterator(file), std::istreambuf_iterator<char>()};
+        return loadFromMemory(buffer);
+    }
+
+    bool Cartridge::loadFromMemory(const std::vector<std::uint8_t>& buffer) {
         constexpr std::array<std::uint8_t, 4> magic = {'N', 'E', 'S', 0x1A};
         const auto magicIt = std::ranges::search(buffer, magic).begin();
         if (magicIt == buffer.end()) {

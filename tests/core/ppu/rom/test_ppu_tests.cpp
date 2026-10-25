@@ -4,6 +4,7 @@
 
 #include "core/emulator.h"
 #include "../test_ppu_utils.h"
+#include "../../test_image_utils.h"
 
 using namespace nes_core;
 
@@ -12,11 +13,11 @@ protected:
     Emulator emulator;
 
     static void compareWithExpectedOutput(const std::string& actualPath) {
-        const std::string expectedPath = "../tests/roms/ppu/blargg_ppu_tests_expected.ppm";
+        const std::string expectedPath = "../tests/roms/ppu/blargg_ppu_tests_expected.png";
         int expectedWidth = 0, expectedHeight = 0;
-        const auto expected = readPPM(expectedPath, expectedWidth, expectedHeight);
+        const auto expected = readPNG(expectedPath, expectedWidth, expectedHeight);
         int actualWidth = 0, actualHeight = 0;
-        const auto actual = readPPM(actualPath, actualWidth, actualHeight);
+        const auto actual = readPNG(actualPath, actualWidth, actualHeight);
         ASSERT_EQ(actualWidth, expectedWidth);
         ASSERT_EQ(actualHeight, expectedHeight);
         EXPECT_EQ(actual, expected);

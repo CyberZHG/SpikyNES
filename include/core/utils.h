@@ -27,26 +27,6 @@ namespace nes_core {
     bool writePGM(const std::string& path, int width, int height, const std::uint8_t* data, bool binary = true);
 
     /**
-     * Write a PPM (color) image file.
-     * @param path Output file path
-     * @param width Image width
-     * @param height Image height
-     * @param data RGB pixel data (3 bytes per pixel: R, G, B, row-major)
-     * @param binary true for binary format (P6), false for ASCII format (P3)
-     * @return true on success
-     */
-    bool writePPM(const std::string& path, int width, int height, const std::uint8_t* data, bool binary = true);
-
-    /**
-     * Write frame buffer to a PPM (color) image file.
-     * @param path Output file path
-     * @param data ARGB pixel data (AARRGGBB)
-     * @param binary true for binary format (P6), false for ASCII format (P3)
-     * @return true on success
-     */
-    bool writePPM(const std::string& path, const std::array<std::uint32_t, 256 * 240>& data, bool binary = true);
-
-    /**
      * Read a PGM (grayscale) image file. Supports P2 (ASCII) and P5 (binary).
      * @param path Input file path
      * @param width Output image width
@@ -54,15 +34,6 @@ namespace nes_core {
      * @return Grayscale pixel data (1 byte per pixel), empty on failure
      */
     std::vector<std::uint8_t> readPGM(const std::string& path, int& width, int& height);
-
-    /**
-     * Read a PPM (color) image file. Supports P3 (ASCII) and P6 (binary).
-     * @param path Input file path
-     * @param width Output image width
-     * @param height Output image height
-     * @return RGB pixel data (3 bytes per pixel: R, G, B), empty on failure
-     */
-    std::vector<std::uint8_t> readPPM(const std::string& path, int& width, int& height);
 }
 
 #endif //SPIKYNES_UTILS_H
