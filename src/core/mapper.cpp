@@ -5,6 +5,7 @@
 #include "core/mapper/mapper_003.h"
 #include "core/mapper/mapper_004.h"
 #include "core/mapper/mapper_007.h"
+#include "core/mapper/mapper_011.h"
 #include "core/mapper/mapper_206.h"
 
 namespace nes_core {
@@ -25,6 +26,7 @@ namespace nes_core {
             case 3: mapper = std::make_unique<Mapper003>(); break;
             case 4: mapper = std::make_unique<Mapper004>(); break;
             case 7: mapper = std::make_unique<Mapper007>(); break;
+            case 11: mapper = std::make_unique<Mapper011>(); break;
             case 206: mapper = std::make_unique<Mapper206>(); break;
             default: break;
         }
