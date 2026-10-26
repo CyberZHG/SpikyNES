@@ -1,0 +1,32 @@
+#ifndef SPIKYNES_MAPPER_206_H
+#define SPIKYNES_MAPPER_206_H
+
+#include <array>
+#include "core/mapper.h"
+
+namespace nes_core {
+
+    class Mapper206 final : public Mapper {
+    public:
+        Mapper206();
+
+        void reset() override;
+
+        std::uint8_t cpuRead(std::uint16_t addr) override;
+        void cpuWrite(std::uint16_t addr, std::uint8_t value) override;
+
+        std::uint8_t ppuRead(std::uint16_t addr) override;
+        void ppuWrite(std::uint16_t addr, std::uint8_t value) override;
+
+    private:
+        [[nodiscard]] int chrBankAddr(std::uint16_t addr) const;
+
+        std::uint8_t bankToUpdate_ = 0;
+        std::array<std::uint8_t, 8> romIndices_{};
+    };
+
+    using MapperDxROM = Mapper206;
+
+}
+
+#endif //SPIKYNES_MAPPER_206_H

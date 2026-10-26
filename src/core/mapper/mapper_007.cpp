@@ -1,6 +1,11 @@
 #include "core/mapper/mapper_007.h"
 
 namespace nes_core {
+    void Mapper007::reset() {
+        Mapper::reset();
+        nametableMode_ = 0;
+    }
+
     std::uint8_t Mapper007::cpuRead(const std::uint16_t addr) {
         if (0x8000 <= addr && addr <= 0xFFFF) {
             // 32KB switchable PRG ROM bank

@@ -75,6 +75,8 @@ add_library(SpikyNesCore STATIC
         src/core/mapper/mapper_004.cpp
         include/core/mapper/mapper_007.h
         src/core/mapper/mapper_007.cpp
+        include/core/mapper/mapper_206.h
+        src/core/mapper/mapper_206.cpp
 )
 
 target_include_directories(SpikyNesCore
@@ -144,6 +146,7 @@ if(SPIKY_NES_ENABLE_TESTS)
             tests/core/ppu/rom/test_ppu_read_buffer.cpp
             tests/core/ppu/rom/test_ppu_open_bus.cpp
             tests/core/mapper/test_mapper_007.cpp
+            tests/core/mapper/test_mapper_206.cpp
     )
 
     if(SPIKY_NES_ENABLE_ROM_TESTS)
